@@ -1,0 +1,3 @@
+2020-10-26 20.38.25 - Connected to Discord
+2020-10-26 20.38.25 - Connected to Database
+2020-10-26 20.38.26 - Sent help and search commands
