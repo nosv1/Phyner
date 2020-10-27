@@ -1,0 +1,3 @@
+2020-10-27 03.32.09 - Connected to Discord
+2020-10-27 03.32.09 - Connected to Database
+2020-10-27 03.32.10 - For help with embeds, click [__here__](https://github.com/nosv1/Phyner/wiki/User-Embeds) to visit the Phyner Wiki Page.

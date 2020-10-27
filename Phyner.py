@@ -11,6 +11,7 @@ from pytz import timezone
 import traceback
 import gspread
 import mysql.connector
+from types import SimpleNamespace
 
 # general imports
 import Secrets
@@ -22,6 +23,7 @@ import Embed
 
 mo_id = 405944496665133058
 phyner_id = 770416211300188190
+phyner_red = int("0x980B0D", 16)
 
 intents = discord.Intents.all()
 client = discord.Client(intents = intents)
@@ -40,11 +42,14 @@ async def on_ready():
   try:
     global connected
     connected = datetime.now()
-    Logger.log(connected, "Connected to Discord")
+    log_path = f"Logs\\{datetime.strftime(connected, '%Y-%m-%d %H.%M.%S')}.txt"
+    f = open(log_path, "a+")
+    f.close()
+    Logger.log("Connected to Discord")
 
     global phyner_db
     phyner_db = Database.connectDatabase("Phyner")
-    Logger.log(connected, "Connected to Database")
+    Logger.log("Connected to Database")
 
     await client.change_presence(
       activity=discord.Activity(
@@ -56,7 +61,7 @@ async def on_ready():
     error = traceback.format_exc()
 
   if error:
-    await Logger.logError(client, connected, error)
+    await Logger.logError(client, error)
 # end on_ready
 
 
@@ -65,17 +70,37 @@ async def on_ready():
 
 @client.event
 async def on_raw_message_edit(payload):
-  pd = payload.data
+  if not connected: # we aint ready yet
+    return
 
-  # get the message object
-  message = await client.get_channel(int(pd["channel_id"])).fetch_message(int(pd["id"]))
+  error = False
+  message = None
+  try:
+
+    pd = payload.data
+
+    channel_id = int(pd["channel_id"])
+    message_id = int(pd["id"])
+
+    channel = client.get_channel(channel_id)
+    channel = channel if channel else await client.fetch_channel(channel_id) # if DM, get_channel is none, i think
+
+    message = await channel.fetch_message(message_id)
+
+    if not message.author.bot and connected:
+      try:
+        pd["content"]
+        await on_message(message)
+      except KeyError: # when content was not updated
+        pass
+
+    
+  except:
+    error = traceback.format_exc()
+
+  if error:
+    await Logger.logErrorMessage(client, error, message)
   
-  if not message.author.bot and connected:
-    try:
-      pd["content"]
-      await on_message(message)
-    except KeyError: # when content was not updated
-      pass
 # end on_raw_message_edit
 
 @client.event
@@ -92,6 +117,15 @@ async def on_message(message):
       mc = mc.replace("  ", " ")
     args = mc.split(" ")
 
+    author_perms = dict(message.channel.permissions_for(message.author))
+    is_mo = message.author.id == mo_id
+    if is_mo:
+      for permission  in author_perms:
+        author_perms[permission] = False
+      author_perms = SimpleNamespace(**author_perms)
+
+
+    ## BEGIN CHECKS ##
 
     if not message.author.bot: # not a bot
       if len(args) == 1: # no args, just @Phyner
@@ -103,23 +137,27 @@ async def on_message(message):
         try:
           embed.color = phyner.roles[-1].color
         except AttributeError: # when in DM
-          embed.color = int("0x980B0D", 16) # red
+          embed.color = phyner_red
 
         await message.channel.send(embed=embed)
-        Logger.log(connected, "Sent help and search commands")
+        Logger.log("Sent help and search commands")
         
         
-      ## CHECK FOR COMMANDS ##
+      ## COMMAND CHECKS ##
+
+      elif args[1] == "test" and is_mo:
+        embed = discord.Embed(video="https://www.youtube.com/watch?v=X9zXcnSXNF0")
+        await message.channel.send(embed=embed)
+        await message.channel.send("done", delete_after=3)
 
       elif args[1] == "embed":
-        await Embed.main(client, message, args)
-
+        await Embed.main(client, message, args, author_perms)
     
   except:
     error = traceback.format_exc()
 
   if error:
-    await Logger.logErrorMessage(client, connected, error, message)
+    await Logger.logErrorMessage(client, error, message)
 # end on_message
 
 client.run(Secrets.getToken("PhynerToken.txt"))
