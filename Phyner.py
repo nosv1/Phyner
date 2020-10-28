@@ -121,7 +121,7 @@ async def on_message(message):
     is_mo = message.author.id == mo_id
     if is_mo:
       for permission  in author_perms:
-        author_perms[permission] = False
+        author_perms[permission] = True
       author_perms = SimpleNamespace(**author_perms)
 
 

@@ -38,18 +38,18 @@ async def logErrorMessage(client, error, message): # error after user message
   log(error)
 # end logErrorMessage
 
-async def botResponse(client, message, response): # response to user command error
+async def botResponse(message, response): # response to user command error
   in_dm = False
   try:
     phyner = [member for member in message.channel.members if member.id == phyner_id][0]
   except AttributeError:
     in_dm = True
-    phyner = client.get_user(phyner_id)
 
   embed = discord.Embed()
   embed.description = response
   embed.color = phyner_red if in_dm else phyner.roles[-1].color
 
   await message.channel.send(embed=embed)
+  log(message.content)
   log(response)
 # end botResponse

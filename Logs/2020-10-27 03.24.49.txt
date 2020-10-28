@@ -1,5 +1,0 @@
-2020-10-27 03.24.49 - Connected to Discord
-2020-10-27 03.24.49 - Connected to Database
-2020-10-27 03.24.50 - Mo, you need the `Manage Messages` permission to create embeds with <@770416211300188190>.
-2020-10-27 03.25.05 - Mo, you need the `Manage Messages` permission to create embeds with <@770416211300188190>.
-2020-10-27 03.25.13 - test, you need the `Manage Messages` permission to create embeds with <@770416211300188190>.
