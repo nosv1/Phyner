@@ -1,4 +1,4 @@
-# functions to deal with opening files in Secrets file
+# functions to deal with opening files in Secrets folder above Phyner folder
 from os import path
 
 def getToken(fileName):
