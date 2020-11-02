@@ -23,7 +23,7 @@ import Embed
 
 mo_id = 405944496665133058
 phyner_id = 770416211300188190
-phyner_red = int("0x980B0D", 16)
+phyner_red = 0x980B0D
 
 intents = discord.Intents.all()
 client = discord.Client(intents = intents)
@@ -53,7 +53,7 @@ async def on_ready():
 
     await client.change_presence(
       activity=discord.Activity(
-        type=discord.ActivityType.playing, name="Phyner is finer."
+        type=discord.ActivityType.watching, name="Phyner is finer."
       )
     )
     

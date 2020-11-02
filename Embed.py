@@ -27,17 +27,24 @@ async def main(client, message, args, author_perms):
 
 async def createEmbed(message, embed): # passing embed incase it's from editEmbed()
   attributes = {
-    ".color" : None,
-    ".colour" : None,
+    ".color" : None, # alias for colour
+    ".colour" : None, # alias for color
+
     ".title" : None,
     ".title_icon" : None,
     ".title_url" : None,
+
     ".description" : None,
+
     ".field#_title" : None, # when checking for field stuff, replace number as #
     ".field#_text" : None, # will be adding actual field# keys upon detection
+
     ".footer" : None,
-    ".embed_thumbnail" : None,
-    ".embed_picture" : None
+
+    ".thumbnail" : None,
+
+    ".picture" : None, # alias for image
+    ".image" : None, # alias for picture
   }
 
 
@@ -54,7 +61,7 @@ async def createEmbed(message, embed): # passing embed incase it's from editEmbe
     lines[i] = " ".join(words)
 
     first_word = words[0]
-    first_word = re.sub(r"[0-9]", "#", first_word) # for .field#_ attributes
+    first_word = re.sub(r"(\d+)", "#", first_word) # for .field#_ attributes
 
     if first_word in attributes:
       # more spacechar stuff if first word is attribute
@@ -72,16 +79,13 @@ async def createEmbed(message, embed): # passing embed incase it's from editEmbe
 
 
   ## set embed attributes ##
-
+  fields = [None for i in range(25)] # max 25 fields, all set to None for now
   for attr in attributes:
     if not attributes[attr]: # attribute is none, then skip attr
       continue
 
-    if attr in [".color", ".colour"]: # color
-      try:
-        color = attributes[attr].replace("#", "").strip() # #ffffff -> ffffff
-      except AttributeError: # when attribute is None
-        continue
+    if attr in [".color", ".colour"] and attributes[attr]: ## COLOR ##
+      color = attributes[attr].replace("#", "").strip() # #ffffff -> ffffff
 
       if len(color) != 6:
         await Logger.botResponse(message, "The color attribute doesn't have 6 characters. The color for a Phyner embed should be expressed as a HEX number, e.g. #FFFFFF or FFFFFF")
@@ -89,7 +93,7 @@ async def createEmbed(message, embed): # passing embed incase it's from editEmbe
       embed.color = int(f"0x{color}", 16)
 
 
-    elif attr == ".title_url": # author
+    elif attr == ".title_url": ## TITLE STUFF ##
       embed = embed.to_dict()
 
       if attributes[".title"] or attributes[".title_icon"] or attributes[".title_url"]:
@@ -105,15 +109,56 @@ async def createEmbed(message, embed): # passing embed incase it's from editEmbe
       embed = discord.Embed().from_dict(embed)
 
     
-    elif attr == ".description": # description
+    elif attr == ".description": ## DESCRIPTION ##
       embed.description = attributes[attr]
+  
+    ## FIELD PREPPING but not creating, creating after attributes loop
+    elif "field" in attr and any([t in attr for t in ["title", "text"]]): 
+      num = int("".join(re.findall(r"[0-9]", attr))) - 1 # get numbers in attribute, and make an int out of it
+      try:
+        if not fields[num]: # creating the field, or at least putting it in the list
+          fields[num] = {"title" : None, "text" : None}
+
+      except IndexError: # field number not 1-25
+        await Logger.botResponse(message, f"{message.author.display_name}, field numbers need to be 1-25 - given the max number of fields in an embed is 25 fields. You gave a field number of **{num+1}**.")
+        return
+
+      if "title" in attr:
+        fields[num]["title"] = attributes[attr]
+      else:
+        fields[num]["text"] = attributes[attr]
 
     
-    elif attr == ".footer": # footer
+    elif attr == ".footer": ## FOOTER ##
       embed.set_footer(text=attributes[attr])
+
+    elif attr == ".thumbnail": ## THUMBNAIL ##
+      embed.set_thumbnail(url=re.sub(r"[<>]", "", attributes[attr])) 
+
+    elif attr in [".picture", ".image"] and attributes[attr]: ## IMAGE ##
+      embed.set_image(url=re.sub(r"[<>]", "", attributes[attr])) 
+
+  # end attributes loop
+
+  ## loop through [fields] to create and populate
+  for field in fields:
+
+    if field:
+      title = field["title"] 
+      text = field["text"]
+
+      name = title if title and not str(title).strip() == "" else space_char
+      value = text if text and not str(text).strip() == "" else space_char
+
+      embed.add_field(
+        name=name,
+        value=value,
+        inline=False
+      )
 
   try:
     await message.channel.send(embed=embed)
+    Logger.log("Custom Embed Sent")
 
   except discord.errors.HTTPException as e: # likely not a well formed URL
     await Logger.botResponse(message, str(e))
