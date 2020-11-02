@@ -7,6 +7,7 @@ import Logger
 
 mo_id = 405944496665133058
 phyner_id = 770416211300188190
+phyner_red = 0x980B0D
 
 space_char = "⠀"
 
@@ -50,7 +51,7 @@ async def createEmbed(message, embed): # passing embed incase it's from editEmbe
 
   embed = discord.Embed() if not embed else embed
 
-  lines = message.content.split("\n")
+  lines = message.content.replace("\s", space_char).split("\n") # \s is a special symbol used to denote space_chars in the text
   end_attribute = len(lines) - 1 # last line of current attribute
   for i in range(len(lines)-1, -1, -1):
     line = lines[i] + " "
@@ -85,12 +86,21 @@ async def createEmbed(message, embed): # passing embed incase it's from editEmbe
       continue
 
     if attr in [".color", ".colour"] and attributes[attr]: ## COLOR ##
-      color = attributes[attr].replace("#", "").strip() # #ffffff -> ffffff
+      color = attributes[attr].replace("#", "").strip().lower() # #ffffff -> ffffff
+      
+      if color.replace(space_char, "") in ["", "default", "role"]:
+        phyner = message.mentions[0]
+        try:
+          embed.color = phyner.roles[-1].color
+        except AttributeError: # when in DM
+          embed.color = phyner_red
 
-      if len(color) != 6:
-        await Logger.botResponse(message, "The color attribute doesn't have 6 characters. The color for a Phyner embed should be expressed as a HEX number, e.g. #FFFFFF or FFFFFF")
+      elif len(color) != 6:
+        await Logger.botResponse(message, f"{message.author.display_name}, the color attribute doesn't have 6 characters. The color for a Phyner embed should be expressed as a HEX number, e.g. **#FFFFFF or FFFFFF* It can also be left blank, set to default, or set to role to have the embed color match Phyner's current role color, e.g. **.color, .color default, or .color role**")
         return
-      embed.color = int(f"0x{color}", 16)
+
+      else:
+        embed.color = int(f"0x{color}", 16)
 
 
     elif attr == ".title_url": ## TITLE STUFF ##

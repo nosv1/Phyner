@@ -14,7 +14,7 @@ def log(text):
   # open current log
   logs_folder = pathlib.Path("Logs")
   log_path = list(logs_folder.iterdir())[-1]
-  f = open(log_path, "a+")
+  f = open(log_path, "a+", encoding="utf-8")
 
   # log text
   log_string = f"{datetime.strftime(datetime.now(), '%Y-%m-%d %H.%M.%S')} - {text}"
