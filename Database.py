@@ -1,5 +1,8 @@
 import mysql.connector
 import Secrets
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def connectDatabase(db_name):
   class PhynerDB:
@@ -9,8 +12,11 @@ def connectDatabase(db_name):
   # end PhynerDB
 
   db_connection = mysql.connector.connect(
-    host = "10.0.0.227",
-    user = "Phyner",
+    host = os.getenv("DB_HOST"),
+    user = os.getenv("DB_USER"),
+    password = os.getenv("DB_PASSWORD"),
+
+    database = db_name,
     charset = "utf8mb4",
     use_unicode = True,
     buffered = True

@@ -12,6 +12,11 @@ import traceback
 import gspread
 import mysql.connector
 from types import SimpleNamespace
+import os
+import re
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # general imports
 import Secrets
@@ -115,7 +120,7 @@ async def on_message(message):
     mc = message.content.translate({ord(c) : " " for c in ["\n", "\t", "\r"]})
     while ("  " in mc):
       mc = mc.replace("  ", " ")
-    args = mc.split(" ")
+    args = mc.split(" ") + ["", ""]
 
     author_perms = dict(message.channel.permissions_for(message.author))
     is_mo = message.author.id == mo_id
@@ -128,7 +133,10 @@ async def on_message(message):
     ## BEGIN CHECKS ##
 
     if not message.author.bot: # not a bot
-      if len(args) == 1: # no args, just @Phyner
+      if (
+        len(args[:-2]) == 1 and
+        f"<@{phyner_id}>" == "".join(re.findall(r"[<@\d>]", message.content))
+      ): # no args, just @Phyner
         phyner = message.mentions[0]
 
         embed = discord.Embed()
@@ -146,7 +154,8 @@ async def on_message(message):
       ## COMMAND CHECKS ##
 
       elif args[1] == "test" and is_mo:
-        embed = discord.Embed(video="https://www.youtube.com/watch?v=X9zXcnSXNF0")
+        embed = discord.Embed()
+        embed.set_footer(text="Yeet", icon_url=message.author.avatar_url)
         await message.channel.send(embed=embed)
         await message.channel.send("done", delete_after=3)
 
@@ -160,4 +169,4 @@ async def on_message(message):
     await Logger.logErrorMessage(client, error, message)
 # end on_message
 
-client.run(Secrets.getToken("PhynerToken.txt"))
+client.run(os.getenv("DISCORD_TOKEN"))
