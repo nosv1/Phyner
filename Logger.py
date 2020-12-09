@@ -1,55 +1,97 @@
-# Log functions
+''' IMPORTS '''
+
 import discord
-import asyncio
 from datetime import datetime
 import pathlib
 
-mo_id = 405944496665133058
-phyner_id = 770416211300188190
-phyner_red = int("0x980B0D", 16)
+import Support
 
 
-def log(text):
 
-  # open current log
-  logs_folder = pathlib.Path("Logs")
-  log_path = list(logs_folder.iterdir())[-1]
-  f = open(log_path, "a+", encoding="utf-8")
+''' CONSTANTS '''
 
-  # log text
-  log_string = f"{datetime.strftime(datetime.now(), '%Y-%m-%d %H.%M.%S')} - {text}"
-  print(log_string)
-  f.write(f"{log_string}\n")
+time_format = "%d %b %y %H.%M.%S"
 
-  # close log
-  f.close()
-# end Log
 
-async def logError(client, error): # general errors
-  await client.get_user(mo_id).send(f"```{error}```")
-  log(error)
-# end logError
 
-async def logErrorMessage(client, error, message): # error after user message
-  await client.get_user(mo_id).send(
-    f"**Message**\n{message.content}\n\n**Error**```{error}```"
-  )
-  log(message.content)
-  log(error)
-# end logErrorMessage
+''' FUNCTIONS '''
 
-async def botResponse(message, response): # response to user command error
-  in_dm = False
-  try:
-    phyner = [member for member in message.channel.members if member.id == phyner_id][0]
-  except AttributeError:
-    in_dm = True
+def create_log_file():
+    """
+    Creates a blank log file in Logs with the current date as the name
 
-  embed = discord.Embed()
-  embed.description = response
-  embed.color = phyner_red if in_dm else phyner.roles[-1].color
+    ------
+    Most recent log path accessed by:
+      import pathlib
+      log_path = list(pahtlib.Path(\"Logs\").iterdir())[-1]
+    ------
+    """
 
-  await message.channel.send(embed=embed)
-  log(message.content)
-  log(response)
-# end botResponse
+    now = datetime.utcnow()
+    log_path = f"Logs\\{now.strftime(time_format)}.txt"
+    log_file = open(log_path, "a+", encoding="utf-8")
+
+    header = ""
+    header += "Phyner is finer.\n"
+    header += "Creator:\n"
+    header += "\tMo#9991\n\n"
+
+    log_file.write(header)
+    log_file.close()
+
+    log("Log", "Created")
+# end create_log_file
+
+def open_active_log_file(read_binary=False):
+    """
+    Opens the most recent log file created.
+    """
+
+    logs_folder = pathlib.Path("Logs")
+    log_path = list(logs_folder.iterdir())[-1]
+    log_file = open(log_path, "a+", encoding="utf-8") if not read_binary else open(log_path, "rb")
+
+    return log_file
+# end open_log_file
+
+def log(action, detail=""):
+    """
+    Writes "{current_time} {action} {detail}\n" to the most recent log file
+
+    ------
+    Examples:
+      log("Log Created")
+      03 Dec 20 07.56.04 [LOG CREATED]
+
+      log("Log Created", detail="This is a new log")
+      03 Dec 20 07.56.04 [LOG CREATED] This is a new log
+    ------
+    """
+
+    log_file = open_active_log_file()
+    now = datetime.utcnow()
+
+    line = f"{now.strftime(time_format)} [{action.upper()}] {detail}\n" 
+    print(line, end="")
+    log_file.write(line)
+    log_file.close
+# end log
+
+async def log_error(client, traceback):
+    """ 
+    Writes "{current_time} ERROR \ntraceback" to the most recent log file
+    Sends Log File to Mo
+    """
+
+    log_file = open_active_log_file()
+    now = datetime.utcnow()
+
+    line = f"{now.strftime(time_format)} [ERROR]\n{traceback}"
+    print(line)
+    log_file.write(line)
+    log_file.close()
+
+    log_file = open_active_log_file(read_binary=True)
+    await client.get_user(Support.ids.mo_id).send(content=f"```{traceback}```", file=discord.File(log_file, now.strftime(time_format)))
+    log_file.close()
+# end log_error

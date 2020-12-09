@@ -1,0 +1,82 @@
+''' IMPORTS '''
+import discord
+from types import SimpleNamespace
+
+
+
+''' CONSTANTS '''
+
+## IDs ##
+ids = SimpleNamespace(**{
+    'mo_id' : 405944496665133058,
+    'phyner_id' : 770416211300188190,
+})
+
+
+## COLORS ##
+colors = SimpleNamespace(**{
+    'phyner_red' : 0x980B0D,
+})
+
+
+## CHARACTERS / EMOJIS ##
+emojis = SimpleNamespace(**{
+    'space_char' : "⠀",
+    'x_emoji' : "❌",
+    'ok_emoji' : "🆗",
+    'i_emoji' : "🛈",
+})
+
+
+
+''' SUPPORT FUNCTIONS '''
+
+def get_member_perms(channel, member):
+    """
+        Gets the permissions for a given member for a given channel. If the member is Mo, all permissions are returned as True.
+    """
+
+    author_perms = dict(channel.permissions_for(member))
+    is_mo = member.id == ids.mo_id
+    if is_mo:
+        for permission  in author_perms:
+            author_perms[permission] = True
+    author_perms = SimpleNamespace(**author_perms) # converts dict back to class
+    return author_perms
+# end get_member_perms
+
+def get_phyner_from_channel(channel):
+    return [member for member in channel.members if member.id == ids.phyner_id][0]
+# end get_phyner_member_from_channel
+
+async def simple_bot_response(channel, title=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply=False):
+    """
+    Bot sends message as basic embed
+    reply is defaulted to False, but expects a discord.Message if declared in call
+    """
+
+    in_dm = False
+    try:
+        phyner = get_phyner_from_channel(channel)
+    except AttributeError:
+        in_dm = True
+
+    embed = discord.Embed()
+    embed.colour = colors.phyner_red if in_dm else phyner.roles[-1].color
+
+    embed.title = title
+    embed.description = description
+
+    if footer:
+        embed.set_footer(text=footer)
+
+
+    if send:
+        if reply:
+            msg = await reply.reply(embed=embed)
+        else:
+            msg = await channel.send(embed=embed)
+        return msg
+    else:
+        return embed
+# end botResponse
