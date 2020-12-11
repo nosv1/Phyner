@@ -48,7 +48,7 @@ async def on_ready():
     try:
         global connected
         connected = True
-        Logger.log(f"{host} Connection", "Controller Connected")
+        Logger.log("Connection", f"{host} Controller Connected")
 
         await client.change_presence(
             activity=discord.Activity(
@@ -133,13 +133,18 @@ async def on_message(message):
                     
                 # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
 
-                if args[1] == "test" and is_mo:
-                    await message.channel.send("test done")
+                ## MO ##
+                if is_mo:
+                    if args[1] == "test":
+                        await message.channel.send("test done")
+
+                    elif args[1] in ["close", "restart"]:
+                        await Support.restart(client, restart=args[1] == "restart")
 
                 
                 ## HELP ##
 
-                elif args[1] in ["?", "search"]:
+                if args[1] in ["?", "search"]:
                     await Help.search(message, args)
 
                 elif args[1] in ["help", "h"]:
@@ -167,5 +172,5 @@ async def on_message(message):
 
 
 Logger.create_log_file()
-Logger.log(f"{host} Connection", "Connecting")
+Logger.log("Connection", f"{host} Controller Connecting")
 client.run(os.getenv("DISCORD_TOKEN"))
