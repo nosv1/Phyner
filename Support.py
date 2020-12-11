@@ -139,6 +139,7 @@ async def restart(client, restart=True):
             while not client.is_closed():
                 print('closing')
                 continue
+            print(client.is_closed())
 
             subprocess.call("./restart.sh", shell=True)
 
