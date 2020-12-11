@@ -131,6 +131,8 @@ async def on_message(message):
                 # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
 
                 if args[1] == "test" and is_mo:
+                    import subprocess
+                    subprocess.call("../Clone_Scripts/test.sh")
                     await message.channel.send("test done")
 
                 
@@ -144,7 +146,7 @@ async def on_message(message):
 
 
                 ## EMBED ##
-                
+
                 elif args[1] == "embed":
                     await Embed.main(client, message, args, author_perms)
 
