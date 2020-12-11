@@ -136,5 +136,6 @@ async def restart(client, restart=True):
             subprocess.call("./restart.sh", shell=True)
 
     await client.close()
+    print('yes')
 
 # end restart
