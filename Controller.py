@@ -173,7 +173,7 @@ async def on_message(message):
         Logger.log("Connection", f"{host} Disconnected")
 
     except SystemExit:
-        pass
+        exit()
     
     except:
         error = traceback.format_exc()
