@@ -136,7 +136,8 @@ async def restart(client, restart=True):
 
             await client.close()
 
-            subprocess.Popen(["./restart.sh", f"{os.getpid()}"], shell=True)
+            pid = os.getpid()
+            subprocess.Popen(["./restart.sh", str(pid)], shell=True)
 
     else:
         await client.close()
