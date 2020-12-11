@@ -1,7 +1,3 @@
-# Phyner is finer.
-# Mo#9991
-# Main File, handles events and runs bot, the controller
-
 ''' IMPORTS '''
 
 import discord
