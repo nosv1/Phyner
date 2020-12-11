@@ -303,6 +303,7 @@ def get_embed_from_content(client, content, roles, embed=discord.Embed()):
 async def create_user_embed(client, message):
     embed, content, errors = get_embed_from_content(client, message.content, message.guild.roles)
     msg = await message.channel.send(content=content, embed=embed)
+    phyner = Support.get_phyner_from_channel(message.channel)
 
     if True or Support.show_moving_editing_phyner_messages(message.author.id): # TODO ... this ability?
 
@@ -310,11 +311,11 @@ async def create_user_embed(client, message):
 
         description = f"`{msg.id}` is the Message ID of the [message]({msg.jump_url}) above.\n\n"
 
-        description += f"**Edit Embed:**\n`@Phyner#2797 embed edit {msg.id}\n[edit embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
+        description += f"**Edit Embed:**\n`@{phyner} embed edit {msg.id}\n[edit embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
 
-        description += f"**Copy Message:**\n`@Phyner#2797 copy {msg.id} [some_msg_id] ... <#destination>`\n\n" # TODO @Phyner copy
+        description += f"**Copy Message:**\n`@{phyner} copy {msg.id} [some_msg_id] ... <#destination>`\n\n" # TODO @Phyner copy
 
-        description += f"**Replace Message:**\n`@Phyner#2797 replace <some_phyner_msg_id> {msg.id}`\n\n" # TODO @Phyner replace
+        description += f"**Replace Message:**\n`@{phyner} replace <some_phyner_msg_id> {msg.id}`\n\n" # TODO @Phyner replace
 
         description += f"{emojis.x_emoji} to never show this message again (also deletes this message)" # TODO ... this ability?
 
@@ -354,6 +355,8 @@ async def create_user_embed(client, message):
 # end create_user_embed
 
 async def edit_user_embed(client, message, args):
+    phyner = Support.get_phyner_from_channel(message.channel)
+    
     msg = None
     msg_id = args[3]
 
@@ -405,7 +408,7 @@ async def edit_user_embed(client, message, args):
         else: # msg not found, by deduction
             description = f"The message_id, `{msg_id}`, could not be found in any of the channels {client.user.mention} is in.\n\n"
 
-            description += f"`@Phyner#2797 ids` to learn how to get message_ids.\n"
+            description += f"`@{phyner} ids` to learn how to get message_ids.\n"
             # TODO @Phyner ids
             msg = await Support.simple_bot_response(message.channel,
                 title="Could Not Find Message",

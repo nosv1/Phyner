@@ -23,8 +23,7 @@ load_dotenv()
 import Logger
 import Database
 import Support
-
-
+import Help
 import Embed
 
 ''' CONSTANTS '''
@@ -128,31 +127,30 @@ async def on_message(message):
 
 
                 ''' COMMAND CHECKS '''
+                    
+                # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
 
                 if args[1] == "test" and is_mo:
-                    await Support.simple_bot_response(message.channel, reply=message)
                     await message.channel.send("test done")
 
+                
+                ## HELP ##
 
+                elif args[1] in ["?", "search"]:
+                    await Help.search(message, args)
+
+                elif args[1] in ["help", "h"]:
+                    await Help.help(message)
+
+
+                ## EMBED ##
+                
                 elif args[1] == "embed":
                     await Embed.main(client, message, args, author_perms)
-                    
-                    # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
 
 
                 else:
-                    ## SIMPLE HELP MESSAGE ##
-
-                    description = f"`@{phyner} help` - general help\n"
-                    description += f"`@{phyner} <command> help` - specific help\n"
-                    description += f"`@{phyner} ? <search words>` - search help\n"
-
-                    msg = await Support.simple_bot_response(
-                        message.channel, 
-                        title="No Comamnd Reckognized",
-                        description=description
-                    )
-                    Logger.log("Bot reponse", "Simple Help Message")
+                    await Help.simple_help(message)
 
                 ''' END COMMAND CHECKS '''
     

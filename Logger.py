@@ -29,15 +29,14 @@ def create_log_file():
 
     now = datetime.utcnow()
     log_path = f"Logs/{now.strftime(time_format)}.txt"
-    log_file = open(log_path, "a+", encoding="utf-8")
+    with open(log_path, "a+", encoding="utf-8") as log_file:
 
-    header = ""
-    header += "Phyner is finer.\n"
-    header += "Creator:\n"
-    header += "\tMo#9991\n\n"
+      header = ""
+      header += "Phyner is finer.\n"
+      header += "Creator:\n"
+      header += "\tMo#9991\n\n"
 
-    log_file.write(header)
-    log_file.close()
+      log_file.write(header)
 
     log("Log", "Created")
 # end create_log_file

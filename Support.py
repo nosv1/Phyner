@@ -1,6 +1,9 @@
 ''' IMPORTS '''
 import discord
 from types import SimpleNamespace
+from bs4 import BeautifulSoup as bsoup
+import requests
+import re
 
 
 
@@ -80,3 +83,23 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
     else:
         return embed
 # end botResponse
+
+def search_github(query):
+    """
+        search github wiki
+        return list of results [{link, title, p}]
+    """
+    while " " in query:
+        query = query.replace(" ", "+")
+
+    html = str(bsoup(requests.get(f"https://github.com/nosv1/Phyner/search?q={query}&type=wikis").text, "html.parser"))
+    results = html.split("class=\"f4 text-normal\"")
+    results = results[1:] if len(results) > 1 else []
+    for i, result in enumerate(results):
+        results[i] = {
+            'link' : "https://github.com" + result.split("href=\"")[1].split("\"")[0],
+            'title' : result.split("title=\"")[1].split("\"")[0],
+            'p' : "\n".join(re.sub(r"(<|(</))(em>)", "**", result.split('<p')[1].split("\">")[1].split("</p>")[0].strip()).split(emojis.space_char))
+        }
+    return results
+# end search

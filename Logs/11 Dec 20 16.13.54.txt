@@ -1,0 +1,10 @@
+Phyner is finer.
+Creator:
+	Mo#9991
+
+11 Dec 20 16.13.54 [LOG] Created
+11 Dec 20 16.13.54 [CONNECTION] Connecting
+11 Dec 20 16.13.57 [CONNECTION] Connected
+11 Dec 20 16.13.58 [COMMAND] 405944496665133058, '<@!770416211300188190>'
+
+11 Dec 20 16.13.58 [BOT REPONSE] Simple Help Message
