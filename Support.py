@@ -121,7 +121,7 @@ async def restart(client, restart=True):
     if host == "PI4":
         if restart:
             Logger.log(f"{host} Connection", "Restarting see you on the other side...")
-            subprocess.call("restart.sh")
+            subprocess.call("./restart.sh", shell=True)
 
     await client.close()
     sys.exit()
