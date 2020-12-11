@@ -28,7 +28,7 @@ def create_log_file():
     """
 
     now = datetime.utcnow()
-    log_path = f"Logs\\{now.strftime(time_format)}.txt"
+    log_path = f"Logs/{now.strftime(time_format)}.txt"
     log_file = open(log_path, "a+", encoding="utf-8")
 
     header = ""
