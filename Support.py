@@ -4,10 +4,19 @@ from types import SimpleNamespace
 from bs4 import BeautifulSoup as bsoup
 import requests
 import re
+import subprocess
+import os
+import sys
 
+from dotenv import load_dotenv
+load_dotenv()
+
+import Logger
 
 
 ''' CONSTANTS '''
+
+host = os.getenv("HOST")
 
 ## IDs ##
 ids = SimpleNamespace(**{
@@ -103,3 +112,13 @@ def search_github(query):
         }
     return results
 # end search
+
+async def restart(client):
+
+    if host == "PI4":
+        Logger.log(f"{host} Connection", "Restarting... see you on the other side")
+        subprocess.call("restart.sh")
+        await client.close()
+        sys.exit()
+
+# end restart

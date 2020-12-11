@@ -35,6 +35,7 @@ client = discord.Client(intents = intents)
 
 connected = None
 phyner_db = None
+host = os.getenv("HOST")
 
 
 
@@ -47,7 +48,7 @@ async def on_ready():
     try:
         global connected
         connected = True
-        Logger.log("Connection", "Connected")
+        Logger.log(f"{host} Connection", "Controller Connected")
 
         await client.change_presence(
             activity=discord.Activity(
@@ -133,8 +134,6 @@ async def on_message(message):
                 # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
 
                 if args[1] == "test" and is_mo:
-                    import subprocess
-                    subprocess.call("../Clone_Scripts/test.sh")
                     await message.channel.send("test done")
 
                 
@@ -168,5 +167,5 @@ async def on_message(message):
 
 
 Logger.create_log_file()
-Logger.log("Connection", "Connecting")
+Logger.log(f"{host} Connection", "Connecting")
 client.run(os.getenv("DISCORD_TOKEN"))
