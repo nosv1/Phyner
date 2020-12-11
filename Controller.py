@@ -136,6 +136,8 @@ async def on_message(message):
 
                 elif args[1] == "embed":
                     await Embed.main(client, message, args, author_perms)
+                    
+                    # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
 
 
                 else:

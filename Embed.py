@@ -68,7 +68,7 @@ async def main(client, message, args, author_perms):
     return
 # end main
 
-def get_embed_from_content(content, roles, embed=discord.Embed()):
+def get_embed_from_content(client, content, roles, embed=discord.Embed()):
     """ 
     Creating a discord.Embed() from the content of a message, or simply from a string.
     returns embed and list of readable error messages
@@ -144,8 +144,8 @@ def get_embed_from_content(content, roles, embed=discord.Embed()):
                 color = abs(int(value.replace("#", ""), 16) + 1) if not role_color and value else role_color
                 color = role_color[0].value if role_color else (color if color else value)
 
-                if not value or color <= 16777215:
-                    embed.color = color
+                if not value or color <= 16777216: # really it's supposed to be < 16777215, but fixing that below
+                    embed.color = abs(color + (1 if color == 0 else -2)) if color else value
 
                 else:
                     errors.append([f"**Attribute:** `{attr}`", f"**Value:** `{value}` is not a role id or is too large of a hex value"])
@@ -275,6 +275,8 @@ def get_embed_from_content(content, roles, embed=discord.Embed()):
                 if not value and 'icon_url' in embed['footer']:
                     del embed['footer']['icon_url']
 
+        embed = discord.Embed().from_dict(embed) if type(embed) == dict else embed
+
     ### ADDING FIELDS ###
 
     field_indexes = list(fields.keys())
@@ -299,7 +301,7 @@ def get_embed_from_content(content, roles, embed=discord.Embed()):
 # end get_attributes_from_content
 
 async def create_user_embed(client, message):
-    embed, content, errors = get_embed_from_content(message.content, message.guild.roles)
+    embed, content, errors = get_embed_from_content(client, message.content, message.guild.roles)
     msg = await message.channel.send(content=content, embed=embed)
 
     if True or Support.show_moving_editing_phyner_messages(message.author.id): # TODO ... this ability?
@@ -308,7 +310,7 @@ async def create_user_embed(client, message):
 
         description = f"`{msg.id}` is the Message ID of the [message]({msg.jump_url}) above.\n\n"
 
-        description += f"**Edit Embed:**\n`@Phyner#2797 embed edit {msg.id}\n[set embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
+        description += f"**Edit Embed:**\n`@Phyner#2797 embed edit {msg.id}\n[edit embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
 
         description += f"**Copy Message:**\n`@Phyner#2797 copy {msg.id} [some_msg_id] ... <#destination>`\n\n" # TODO @Phyner copy
 
@@ -347,7 +349,7 @@ async def create_user_embed(client, message):
 
     if errors:
         await send_embed_attr_errors(message, msg.id, errors)
-    Logger.log('embed', errors)
+    Logger.log('embed', f"errors: {errors}")
     Logger.log('embed', f'custom embed created')
 # end create_user_embed
 
@@ -376,14 +378,17 @@ async def edit_user_embed(client, message, args):
     if msg and msg.author.id == Support.ids.phyner_id: # msg found and phyner is author
         embed = msg.embeds[0] if msg.embeds else None
         embed, content, errors = get_embed_from_content(
+            client,
             message.content, 
             message.guild.roles, 
             embed=embed if embed else discord.Embed()
         )
         await msg.edit(content=content, embed=embed)
+        
         if errors:
             await send_embed_attr_errors(message, msg_id, errors)
-        Logger.log('embed', errors)
+
+        Logger.log('embed', f"errors: {errors}")
         Logger.log('embed', f'custom embed edited')
 
     else:
