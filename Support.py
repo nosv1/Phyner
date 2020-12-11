@@ -4,7 +4,6 @@ from types import SimpleNamespace
 from bs4 import BeautifulSoup as bsoup
 import requests
 import re
-import subprocess
 import os
 import sys
 
@@ -137,9 +136,8 @@ async def restart(client, restart=True):
             await client.close()
 
             pid = os.getpid()
-            print(pid)
             os.system(f'bash restart.sh {pid}')
-            
+
         else:
             await client.close()
 
