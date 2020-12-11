@@ -139,6 +139,9 @@ async def restart(client, restart=True):
             pid = os.getpid()
             print(pid)
             os.system(f'bash restart.sh {pid}')
+            
+        else:
+            await client.close()
 
     else:
         await client.close()
