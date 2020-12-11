@@ -161,6 +161,9 @@ async def on_message(message):
                     await Help.simple_help(message)
 
                 ''' END COMMAND CHECKS '''
+
+    except RuntimeError:
+        Logger.log("Connection", f"{host} Disconnected")
     
     except:
         error = traceback.format_exc()
