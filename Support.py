@@ -139,10 +139,16 @@ async def restart(client, restart=True):
             os.system(f'bash restart.sh {pid}')
 
         else:
-            await client.close()
-            sys.exit()
+            await close(client)
 
     else:
-        await client.close()
-        sys.exit()
+        await close(client)
 # end restart
+
+async def close(client):
+    """
+        client.close() + sys.exit()
+    """
+    await client.close()
+    sys.exit()
+# end close   
