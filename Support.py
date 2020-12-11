@@ -43,6 +43,10 @@ emojis = SimpleNamespace(**{
 
 ''' SUPPORT FUNCTIONS '''
 
+def is_DMChannel(channel):
+    return channel.type == discord.ChannelType.private
+# end is_dm
+
 def get_member_perms(channel, member):
     """
         Gets the permissions for a given member for a given channel. If the member is Mo, all permissions are returned as True.
@@ -58,23 +62,23 @@ def get_member_perms(channel, member):
 # end get_member_perms
 
 def get_phyner_from_channel(channel):
-    return [member for member in channel.members if member.id == ids.phyner_id][0]
+    if channel.type != discord.ChannelType.private:
+        return [member for member in channel.members if member.id == ids.phyner_id][0]
+    else:
+        return channel.me
 # end get_phyner_member_from_channel
 
 async def simple_bot_response(channel, title=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply=False):
     """
-    Bot sends message as basic embed
-    reply is defaulted to False, but expects a discord.Message if declared in call
+        Bot sends message as basic embed
+        reply is defaulted to False, but expects a discord.Message if declared in call
     """
 
-    in_dm = False
-    try:
-        phyner = get_phyner_from_channel(channel)
-    except AttributeError:
-        in_dm = True
+    is_dm = is_DMChannel(channel)
+    phyner = get_phyner_from_channel(channel)
 
     embed = discord.Embed()
-    embed.colour = colors.phyner_red if in_dm else phyner.roles[-1].color
+    embed.colour = colors.phyner_red if is_dm else phyner.roles[-1].color
 
     embed.title = title
     embed.description = description
@@ -84,11 +88,18 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
 
 
     if send:
-        if reply:
+        if type(reply) == discord.message:
             msg = await reply.reply(embed=embed)
+            
         else:
             msg = await channel.send(embed=embed)
+
+            if reply: # cuz im silly sometimes
+                for i in range(5):
+                    Logger.log("MO", "You've set reply=True instead of reply=message somewhere...")
+                
         return msg
+
     else:
         return embed
 # end botResponse
@@ -124,6 +135,5 @@ async def restart(client, restart=True):
             subprocess.call("./restart.sh", shell=True)
 
     await client.close()
-    sys.exit()
 
 # end restart
