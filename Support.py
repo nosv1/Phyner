@@ -140,7 +140,9 @@ async def restart(client, restart=True):
 
         else:
             await client.close()
+            sys.exit()
 
     else:
         await client.close()
+        sys.exit()
 # end restart
