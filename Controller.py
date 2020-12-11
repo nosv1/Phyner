@@ -139,6 +139,7 @@ async def on_message(message):
 
                 ## MO ##
                 if is_mo:
+                    print(args)
                     if args[1] == "test":
                         await message.channel.send("test done")
 
