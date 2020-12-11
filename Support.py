@@ -113,12 +113,17 @@ def search_github(query):
     return results
 # end search
 
-async def restart(client):
+async def restart(client, restart=True):
+    """
+        ability to restart PI4 host
+    """
 
     if host == "PI4":
-        Logger.log(f"{host} Connection", "Restarting... see you on the other side")
-        subprocess.call("restart.sh")
-        await client.close()
-        sys.exit()
+        if restart:
+            Logger.log(f"{host} Connection", "Restarting see you on the other side...")
+            subprocess.call("restart.sh")
+
+    await client.close()
+    sys.exit()
 
 # end restart
