@@ -133,9 +133,7 @@ async def restart(client, restart=True):
         if restart:
             await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Phyner restart."))
             Logger.log(f"Connection", f"{host} Restarting see you on the other side...")
+            await client.close()
             subprocess.call("./restart.sh", shell=True)
-
-    await client.close()
-    print('yes')
 
 # end restart
