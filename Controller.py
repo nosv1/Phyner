@@ -26,6 +26,8 @@ import Support
 import Help
 import Embed
 
+
+
 ''' CONSTANTS '''
 
 intents = discord.Intents.all()
