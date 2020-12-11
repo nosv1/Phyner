@@ -126,7 +126,7 @@ def search_github(query):
 
 async def restart(client, restart=True):
     """
-        ability to restart PI4 host
+        close or restart pi4 host
     """
 
     if host == "PI4":

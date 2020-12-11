@@ -118,10 +118,18 @@ async def on_message(message):
 
         if not message.author.bot: # not a bot
 
-            if message.mentions and message.mentions[0].id == Support.ids.phyner_id:
+            if (
+                (
+                    host == "PI4" and # is PI4
+                    (message.mentions and message.mentions[0].id == Support.ids.phyner_id) # @Phyner command
+                ) or (
+                    host == "PC" and # is PC
+                        (args[0] == "``p") # ``p command
+                )
+            ):
                 Logger.log("COMMAND", f"{message.author.id}, '{message.content}'\n")
 
-                phyner = message.mentions[0]
+                phyner = Support.get_phyner_from_channel(message.channel)
                 is_mo = message.author.id == Support.ids.mo_id
 
 
@@ -138,13 +146,16 @@ async def on_message(message):
                         await Support.restart(client, restart=args[1] == "restart")
 
                 
-                ## HELP ##
+                ## HELP + RANDOM ##
 
                 if args[1] in ["?", "search"]:
                     await Help.search(message, args)
 
                 elif args[1] in ["help", "h"]:
                     await Help.help(message)
+
+                elif args[1] == "ping":
+                    await Support.simple_bot_response(message.channel, description=f"**Ping:** {int(client.latency*1000)}ms")
 
 
                 ## EMBED ##
