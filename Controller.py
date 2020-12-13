@@ -142,13 +142,16 @@ async def on_message(message):
                 if is_mo:
                     if args[1] == "test":
                         await message.channel.send("test done")
+                        return
                         
                     elif args[1] == "setavatar":
                         with open('Images/62a3c8.png', 'rb') as f:
                             await client.user.edit(avatar=f.read())
+                        return
 
                     elif args[1] in ["close", "restart"]:
-                        await Support.restart(client, restart=args[1] == "restart")
+                        pid = await Support.restart(client, restart=args[1] == "restart")
+                        return pid
 
                 
                 ## HELP + RANDOM ##
