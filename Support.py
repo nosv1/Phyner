@@ -30,13 +30,14 @@ ids = SimpleNamespace(**{
 
 ## COLORS ##
 colors = SimpleNamespace(**{
-    'phyner_red' : 0x980B0D,
+    'phyner_blue' : 0x62a3c8,
 })
 
 
 ## CHARACTERS / EMOJIS ##
 emojis = SimpleNamespace(**{
     'space_char' : "⠀",
+    'bullet' : "•",
     'x_emoji' : "❌",
     'ok_emoji' : "🆗",
     'i_emoji' : "🛈",
@@ -81,7 +82,7 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
     phyner = get_phyner_from_channel(channel)
 
     embed = discord.Embed()
-    embed.colour = colors.phyner_red if is_dm else phyner.roles[-1].color
+    embed.colour = colors.phyner_blue if is_dm else phyner.roles[-1].color
 
     embed.title = title
     embed.description = description
@@ -96,10 +97,6 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
             
         else:
             msg = await channel.send(embed=embed, delete_after=delete_after)
-
-            if reply_message: # cuz im silly sometimes
-                for i in range(5):
-                    Logger.log("MO", "You've set reply_message=True instead of reply_message=message somewhere...")
                 
         return msg
 

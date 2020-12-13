@@ -9,6 +9,7 @@ import validators
 import Logger
 import Support
 from Support import emojis
+from Help import help_aliases
 
 
 
@@ -40,11 +41,12 @@ embed_attrs = [
 ]
 
 
+
 ''' FUNCTIONS '''
 
 async def main(client, message, args, author_perms):
 
-    if args[2] in [" ", "help", "?"]: # @Phyner <command> or @Phyner command help
+    if args[2] in help_aliases: # @Phyner <command> or @Phyner command help
         await send_embed_help(message)
 
 
@@ -67,6 +69,9 @@ async def main(client, message, args, author_perms):
 
     return
 # end main
+
+
+## FUNCTIONALITY ##
 
 def get_embed_from_content(client, content, roles, embed=discord.Embed()):
     """ 
@@ -300,6 +305,7 @@ def get_embed_from_content(client, content, roles, embed=discord.Embed()):
     return embed, msg_content, errors
 # end get_attributes_from_content
 
+
 async def create_user_embed(client, message):
     embed, content, errors = get_embed_from_content(client, message.content, message.guild.roles)
     msg = await message.channel.send(content=content, embed=embed)
@@ -353,6 +359,7 @@ async def create_user_embed(client, message):
     Logger.log('embed', f"errors: {errors}")
     Logger.log('embed', f'custom embed created')
 # end create_user_embed
+
 
 async def edit_user_embed(client, message, args):
     phyner = Support.get_phyner_from_channel(message.channel)
@@ -434,10 +441,10 @@ async def edit_user_embed(client, message, args):
 
         except asyncio.TimeoutError:
             await msg.remove_reaction(emojis.ok_emoji, client.user)
-        
 # end edit_user_embed
 
 
+## RESPONSES ##
 
 async def send_embed_help(message): # TODO proper help message
 
@@ -451,6 +458,7 @@ async def send_embed_help(message): # TODO proper help message
     Logger.log("EMBED", "Help")
 # end send_embed_help
 
+
 async def send_permissions_needed(message, member):
     await Support.simple_bot_response(message.channel,
         title="Permissions Needed",
@@ -460,6 +468,7 @@ async def send_permissions_needed(message, member):
     )
     await Logger.log("EMBED", "Member Permissons Needed")
 # end send_permissions_needed
+
 
 async def send_embed_attr_errors(message, msg_id, errors):
     title = "Embed Errors"

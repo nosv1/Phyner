@@ -22,6 +22,7 @@ import Support
 import Help
 import Embed
 import General
+import Delete
 
 
 
@@ -40,7 +41,6 @@ host = os.getenv("HOST")
 
 @client.event
 async def on_ready():
-
     error = None
     try:
         global connected
@@ -49,7 +49,7 @@ async def on_ready():
 
         await client.change_presence(
             activity=discord.Activity(
-                type=discord.ActivityType.watching, name="Phyner is finer. 🌹"
+                type=discord.ActivityType.watching, name="@Phyner is finer."
             )
         )
     
@@ -59,7 +59,6 @@ async def on_ready():
     if error:
         await Logger.log_error(client, error)
 # end on_ready
-
 
 
 @client.event
@@ -94,8 +93,8 @@ async def on_raw_message_edit(payload):
 
     if error:
         await Logger.log_error(client, error)
-  
 # end on_raw_message_edit
+
 
 @client.event
 async def on_message(message):
@@ -143,6 +142,10 @@ async def on_message(message):
                 if is_mo:
                     if args[1] == "test":
                         await message.channel.send("test done")
+                        
+                    elif args[1] == "setavatar":
+                        with open('Images/62a3c8.png', 'rb') as f:
+                            await client.user.edit(avatar=f.read())
 
                     elif args[1] in ["close", "restart"]:
                         await Support.restart(client, restart=args[1] == "restart")
@@ -159,8 +162,8 @@ async def on_message(message):
                 elif args[1] == "ping":
                     await General.send_ping(client, message.channel)
 
-                elif args[1] in ["delete", "purge", "clear"]:
-                    await General.delete_messages(client, message, args, author_perms)
+                elif args[1] in Delete.delete_aliases:
+                    await Delete.delete_controller(client, message, args, author_perms)
 
 
                 ## EMBED ##
@@ -186,7 +189,6 @@ async def on_message(message):
     if error:
         await Logger.log_error(client, error)
 # end on_message
-
 
 
 Logger.create_log_file()

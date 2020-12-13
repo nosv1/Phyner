@@ -3,6 +3,7 @@
 import discord
 from datetime import datetime
 import pathlib
+import os
 
 import Support
 
@@ -47,7 +48,7 @@ def open_active_log_file(read_binary=False):
     """
 
     logs_folder = pathlib.Path("Logs")
-    log_path = list(logs_folder.iterdir())[-1]
+    log_path = sorted(logs_folder.iterdir(), key=os.path.getmtime)[-1]
     log_file = open(log_path, "a+", encoding="utf-8") if not read_binary else open(log_path, "rb")
 
     return log_file

@@ -4,6 +4,12 @@ import Support
 import Logger
 
 
+
+''' CONSTANTS '''
+
+help_aliases = ["help", "h", "?", ""]
+
+
 ''' FUNCTIONS '''
 
 async def search(message, args):
