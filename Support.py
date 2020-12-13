@@ -19,8 +19,12 @@ host = os.getenv("HOST")
 
 ## IDs ##
 ids = SimpleNamespace(**{
+    # user ids
     'mo_id' : 405944496665133058,
     'phyner_id' : 770416211300188190,
+
+    # guild ids
+    'mobot_support' : 467239192007671818,
 })
 
 

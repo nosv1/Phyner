@@ -21,6 +21,7 @@ import Database
 import Support
 import Help
 import Embed
+import General
 
 
 
@@ -109,7 +110,7 @@ async def on_message(message):
         mc = re.sub(r"[\n\t\r]", ' ', message.content)
         while "  " in mc:
             mc = mc.replace("  ", " ")
-        args = mc.split(" ") + [" "] # appending blank to remove index error issues
+        args = mc.split(" ") + [""] # appending blank to remove index error issues
 
         author_perms = Support.get_member_perms(message.channel, message.author)
 
@@ -155,7 +156,7 @@ async def on_message(message):
                     await Help.help(message)
 
                 elif args[1] == "ping":
-                    await Support.simple_bot_response(message.channel, description=f"**Ping:** {int(client.latency*1000)}ms")
+                    await General.send_ping(client, message.channel)
 
 
                 ## EMBED ##
