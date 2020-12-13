@@ -73,7 +73,7 @@ async def main(client, message, args, author_perms):
 
 ## FUNCTIONALITY ##
 
-def get_embed_from_content(client, content, roles, embed=discord.Embed()):
+def get_embed_from_content(client, content, roles=[], embed=discord.Embed()):
     """ 
     Creating a discord.Embed() from the content of a message, or simply from a string.
     returns embed and list of readable error messages
@@ -307,7 +307,11 @@ def get_embed_from_content(client, content, roles, embed=discord.Embed()):
 
 
 async def create_user_embed(client, message):
-    embed, content, errors = get_embed_from_content(client, message.content, message.guild.roles)
+    embed, content, errors = get_embed_from_content(
+        client, message.content, 
+        roles=message.guild.roles if message.guild else [] # may be dm channel
+    )
+
     msg = await message.channel.send(content=content, embed=embed)
     phyner = Support.get_phyner_from_channel(message.channel)
 
