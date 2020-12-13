@@ -124,8 +124,17 @@ async def delete_messages(cilent, message, args, author_perms):
     bottom_message = None
     try:
         await message.channel.trigger_typing()
+        
         top_message = await destination_channel.fetch_message(top_message_id)
-        bottom_message = await destination_channel.fetch_message(bottom_message_id) if bottom_message_id != top_message_id else None
+
+        if (
+            bottom_message_id != top_message_id or
+            len(args) == 2
+        ):
+            bottom_message = await destination_channel.fetch_message(bottom_message_id)
+
+        else:
+            bottom_message = None
 
     except discord.errors.NotFound:
         pass
@@ -152,7 +161,8 @@ async def delete_messages(cilent, message, args, author_perms):
 
         else:
             messages = await destination_channel.history(after=top_message, before=bottom_message).flatten()
-            messages += [top_message] + ([bottom_message] if bottom_message else [])
+            messages += [top_message] 
+            messages += [bottom_message] if bottom_message and bottom_message_id != top_message_id else []
             messages += [message]
             
 
