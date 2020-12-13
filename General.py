@@ -80,6 +80,15 @@ async def delete_messages(client, message, args, author_perms):
     except discord.errors.NotFound:
         pass
 
+    async def log_delete_messages(messages):
+        await simple_bot_response(message.channel,
+            description=f"**Deleted:** {len(messages)-1}",
+            delete_after=3
+        )
+        log("delete messages", f"Deleted Messages ({len(messages)})")
+    # end log_delete_messages
+
+
 
     messages = []
     try:
@@ -94,11 +103,7 @@ async def delete_messages(client, message, args, author_perms):
             
 
         await destination_channel.delete_messages(messages)
-        await simple_bot_response(message.channel,
-            description=f"**Deleted:** {len(messages)}",
-            delete_after=3
-        )
-        log("delete messages", f"Deleted Messages ({len(messages)})")
+        await log_delete_messages(messages)
     
     except discord.errors.Forbidden:
         await simple_bot_response(message.channel,
@@ -110,12 +115,7 @@ async def delete_messages(client, message, args, author_perms):
 
     except discord.errors.HTTPException:
         [await m.delete() for m in messages]
-
-        await simple_bot_response(message.channel,
-            description=f"**Deleted:** {len(messages)}",
-            delete_after=3
-        )
-        log("delete messages", f"Deleted Messages ({len(messages)})")
+        await log_delete_messages(messages)
     
 
 # end delete_messages
