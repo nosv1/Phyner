@@ -109,7 +109,7 @@ async def delete_messages(client, message, args, author_perms):
         log('delete error', f"Phyner Missing Permissions\n{traceback.format_exc()}")
 
     except discord.errors.HTTPException:
-        [await m.delete(``) for m in messages]
+        [await m.delete() for m in messages]
 
         await simple_bot_response(message.channel,
             description=f"**Deleted:** {len(messages)}",
