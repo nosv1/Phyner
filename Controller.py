@@ -137,6 +137,7 @@ async def on_message(message):
                 ''' COMMAND CHECKS '''
                     
                 # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
+                # TODO Invite Phyner Support
 
                 ## MO ##
                 if is_mo:
@@ -157,6 +158,9 @@ async def on_message(message):
 
                 elif args[1] == "ping":
                     await General.send_ping(client, message.channel)
+
+                elif args[1] in ["delete", "purge", "clear"]:
+                    await General.delete_messages(client, message, args, author_perms)
 
 
                 ## EMBED ##

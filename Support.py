@@ -71,10 +71,10 @@ def get_phyner_from_channel(channel):
         return channel.me
 # end get_phyner_member_from_channel
 
-async def simple_bot_response(channel, title=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply=False):
+async def simple_bot_response(channel, title=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
     """
         Bot sends message as basic embed
-        reply is defaulted to False, but expects a discord.Message if declared in call
+        reply_message is defaulted to False, but expects a discord.Message if declared in call
     """
 
     is_dm = is_DMChannel(channel)
@@ -91,15 +91,15 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
 
 
     if send:
-        if type(reply) == discord.message.Message:
-            msg = await reply.reply(embed=embed)
+        if type(reply_message) == discord.message.Message:
+            msg = await reply_message.reply(embed=embed, delete_after=delete_after)
             
         else:
-            msg = await channel.send(embed=embed)
+            msg = await channel.send(embed=embed, delete_after=delete_after)
 
-            if reply: # cuz im silly sometimes
+            if reply_message: # cuz im silly sometimes
                 for i in range(5):
-                    Logger.log("MO", "You've set reply=True instead of reply=message somewhere...")
+                    Logger.log("MO", "You've set reply_message=True instead of reply_message=message somewhere...")
                 
         return msg
 

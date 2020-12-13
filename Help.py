@@ -50,7 +50,7 @@ async def search(message, args):
         await Support.simple_bot_response(message.channel,
             title="No Search Words Provided",
             description=description,
-            reply=message
+            reply_message=message
         )
 
         Logger.log("Bot Reponse", "Simple Help Search")
@@ -67,7 +67,7 @@ async def help(message): # TODO Help.help()
     await Support.simple_bot_response(message.channel,
         title="General Help",
         description="Work In Progress",
-        reply=message
+        reply_message=message
     )
 
     Logger.log("Bot reponse", "Help Message")
@@ -87,7 +87,7 @@ async def simple_help(message):
     await Support.simple_bot_response(message.channel, 
         title="No Comamnd Recognized",
         description=description,
-        reply=message
+        reply_message=message
     )
     
     Logger.log("Bot reponse", "Simple Help Message")

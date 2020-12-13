@@ -45,7 +45,7 @@ embed_attrs = [
 async def main(client, message, args, author_perms):
 
     if args[2] in [" ", "help", "?"]: # @Phyner <command> or @Phyner command help
-        await send_embed_help(message.channel)
+        await send_embed_help(message)
 
 
     elif args[2] == "create":
@@ -54,7 +54,7 @@ async def main(client, message, args, author_perms):
             await create_user_embed(client, message)
 
         else:
-            await send_permissions_needed(message.channel, message.author)
+            await send_permissions_needed(message, message.author)
 
 
     elif args[2] == "edit":
@@ -63,7 +63,7 @@ async def main(client, message, args, author_perms):
             await edit_user_embed(client, message, args)
 
         else:
-            await send_permissions_needed(message.channel, message.author)
+            await send_permissions_needed(message, message.author)
 
     return
 # end main
@@ -324,7 +324,7 @@ async def create_user_embed(client, message):
             title=title,
             description=description, 
             footer=help_footer,
-            reply=message
+            reply_message=message
         )
         await msg.add_reaction(emojis.x_emoji)
 
@@ -401,7 +401,7 @@ async def edit_user_embed(client, message, args):
                 title="Could Not Edit Message",
                 description=f"{client.user.mention} is not the author of the given message {msg.jump_url}",
                 footer=help_footer,
-                reply=message
+                reply_message=message
             )
             Logger.log('embed', "could not edit another author's message")
 
@@ -414,7 +414,7 @@ async def edit_user_embed(client, message, args):
                 title="Could Not Find Message",
                 description=description,
                 footer=help_footer,
-                reply=message
+                reply_message=message
             )
             Logger.log("embed", "could not find message")
 
@@ -439,22 +439,24 @@ async def edit_user_embed(client, message, args):
 
 
 
-async def send_embed_help(channel): # TODO proper help message
+async def send_embed_help(message): # TODO proper help message
 
     description = f"For help with embeds, click [__here__](https://github.com/nosv1/Phyner/wiki/Custom-Embed-Messages) to visit the Phyner wiki page for **User Embeds**."
 
-    await Support.simple_bot_response(channel,
+    await Support.simple_bot_response(message.channel,
         title = "Custom Embed Messages",
-        description=description
+        description=description,
+        reply_message=message
     )
     Logger.log("EMBED", "Help")
 # end send_embed_help
 
-async def send_permissions_needed(channel, member):
-    await Support.simple_bot_response(channel,
+async def send_permissions_needed(message, member):
+    await Support.simple_bot_response(message.channel,
         title="Permissions Needed",
-        description=f"{member.mention}, you need the `Manage Messages` permission to create/edit embeds with {Support.get_phyner_from_channel(channel).mention}.",
-        footer=help_footer
+        description=f"You need the `Manage Messages` permission to create/edit embeds with {Support.get_phyner_from_channel(message.channel).mention}.",
+        footer=help_footer,
+        reply_message=message
     )
     await Logger.log("EMBED", "Member Permissons Needed")
 # end send_permissions_needed
@@ -465,5 +467,5 @@ async def send_embed_attr_errors(message, msg_id, errors):
     for error in errors:
         description += f"{error[0]}\n{error[1]}\n\n"
 
-    await Support.simple_bot_response(message.channel, title, description, reply=message)
+    await Support.simple_bot_response(message.channel, title, description, reply_message=message)
 # end send_embed_attr_errors
