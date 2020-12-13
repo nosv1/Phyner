@@ -84,7 +84,7 @@ async def delete_messages(client, message, args, author_perms):
     messages = []
     try:
         if not top_message: # likely not msg_id inputted, but instead a count
-            count = top_message_id
+            count = top_message_id + 1 # + 1 to account for message
             messages = await destination_channel.history(limit=count).flatten()
 
         else:
@@ -109,7 +109,7 @@ async def delete_messages(client, message, args, author_perms):
         log('delete error', f"Phyner Missing Permissions\n{traceback.format_exc()}")
 
     except discord.errors.HTTPException:
-        [await m.delete() for m in messages]
+        [await m.delete(``) for m in messages]
 
         await simple_bot_response(message.channel,
             description=f"**Deleted:** {len(messages)}",
