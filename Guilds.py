@@ -118,7 +118,7 @@ async def set_prefix(message, args, author_perms):
         @Phyner prefix - view current prefix
         @Phyner prefix [new_prefix] - set prefix
     """
-
+    # TODO prefix help
 
     prefix = message.content[message.content.index(args[1])+len(args[1]):].strip()
 
@@ -139,6 +139,18 @@ async def set_prefix(message, args, author_perms):
             await phyner_guild.display_prefix(message.channel, new_prefix=True)
 
         else: # too long
+            phyner = Support.get_phyner_from_channel(message.channel)
+
+            description = f"A {phyner.mention} prefix cannot be longer than {max_prefix_length} characters.\n"
+            description += f"`{prefix}` is {len(prefix)} characters.\n\n"
+
+            description += f"`@{phyner} prefix <new_prefix>`"
+
+            await simple_bot_response(message.channel,
+                title="Prefix Too Long",
+                description=description,
+                reply_message=message
+            )
             log('guild prefix', 'too long')
 
     else:

@@ -136,11 +136,11 @@ async def on_message(message):
                     host == "PI4" and # is PI4
                     (
                         (message.mentions and message.mentions[0].id == Support.ids.phyner_id) or # @Phyner command
-                        message.content[:len(str(guild_prefix))] == guild_prefix # start of content = guild prefix
+                        message.content[:len(str(guild_prefix))+1] == guild_prefix # start of content = guild prefix
                     )
                 ) or (
                     host == "PC" and # is PC
-                        (args[0] == "``p") # ``p command
+                        (args[0] == "..p") # ..p command
                 )
             ):
                 Logger.log("COMMAND", f"{message.author.id}, '{message.content}'\n")
