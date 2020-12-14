@@ -126,7 +126,10 @@ async def on_message(message):
 
         if not message.author.bot: # not a bot
 
-            guild_prefix = guild_prefixes[message.guild.id] if message.guild else None
+            try:
+                guild_prefix = guild_prefixes[message.guild.id if message.guild else message.author.id]
+            except KeyError:
+                guild_prefix = None
 
             if (
                 (
