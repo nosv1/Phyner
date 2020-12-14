@@ -151,7 +151,7 @@ async def on_message(message):
 
                     elif args[1] in ["close", "restart"]:
                         pid = await Support.restart(client, restart=args[1] == "restart")
-                        return pid
+                        print(pid)
 
                 
                 ## HELP + RANDOM ##
