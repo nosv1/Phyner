@@ -23,6 +23,7 @@ import Help
 import Embed
 import General
 import Delete
+import Guilds
 
 
 
@@ -32,8 +33,9 @@ intents = discord.Intents.all()
 client = discord.Client(intents = intents)
 
 connected = None
-phyner_db = None
 host = os.getenv("HOST")
+
+guild_prefixes = Guilds.get_guild_prefixes()
 
 restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 
@@ -102,6 +104,7 @@ async def on_raw_message_edit(payload):
 @client.event
 async def on_message(message):
     global restart 
+    global guild_prefixes
 
     if not connected: # we aint ready yet
         return
@@ -123,10 +126,15 @@ async def on_message(message):
 
         if not message.author.bot: # not a bot
 
+            guild_prefix = guild_prefixes[message.guild.id] if message.guild else None
+
             if (
                 (
                     host == "PI4" and # is PI4
-                    (message.mentions and message.mentions[0].id == Support.ids.phyner_id) # @Phyner command
+                    (
+                        (message.mentions and message.mentions[0].id == Support.ids.phyner_id) or # @Phyner command
+                        message.content[:len(str(guild_prefix))] == guild_prefix # start of content = guild prefix
+                    )
                 ) or (
                     host == "PC" and # is PC
                         (args[0] == "``p") # ``p command
@@ -134,7 +142,7 @@ async def on_message(message):
             ):
                 Logger.log("COMMAND", f"{message.author.id}, '{message.content}'\n")
 
-                phyner = Support.get_phyner_from_channel(message.channel)
+                # phyner = Support.get_phyner_from_channel(message.channel)
                 is_mo = message.author.id == Support.ids.mo_id
 
 
@@ -180,8 +188,16 @@ async def on_message(message):
 
                 ## EMBED ##
 
-                elif args[1] == "embed":
+                elif args[1] == Embed.embed_aliases:
                     await Embed.main(client, message, args, author_perms)
+
+
+
+                ## GUILDS ##
+
+                elif args[1] == "prefix":
+                    await Guilds.set_prefix(message, args, author_perms)
+                    guild_prefixes = Guilds.get_guild_prefixes()
 
 
                 else:

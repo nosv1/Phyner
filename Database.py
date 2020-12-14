@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-def connectDatabase(db_name):
+def connect_database(db_name=os.getenv("DB_NAME")):
   class PhynerDB:
     def __init__(self, connection, cursor):
       self.connection = connection
@@ -22,8 +22,8 @@ def connectDatabase(db_name):
   )
   db_cursor = db_connection.cursor()
   return PhynerDB(db_connection, db_cursor)
-# end connectDatabase
+# end connect_database
 
-def replaceChars(bad_string):
+def replace_chars(bad_string):
   return bad_string.replace("'", "''").replace("\\", "\\\\")
-# end replaceChars
+# end replace_chars

@@ -51,6 +51,7 @@ def is_DMChannel(channel):
     return channel.type == discord.ChannelType.private
 # end is_dm
 
+
 def get_member_perms(channel, member):
     """
         Gets the permissions for a given member for a given channel. If the member is Mo, all permissions are returned as True.
@@ -65,6 +66,7 @@ def get_member_perms(channel, member):
     return author_perms
 # end get_member_perms
 
+
 def get_phyner_from_channel(channel):
     if channel.type != discord.ChannelType.private:
         return [member for member in channel.members if member.id == ids.phyner_id][0]
@@ -72,12 +74,13 @@ def get_phyner_from_channel(channel):
         return channel.me
 # end get_phyner_member_from_channel
 
+
 async def simple_bot_response(channel, title=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
     """
         Bot sends message as basic embed
         reply_message is defaulted to False, but expects a discord.Message if declared in call
     """
-
+    # TODO pass in embed_dict as starting point, no overwriting
     is_dm = is_DMChannel(channel)
     phyner = get_phyner_from_channel(channel)
 
@@ -104,6 +107,7 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
         return embed
 # end botResponse
 
+
 def search_github(query):
     """
         search github wiki
@@ -123,6 +127,7 @@ def search_github(query):
         }
     return results
 # end search
+
 
 async def restart(client, restart=True):
     """

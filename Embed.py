@@ -40,6 +40,7 @@ embed_attrs = [
     '.image_url ',
 ]
 
+embed_aliases = ["embed"]
 
 
 ''' FUNCTIONS '''
@@ -237,9 +238,6 @@ def get_embed_from_content(client, content, roles=[], embed=discord.Embed()):
                     'name' : discord.Embed().Empty, 'value' : discord.Embed().Empty, 'inline' : False
                 }
 
-            field_name = fields[field_index]['name']
-            field_value = fields[field_index]['value']
-
             if '_name' in attr:
                 fields[field_index]['name'] = value
 
@@ -315,7 +313,7 @@ async def create_user_embed(client, message):
     msg = await message.channel.send(content=content, embed=embed)
     phyner = Support.get_phyner_from_channel(message.channel)
 
-    if True or Support.show_moving_editing_phyner_messages(message.author.id): # TODO ... this ability?
+    if True or Support.show_moving_editing_phyner_messages(message.author.id): # TODO ... this ability? show_embed(embed_id, user_id), goes with pass embed_dict to simple bot response idea
 
         title = "Moving and Editing Phyner Messages"
 
@@ -329,7 +327,7 @@ async def create_user_embed(client, message):
 
         description += f"{emojis.x_emoji} to never show this message again (also deletes this message)" # TODO ... this ability?
 
-        msg = await Support.simple_bot_response(
+        msg = await Support.simple_bot_response( 
             message.channel,
             title=title,
             description=description, 
