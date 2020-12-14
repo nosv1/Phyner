@@ -19,12 +19,12 @@ time_format = "%d %b %y %H.%M.%S"
 
 def create_log_file():
     """
-    Creates a blank log file in Logs with the current date as the name
+        Creates a blank log file in Logs with the current date as the name
 
-    ------
-    Most recent log path accessed by:
-      import pathlib
-      log_path = list(pahtlib.Path(\"Logs\").iterdir())[-1]
+        ------
+        Most recent log path accessed by:
+        import pathlib
+        log_path = list(pahtlib.Path(\"Logs\").iterdir())[-1]
     ------
     """
 
@@ -42,9 +42,10 @@ def create_log_file():
     log("Log", "Created")
 # end create_log_file
 
+
 def open_active_log_file(read_binary=False):
     """
-    Opens the most recent log file created.
+        Opens the most recent log file created.
     """
 
     logs_folder = pathlib.Path("Logs")
@@ -54,18 +55,19 @@ def open_active_log_file(read_binary=False):
     return log_file
 # end open_log_file
 
+
 def log(action, detail=""):
     """
-    Writes "{current_time} {action} {detail}\n" to the most recent log file
+        Writes "{current_time} {action} {detail}\n" to the most recent log file
 
-    ------
-    Examples:
-      log("Log Created")
-      03 Dec 20 07.56.04 [LOG CREATED]
+        ------
+        Examples:
+        log("Log Created")
+        03 Dec 20 07.56.04 [LOG CREATED]
 
-      log("Log Created", detail="This is a new log")
-      03 Dec 20 07.56.04 [LOG CREATED] This is a new log
-    ------
+        log("Log Created", detail="This is a new log")
+        03 Dec 20 07.56.04 [LOG CREATED] This is a new log
+        ------
     """
 
     log_file = open_active_log_file()
@@ -77,16 +79,17 @@ def log(action, detail=""):
     log_file.close
 # end log
 
+
 async def log_error(client, traceback):
     """ 
-    Writes "{current_time} ERROR \ntraceback" to the most recent log file
-    Sends Log File to Mo
+        Writes "{current_time} ERROR \ntraceback" to the most recent log file
+        Sends Log File to Mo
     """
 
     log_file = open_active_log_file()
     now = datetime.utcnow()
 
-    line = f"{now.strftime(time_format)} [ERROR]\n{traceback}"
+    line = f"{now.strftime(time_format)} [ERROR]\n{traceback}\n"
     print(line)
     log_file.write(line)
     log_file.close()
