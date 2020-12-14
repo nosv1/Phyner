@@ -141,7 +141,7 @@ async def on_message(message):
                     )
                 ) or (
                     host == "PC" and # is PC
-                        (args[0] == "..p") # ..p command
+                        (args[0] == "``p") # ..p command
                 )
             ):
                 Logger.log("COMMAND", f"{message.author.id}, '{message.content}'\n")
