@@ -155,19 +155,28 @@ async def delete_messages(cilent, message, args, author_perms):
 
     messages = []
     try:
-        if not top_message: # likely not msg_id inputted, but instead a count
-            count = top_message_id + 1 # + 1 to account for message
-            messages = await destination_channel.history(limit=count).flatten()
+        try:
+            if not top_message: # likely not msg_id inputted, but instead a count
+                count = top_message_id + 1 # + 1 to account for message
+                messages = await destination_channel.history(limit=count).flatten()
 
-        else:
-            messages = await destination_channel.history(after=top_message, before=bottom_message).flatten()
-            messages += [top_message] 
-            messages += [bottom_message] if bottom_message and bottom_message_id != top_message_id else []
-            messages += [message]
-            
+            else:
+                messages = await destination_channel.history(after=top_message, before=bottom_message).flatten()
+                messages += [top_message] 
+                messages += [bottom_message] if bottom_message and bottom_message_id != top_message_id else []
+                messages += [message]
+                
+            messages = messages[-100:]
+            await destination_channel.delete_messages(messages[-100:])
+            await log_delete_messages(messages)
 
-        await destination_channel.delete_messages(messages)
-        await log_delete_messages(messages)
+        except discord.errors.HTTPException: # messages too old
+            await iter_delete_messages(messages)
+            await log_delete_messages(messages)
+
+        except AttributeError: # in dm
+            await iter_delete_messages(messages, bot_only=True)
+            await log_delete_messages(messages)
     
     except discord.errors.Forbidden:
         await simple_bot_response(message.channel,
@@ -176,14 +185,6 @@ async def delete_messages(cilent, message, args, author_perms):
             reply_message=message
         )
         log('delete error', f"Phyner Missing Permissions\n{traceback.format_exc()}")
-
-    except discord.errors.HTTPException:
-        await iter_delete_messages(messages)
-        await log_delete_messages(messages)
-
-    except AttributeError: # in dm
-        await iter_delete_messages(messages, bot_only=True)
-        await log_delete_messages(messages)
 
 
 # end delete_messages
