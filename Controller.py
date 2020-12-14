@@ -89,7 +89,7 @@ async def on_raw_message_edit(payload):
                 pass
 
     except discord.errors.NotFound:
-        await log("message edit erorr", traceback.format_exc())
+        await Logger.log("message edit erorr", traceback.format_exc())
     
     except:
         error = traceback.format_exc()
@@ -159,7 +159,7 @@ async def on_message(message):
                         restart = 1 if restart else 0
 
                 
-                ## HELP + RANDOM ##
+                ## HELP + GENERAL ##
 
                 if args[1] in ["?", "search"]:
                     await Help.search(message, args)
@@ -172,6 +172,10 @@ async def on_message(message):
 
                 elif args[1] in Delete.delete_aliases:
                     await Delete.delete_controller(client, message, args, author_perms)
+
+                elif args[1] in General.say_aliases:
+                    await General.say(message, args)
+
 
 
                 ## EMBED ##

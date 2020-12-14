@@ -9,9 +9,16 @@ import Support
 from Support import simple_bot_response
 from Help import help_aliases
 
-
+say_aliases = ["say", "speak"]
 
 ''' FUNCTIONS '''
+
+async def say(message, args, markdown=False):
+    content = message.content[message.content.index(args[1])+len(args[1]):]
+    content = f"```{content}```" if markdown else content
+    await message.channel.send(content=content)
+    log("say", 'say command')
+# end say
 
 async def send_ping(client, channel):
     """
