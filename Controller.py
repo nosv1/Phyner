@@ -35,7 +35,7 @@ connected = None
 phyner_db = None
 host = os.getenv("HOST")
 
-
+restart = 1
 
 ''' FUNCTIONS '''
 
@@ -98,6 +98,8 @@ async def on_raw_message_edit(payload):
 
 @client.event
 async def on_message(message):
+    global restart 
+
     if not connected: # we aint ready yet
         return
 
@@ -151,7 +153,7 @@ async def on_message(message):
 
                     elif args[1] in ["close", "restart"]:
                         restart = await Support.restart(client, restart=args[1] == "restart")
-                        print(1 if restart else 0) # prints 1 for close, 0 for restart
+                        restart = 1 if restart else 0
 
                 
                 ## HELP + RANDOM ##
@@ -197,3 +199,4 @@ async def on_message(message):
 Logger.create_log_file()
 Logger.log("Connection", f"{host} Controller Connecting")
 client.run(os.getenv("DISCORD_TOKEN"))
+print(restart)
