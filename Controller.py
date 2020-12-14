@@ -35,7 +35,8 @@ connected = None
 phyner_db = None
 host = os.getenv("HOST")
 
-restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, we return 1 or 0 if we want to restart or not, 1 attempts restart
+restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
+
 
 ''' FUNCTIONS '''
 
