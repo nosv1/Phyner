@@ -9,7 +9,13 @@ import Support
 from Support import simple_bot_response
 from Help import help_aliases
 
+
+
+''' CONSTANTS '''
+
 say_aliases = ["say", "speak"]
+
+
 
 ''' FUNCTIONS '''
 
@@ -19,6 +25,7 @@ async def say(message, args, markdown=False):
     await message.channel.send(content=content)
     log("say", 'say command')
 # end say
+
 
 async def send_ping(client, channel):
     """
