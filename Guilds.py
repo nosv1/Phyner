@@ -64,8 +64,12 @@ class Guild:
 
 
     async def display_prefix(self, channel, new_prefix=False):
+        description=f"**{self.name}'s {'New ' if new_prefix else ''}Prefix:** `{self.prefix}`\n\n"
+
+        description += f"`@{Support.get_phyner_from_channel(channel)} prefix <new_prefix>`" if not new_prefix else ''
+
         await simple_bot_response(channel, 
-            description=f"{self.name}'s {'New ' if new_prefix else ''}Prefix: `{self.prefix}`"
+            description=description
         )
         log("prefix", f"{'New Prefix: ' if new_prefix else ''}{vars(self)}")
     # end display_prefix
