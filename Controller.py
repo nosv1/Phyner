@@ -115,6 +115,7 @@ async def on_message(message):
         mc = message.content
         mc = re.sub(r"[“”]", '"', message.content)
         mc = re.sub(r"[\n\t\r]", ' ', message.content)
+        mc += " "
         while "  " in mc:
             mc = mc.replace("  ", " ")
         args = mc.split(" ") + [""] # appending blank to remove index error issues
@@ -136,7 +137,7 @@ async def on_message(message):
                     host == "PI4" and # is PI4
                     (
                         (message.mentions and message.mentions[0].id == Support.ids.phyner_id) or # @Phyner command
-                        message.content[:len(str(guild_prefix))+1] == guild_prefix # start of content = guild prefix
+                        mc[:len(str(guild_prefix))+1] == guild_prefix + " " # start of content = guild prefix
                     )
                 ) or (
                     host == "PC" and # is PC
