@@ -51,10 +51,8 @@ class Guild:
 
         except mysql.connector.errors.IntegrityError:
             db.cursor.execute(f"""
-                UPDATE Guilds SET (
-                    `name` = '{self.name}', 
-                    `prefix` = '{self.prefix}'
-                ) WHERE 
+                UPDATE Guilds SET (`name` = '{self.name}', `prefix` = '{self.prefix}')
+                WHERE 
                     id = '{self.id}'
             ;""")
 
