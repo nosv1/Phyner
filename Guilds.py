@@ -9,9 +9,12 @@ import Support
 from Support import simple_bot_response
 
 
+
 '''' CONSTANTS '''
 
 max_prefix_length = 30 # see Guild comment
+
+
 
 ''' CLASS '''
 
