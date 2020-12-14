@@ -321,9 +321,9 @@ async def create_user_embed(client, message):
 
         description += f"**Edit Embed:**\n`@{phyner} embed edit {msg.id}\n[edit embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
 
-        description += f"**Copy Message:**\n`@{phyner} copy {msg.id} [some_msg_id] ... <#destination>`\n\n" # TODO @Phyner copy
+        description += f"**Copy Message:**\n`@{phyner} copy {msg.id} [some_msg_id] ... <#destination>`\n\n" 
 
-        description += f"**Replace Message:**\n`@{phyner} replace <some_phyner_msg_id> {msg.id}`\n\n" # TODO @Phyner replace
+        description += f"**Replace Message:**\n`@{phyner} replace <some_phyner_msg_id> {msg.id}`\n\n" 
 
         description += f"{emojis.x_emoji} to never show this message again (also deletes this message)" # TODO ... this ability?
 
@@ -418,7 +418,7 @@ async def edit_user_embed(client, message, args):
             description = f"The message_id, `{msg_id}`, could not be found in any of the channels {client.user.mention} is in.\n\n"
 
             description += f"`@{phyner} ids` to learn how to get message_ids.\n"
-            # TODO @Phyner ids
+            
             msg = await Support.simple_bot_response(message.channel,
                 title="Could Not Find Message",
                 description=description,

@@ -19,7 +19,7 @@ delete_aliases = ["delete", "purge", "clear"]
 
 ''' FUNCTIONS '''
 
-async def delete_controller(client, message, args, author_perms):
+async def main(client, message, args, author_perms):
     """
         figure out what we're trying to delete, deleting message is default
         messages, categories, ...
@@ -32,7 +32,7 @@ async def delete_controller(client, message, args, author_perms):
     else:
         await delete_messages(client, message, args[2:-1], author_perms)
 
-# end delete_controller
+# end main
         
     
 
@@ -69,7 +69,7 @@ async def delete_messages(cilent, message, args, author_perms):
         description += "**Permissions Needed:** `Manage Messages`\n\n"
 
         description += f"**Extra Help:**\n"
-        description += f"`@{phyner} ids` to learn how to get Message IDs." # TODO @Phyner ids
+        description += f"`@{phyner} ids` to learn how to get Message IDs."
 
         await simple_bot_response(message.channel,
             title=title,
@@ -110,9 +110,9 @@ async def delete_messages(cilent, message, args, author_perms):
 
         title = "Invalid Syntax"
 
-        description = f"`@{phyner} delete <count> [#channel]` - deletes `count` messages above\n"
-        description = f"`@{phyner} delete <top_message_id> [#channel]`- deletes all messages below and including `top_message_id`\n"
-        description = f"`@{phyner} delete <top_message_id> <bottom_message_id> [#channel]`- deletes all messages including and between `top_message_id` and `bottom_message_id`\n\n"
+        description = f"`@{phyner} delete <count> [#channel]` - deletes `count` messages above\n\n"
+        description += f"`@{phyner} delete <top_message_id> [#channel]`- deletes all messages below and including `top_message_id`\n\n"
+        description += f"`@{phyner} delete <top_message_id> <bottom_message_id> [#channel]`- deletes all messages including and between `top_message_id` and `bottom_message_id`\n\n"
 
         description += "`#channel` is the location where the messages will be deleted, if omitted, messages in the current channel are deleted\n"
 
@@ -132,9 +132,6 @@ async def delete_messages(cilent, message, args, author_perms):
             len(args) == 2
         ):
             bottom_message = await destination_channel.fetch_message(bottom_message_id)
-
-        else:
-            bottom_message = None
 
     except discord.errors.NotFound:
         pass
@@ -170,9 +167,10 @@ async def delete_messages(cilent, message, args, author_perms):
             await destination_channel.delete_messages(messages)
             await log_delete_messages(messages)
 
-        except discord.errors.HTTPException: # messages too old
+        except discord.errors.HTTPException: # messages too old, or message already in set
+            
             msg = await simple_bot_response(message.channel,
-                description="These messages are a bit old. This could take a moment."
+                description="These messages are not in my cache. This could take a moment."
             )
             messages = messages[-99:] + [msg]
             await iter_delete_messages(messages)

@@ -118,7 +118,7 @@ async def on_message(message):
         mc += " "
         while "  " in mc:
             mc = mc.replace("  ", " ")
-        args = mc.split(" ") + [""] # appending blank to remove index error issues
+        args = mc.split(" ")
 
         author_perms = Support.get_member_perms(message.channel, message.author)
 
@@ -152,8 +152,13 @@ async def on_message(message):
 
                 ''' COMMAND CHECKS '''
                     
-                # TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
+                # \TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
                 # TODO Invite Phyner Support
+                # TODO request feature for money
+                # TODO Donations
+                # TODO @Phyner ids
+                # TODO @Phyner copy
+                # TODO @Phyner replace
 
                 ## MO ##
                 if is_mo:
@@ -183,7 +188,7 @@ async def on_message(message):
                     await General.send_ping(client, message.channel)
 
                 elif args[1] in Delete.delete_aliases:
-                    await Delete.delete_controller(client, message, args, author_perms)
+                    await Delete.main(client, message, args, author_perms)
 
                 elif args[1] in General.say_aliases:
                     await General.say(message, args)
