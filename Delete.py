@@ -167,14 +167,22 @@ async def delete_messages(cilent, message, args, author_perms):
                 messages += [message]
                 
             messages = messages[-100:]
-            await destination_channel.delete_messages(messages[-100:])
+            await destination_channel.delete_messages(messages)
             await log_delete_messages(messages)
 
         except discord.errors.HTTPException: # messages too old
+            msg = await simple_bot_response(message.channel,
+                description="These messages are a bit old. This could take a moment."
+            )
+            messages = messages[-99:] + [msg]
             await iter_delete_messages(messages)
             await log_delete_messages(messages)
 
         except AttributeError: # in dm
+            msg = await simple_bot_response(message.channel,
+                description="It looks like we're in a dm, so I will only delete my messages. This could take a moment."
+            )
+            messages = messages[-99:] + [msg]
             await iter_delete_messages(messages, bot_only=True)
             await log_delete_messages(messages)
     
