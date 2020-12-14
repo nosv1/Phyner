@@ -109,7 +109,7 @@ async def on_message(message):
         mc = re.sub(r"[\n\t\r]", ' ', message.content)
         while "  " in mc:
             mc = mc.replace("  ", " ")
-        args = mc.split(" ") + [""] # appending blank to remove index error issues 
+        args = mc.split(" ") + [""] # appending blank to remove index error issues
 
         author_perms = Support.get_member_perms(message.channel, message.author)
 
