@@ -134,21 +134,7 @@ async def restart(client, restart=True):
             await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Phyner restart."))
             Logger.log(f"Connection", f"{host} Restarting see you on the other side...")
 
-            await client.close()
-
-        else:
-            pid = await close(client)
-            return pid
-
-    else:
-        await close(client)
-# end restart
-
-async def close(client):
-    """
-        client.close() + sys.exit()
-    """
-    
     await client.close()
-    return os.getpid()
-# end close   
+
+    return restart
+# end restart  
