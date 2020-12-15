@@ -129,26 +129,30 @@ def search_github(query):
 # end search
 
 
-async def restart(client, restart=True):
+async def restart(client, message, restart_interval, restart=True):
     """
         close or restart pi4 host
     """
 
-
-    await client.change_presence(
-        activity=discord.Activity(
-            type=discord.ActivityType.playing, 
-            name=f"Phyner is {'restarting' if restart else 'shutting down'}."
-        )
-    )
-
-
     if host == "PI4":
-        if restart:
+        if restart: # only PI4 has ability to restart
             Logger.log(f"Connection", f"{host} Restarting see you on the other side...")
+
+
+        await client.change_presence(
+            activity=discord.Activity(
+                type=discord.ActivityType.playing, 
+                name=f"{'Restart' if restart else 'Shut down'} soon!"
+            )
+        )
+
+        await simple_bot_response(
+            message.channel, 
+            description=f"**{'Restarting' if restart else 'Shutting down'} in {restart_interval} seconds.**"
+        )
 
     if not restart:
         Logger.log("Connection", f"{host} Shutting Down")
 
-    return restart
+    return 1 if restart else 0
 # end restart  

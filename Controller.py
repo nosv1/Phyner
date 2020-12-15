@@ -42,7 +42,7 @@ guild_prefixes = Guilds.get_guild_prefixes()
 
 restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
-restart_interval = 60 # time between restart/shutdown command and action
+restart_interval = 10 # time between restart/shutdown command and action
 
 
 ''' FUNCTIONS '''
@@ -195,11 +195,7 @@ async def on_message(message):
                         return
 
                     elif args[1] in ["close", "restart"]:
-                        restart = 1 if await Support.restart(client, restart=args[1] == "restart") else 0
-                        await Support.simple_bot_response(
-                            message.channel, 
-                            description=f"**{'Restarting' if restart else 'Shutting down'} in {restart_interval} seconds.**"
-                        )
+                        restart = await Support.restart(client, message, restart_interval, restart=args[1] == "restart")
                         restart_time = datetime.utcnow() + relativedelta(seconds=restart_interval) # set new restart time
                         await asyncio.sleep(restart_interval)
                         await client.close()
