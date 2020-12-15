@@ -138,7 +138,7 @@ async def restart(client, restart=True):
     await client.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.playing, 
-            name=f"Phyner is {'restarting.' if restart else 'shutting down.'}."
+            name=f"Phyner is {'restarting' if restart else 'shutting down'}."
         )
     )
 
@@ -146,6 +146,9 @@ async def restart(client, restart=True):
     if host == "PI4":
         if restart:
             Logger.log(f"Connection", f"{host} Restarting see you on the other side...")
+
+    if not restart:
+        Logger.log("Connection", f"{host} Shutting Down")
 
     return restart
 # end restart  

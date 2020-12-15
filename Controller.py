@@ -41,7 +41,8 @@ host = os.getenv("HOST")
 guild_prefixes = Guilds.get_guild_prefixes()
 
 restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
-restart_time = datetime.utcnow() # this is used to not allow commands a minute before restart happens
+restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
+restart_interval = 60 # time between restart/shutdown command and action
 
 
 ''' FUNCTIONS '''
@@ -171,8 +172,14 @@ async def on_message(message):
                 ## CHECK FOR UPCOMING RESTART ##
 
                 restart_delta = (restart_time - datetime.utcnow()).seconds
-                if restart_delta < 60 and restart_delta > 0:
-                    await Support.simple_bot_response(message.channel, description=f"**{phyner.mention} is about to restart. Try again in {restart_delta + 60} seconds.**", reply_message=message)
+                if restart_delta < restart_interval:
+                    description = f"**{phyner.mention} is about to {'restart' if restart else 'shut down'}. "
+                    if restart:
+                        description += f"Try again in {restart_delta + restart_interval} seconds or watch for its status to change.**" 
+                    else:
+                        description += "Try again when it comes back online.**"
+
+                    await Support.simple_bot_response(message.channel, description=description, reply_message=message)
                     return
 
                 ## MO ##
@@ -188,12 +195,10 @@ async def on_message(message):
                         return
 
                     elif args[1] in ["close", "restart"]:
-                        restart = await Support.restart(client, restart=args[1] == "restart")
-                        restart = 1 if restart else 0 # set restart
-                        restart_time = datetime.utcnow() + relativedelta(seconds=60) # set new restart time
-                        while restart and (restart_time - datetime.utcnow()).seconds != 1: # loop until then
-                            continue
-                        await client.close() # close
+                        restart = 1 if await Support.restart(client, restart=args[1] == "restart") else 0
+                        restart_time = datetime.utcnow() + relativedelta(seconds=restart_interval) # set new restart time
+                        await asyncio.sleep(restart_interval)
+                        await client.close()
                         
                 
                 ## HELP + GENERAL ##
