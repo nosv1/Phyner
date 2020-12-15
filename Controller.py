@@ -200,8 +200,9 @@ async def on_message(message):
                         return
                         
                     elif args[1] == "setavatar":
-                        with open('Images/62a3c8.png', 'rb') as f:
+                        with open('Images/9a9c9f.png', 'rb') as f:
                             await client.user.edit(avatar=f.read())
+                        await message.channel.send("avatar set")
                         return
 
                     elif args[1] in ["close", "restart"]:
@@ -232,7 +233,7 @@ async def on_message(message):
 
                 ## EMBED ##
 
-                elif args[1] == Embed.embed_aliases:
+                elif args[1] in Embed.embed_aliases:
                     await Embed.main(client, message, args, author_perms)
 
 

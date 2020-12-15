@@ -30,7 +30,7 @@ ids = SimpleNamespace(**{
 
 ## COLORS ##
 colors = SimpleNamespace(**{
-    'phyner_blue' : 0x62a3c8,
+    'phyner_grey' : 0x9a9c9f,
 })
 
 
@@ -95,7 +95,7 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
     phyner = get_phyner_from_channel(channel)
 
     embed = discord.Embed()
-    embed.colour = colors.phyner_blue if is_dm else phyner.roles[-1].color
+    embed.colour = colors.phyner_grey if is_dm else phyner.roles[-1].color
 
     embed.title = title
     embed.description = description

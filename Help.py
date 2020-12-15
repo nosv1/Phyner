@@ -82,7 +82,7 @@ async def help(message):
 
     description += f"`@{phyner} delete <count> [#channel]`\n"
     description += f"`@{phyner} delete <top_message_id> [#channel]`\n"
-    description += f"`@{phyner} delete <bottom_message_id> [#channel]`\n\n"
+    description += f"`@{phyner} delete <top_message_id> <bottom_message_id> [#channel]`\n\n"
 
     description += f"`@{phyner} prefix`\n"
     description += f"`@{phyner} prefix <new_prefix>`\n\n"
