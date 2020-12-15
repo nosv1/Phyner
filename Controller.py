@@ -3,6 +3,7 @@
 import discord
 import asyncio
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import random
 from pytz import timezone
 import traceback
@@ -25,6 +26,7 @@ import General
 import Delete
 import Guilds
 import CustomCommands
+import Events
 
 
 
@@ -39,6 +41,7 @@ host = os.getenv("HOST")
 guild_prefixes = Guilds.get_guild_prefixes()
 
 restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
+restart_time = datetime.utcnow() # this is used to not allow commands a minute before restart happens
 
 
 ''' FUNCTIONS '''
@@ -105,6 +108,7 @@ async def on_raw_message_edit(payload):
 @client.event
 async def on_message(message):
     global restart 
+    global restart_time
     global guild_prefixes
 
     if not connected: # we aint ready yet
@@ -147,7 +151,7 @@ async def on_message(message):
             ):
                 Logger.log("COMMAND", f"{message.author.id}, '{message.content}'\n")
 
-                # phyner = Support.get_phyner_from_channel(message.channel)
+                phyner = Support.get_phyner_from_channel(message.channel)
                 is_mo = message.author.id == Support.ids.mo_id
 
 
@@ -161,8 +165,18 @@ async def on_message(message):
                 # TODO @Phyner copy
                 # TODO @Phyner replace
                 # TODO @Phyner command create/edit
+                # TODO @Phyne watch -- <webhook_id> Events handling from webhooks
+
+
+                ## CHECK FOR UPCOMING RESTART ##
+
+                restart_delta = (restart_time - datetime.utcnow()).seconds
+                if restart_delta < 60 and restart_delta > 0:
+                    await Support.simple_bot_response(message.channel, description=f"**{phyner.mention} is about to restart. Try again in {restart_delta + 60} seconds.**", reply_message=message)
+                    return
 
                 ## MO ##
+
                 if is_mo:
                     if args[1] == "test":
                         await message.channel.send("test done")
@@ -175,8 +189,12 @@ async def on_message(message):
 
                     elif args[1] in ["close", "restart"]:
                         restart = await Support.restart(client, restart=args[1] == "restart")
-                        restart = 1 if restart else 0
-
+                        restart = 1 if restart else 0 # set restart
+                        restart_time = datetime.utcnow() + relativedelta(seconds=60) # set new restart time
+                        while restart and (restart_time - datetime.utcnow()).seconds != 1: # loop until then
+                            continue
+                        await client.close() # close
+                        
                 
                 ## HELP + GENERAL ##
 
@@ -215,6 +233,12 @@ async def on_message(message):
 
                 # elif args[1] in CustomCommands.custom_command_aliases:
                     # await CustomCommands.main(args, author_perms)
+
+
+                ## WATCH ##
+
+                elif args[1] in Events.events_aliases:
+                    await Events.main(message, args[2:], author_perms)
 
 
                 else:

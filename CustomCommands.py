@@ -116,6 +116,7 @@ async def create_command(message, args):
             response = message.content[message.content.index(args[1]):].strip()
 
         else:
+            pass
             # no prefix
 
 

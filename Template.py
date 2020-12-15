@@ -1,9 +1,26 @@
-import asyncio
-import traceback
+''' IMPORTS '''
 
-async def main(client, message, args):
+import discord
 
-  if len(args) == 2 or args[2] == "help": # @Phyner <command> or @Phyner command help
-    await message.channel.send("send help")
+
+import Database
+from Logger import log
+import Support
+from Support import simple_bot_response
+
+
+
+''' CONSTANTS '''
+
+aliases = ["", ]
+
+
+
+''' FUNCTIONS '''
+
+async def main(message, args, author_perms):
+    """
+        @Phyner _command_
+    """
 
 # end main
