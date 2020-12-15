@@ -24,6 +24,7 @@ import Embed
 import General
 import Delete
 import Guilds
+import CustomCommands
 
 
 
@@ -52,7 +53,7 @@ async def on_ready():
 
         await client.change_presence(
             activity=discord.Activity(
-                type=discord.ActivityType.watching, name="@Phyner is finer."
+                type=discord.ActivityType.playing, name="@Phyner is finer."
             )
         )
     
@@ -159,6 +160,7 @@ async def on_message(message):
                 # TODO @Phyner ids
                 # TODO @Phyner copy
                 # TODO @Phyner replace
+                # TODO @Phyner command create/edit
 
                 ## MO ##
                 if is_mo:
@@ -207,6 +209,12 @@ async def on_message(message):
                 elif args[1] == "prefix":
                     await Guilds.set_prefix(message, args, author_perms)
                     guild_prefixes = Guilds.get_guild_prefixes()
+
+                
+                ## CUSTOM COMMANDS ##
+
+                # elif args[1] in CustomCommands.custom_command_aliases:
+                    # await CustomCommands.main(args, author_perms)
 
 
                 else:

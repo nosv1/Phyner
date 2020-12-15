@@ -23,7 +23,7 @@ class Guild:
         Guild in Guilds Table
         id - varchar(20), primary key
         name - varchar(100)
-        prefix - varchar(30)
+        prefix - varchar(30) # length same as CustomCommand.prefix
 
         accounts for dm channels
     """
