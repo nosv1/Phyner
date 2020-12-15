@@ -7,7 +7,7 @@ import Logger
 
 ''' CONSTANTS '''
 
-help_aliases = ["help", "h", "?", ""]
+help_aliases = ["help", "h", "?", " ", ""]
 
 
 
@@ -85,16 +85,15 @@ async def help(message):
     description += f"`@{phyner} delete <bottom_message_id> [#channel]`\n\n"
 
     description += f"`@{phyner} prefix`\n"
-    description += f"`@{phyner} prefix <new_prefix>`\n"
+    description += f"`@{phyner} prefix <new_prefix>`\n\n"
+
+    description += f"`@{phyner} watch webhook [webhook_id]`\n\n"
 
     embed = await Support.simple_bot_response(message.channel,
         title="General Help (WIP)", # TODO Help.help()
         description=description,
         reply_message=message
     )
-
-
-    await message.reply(embed=embed)
 
     Logger.log("Bot reponse", "Help Message")
 # end help

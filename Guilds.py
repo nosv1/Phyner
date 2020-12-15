@@ -164,6 +164,6 @@ async def set_prefix(message, args, author_perms):
         await phyner_guild.display_prefix(message.channel)
         
     phyner_guild.edit_guild()
-    return phyner_guild
+    return phyner_guild, get_guild_prefixes()
 # end set_prefix
 

@@ -39,10 +39,12 @@ connected = None
 host = os.getenv("HOST")
 
 guild_prefixes = Guilds.get_guild_prefixes()
+phyner_webhooks = Events.get_webhook_ids()
 
 restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
 restart_interval = 60 # time between restart/shutdown command and action
+
 
 
 ''' FUNCTIONS '''
@@ -111,6 +113,7 @@ async def on_message(message):
     global restart 
     global restart_time
     global guild_prefixes
+    global phyner_webhooks
 
     if not connected: # we aint ready yet
         return
@@ -118,7 +121,7 @@ async def on_message(message):
     error = False
     try:
         # prep message content for use
-        mc = message.content
+        mc = message.content 
         mc = re.sub(r"[“”]", '"', message.content)
         mc = re.sub(r"[\n\t\r]", ' ', message.content)
         mc += " "
@@ -126,12 +129,16 @@ async def on_message(message):
             mc = mc.replace("  ", " ")
         args = mc.split(" ")
 
-        author_perms = Support.get_member_perms(message.channel, message.author)
-
-
         ''' BEGIN CHECKS '''
 
-        if not message.author.bot: # not a bot
+
+        try:
+            is_webhook = message.webhook_id in phyner_webhooks
+        except KeyError:
+            return
+
+        if not message.author.bot or is_webhook: # not a bot and webhook we care about
+                
 
             try:
                 guild_prefix = guild_prefixes[message.guild.id if message.guild else message.author.id]
@@ -154,6 +161,9 @@ async def on_message(message):
 
                 phyner = Support.get_phyner_from_channel(message.channel)
                 is_mo = message.author.id == Support.ids.mo_id
+
+                message.author = phyner if is_webhook else message.author
+                author_perms = Support.get_member_perms(message.channel, message.author)
 
 
                 ''' COMMAND CHECKS '''
@@ -230,8 +240,7 @@ async def on_message(message):
                 ## GUILDS ##
 
                 elif args[1] == "prefix":
-                    await Guilds.set_prefix(message, args, author_perms)
-                    guild_prefixes = Guilds.get_guild_prefixes()
+                    phyner_guild, guild_prefixes = await Guilds.set_prefix(message, args, author_perms)
 
                 
                 ## CUSTOM COMMANDS ##
@@ -243,7 +252,10 @@ async def on_message(message):
                 ## WATCH ##
 
                 elif args[1] in Events.events_aliases:
-                    await Events.main(message, args[2:], author_perms)
+                    invoker = await Events.main(client, message, args[2:], author_perms)
+                    if type(invoker) == Events.Webhook:
+                        phyner_webhooks = invoker[1]
+
 
 
                 else:

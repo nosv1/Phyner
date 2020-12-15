@@ -39,13 +39,23 @@ emojis = SimpleNamespace(**{
     'space_char' : "⠀",
     'bullet' : "•",
     'x_emoji' : "❌",
+    'tick_emoji' : "✅",
     'ok_emoji' : "🆗",
     'i_emoji' : "🛈",
+    'number_emojis' : ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"],
+    'exclamation_emoji' : "❗",
 })
 
 
 
 ''' SUPPORT FUNCTIONS '''
+
+async def clear_reactions(msg):
+    try:
+        await msg.clear_reactions()
+    except discord.errors.Forbidden:
+        pass
+# end clear_reactions
 
 def is_DMChannel(channel):
     return channel.type == discord.ChannelType.private

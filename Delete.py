@@ -143,7 +143,7 @@ async def delete_messages(cilent, message, args, author_perms):
 
     async def log_delete_messages(messages):
         await simple_bot_response(message.channel,
-            description=f"**Deleted:** {len(messages)-1}",
+            description=f"**Deleted {len(messages)-1} messages.**",
             delete_after=3
         )
         log("delete messages", f"Deleted Messages ({len(messages)})")
