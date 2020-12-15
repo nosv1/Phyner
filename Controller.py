@@ -42,7 +42,7 @@ guild_prefixes = Guilds.get_guild_prefixes()
 
 restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
-restart_interval = 10 # time between restart/shutdown command and action
+restart_interval = 60 # time between restart/shutdown command and action
 
 
 ''' FUNCTIONS '''
