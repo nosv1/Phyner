@@ -142,7 +142,7 @@ async def restart(client, message, restart_interval, restart=True):
         await client.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.playing, 
-                name=f"{'Restart' if restart else 'Shut down'} soon!"
+                name=f"{'restart' if restart else 'hut down'} soon!"
             )
         )
 
