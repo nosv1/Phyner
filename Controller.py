@@ -175,7 +175,7 @@ async def on_message(message):
                 if restart_delta < restart_interval:
                     description = f"**{phyner.mention} is about to {'restart' if restart else 'shut down'}. "
                     if restart:
-                        description += f"Try again in {restart_delta + restart_interval} seconds or watch for its status to change.**" 
+                        description += f"Try again in {restart_delta + restart_interval} seconds, or watch for its status to change.**" 
                     else:
                         description += "Try again when it comes back online.**"
 
@@ -196,6 +196,10 @@ async def on_message(message):
 
                     elif args[1] in ["close", "restart"]:
                         restart = 1 if await Support.restart(client, restart=args[1] == "restart") else 0
+                        await Support.simple_bot_response(
+                            message.channel, 
+                            description=f"**{'Restarting' if restart else 'Shutting down'} in {restart_interval} seconds.**"
+                        )
                         restart_time = datetime.utcnow() + relativedelta(seconds=restart_interval) # set new restart time
                         await asyncio.sleep(restart_interval)
                         await client.close()
