@@ -163,8 +163,8 @@ async def delete_messages(cilent, message, args, author_perms):
                 messages += [bottom_message] if bottom_message and bottom_message_id != top_message_id else []
                 messages += [message]
                 
-            messages = messages[-100:]
-            await destination_channel.delete_messages(list(set(messages)))
+            messages = list(set(messages[-100:]))
+            await destination_channel.delete_messages(messages)
             await log_delete_messages(messages)
 
         except discord.errors.HTTPException: # messages too old, or message already in set
