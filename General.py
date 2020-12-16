@@ -36,7 +36,7 @@ async def send_ping(client, channel):
 
     host_region = None
     try:
-        host_region = client.get_guild(Support.ids.mobot_support).region
+        host_region = client.get_guild(Support.ids.mobot_support_id).region
         client_region = channel.guild.region
 
         description += f"**Host:** {host_region}\n"

@@ -16,6 +16,7 @@ import Support
 from Support import simple_bot_response
 from Support import quote
 import Help
+from Servers import TemplarLeagues
 
 
 
@@ -929,6 +930,11 @@ async def perform_action(client, message, user, event):
     if event.action.action == "create_private_text_channel":
         await create_private_text_channel(client, message, user, event)
 
+        if event.guild_id == TemplarLeagues.templar_leagues_id:
+            if event.condition.id == "some_message_id":
+                if event.object.id == "some_emoji":
+                    log("templar leagues", "submit series report")
+
     
 # end perform_action
 
@@ -956,5 +962,7 @@ async def create_private_text_channel(client, message, user, event):
         category=source.category if type(source) == type(message.channel) else source,
         position=sys.maxsize,
     )
+
+    log("reaction_add event", f"private text channel created {event.to_string()}")
 
 # end create_private_text_channel

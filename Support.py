@@ -26,7 +26,7 @@ ids = SimpleNamespace(**{
     'phyner_id' : 770416211300188190,
 
     # guild ids
-    'mobot_support' : 467239192007671818,
+    'mobot_support_id' : 467239192007671818,
 })
 
 
