@@ -313,48 +313,46 @@ async def create_user_embed(client, message):
     msg = await message.channel.send(content=content, embed=embed)
     phyner = Support.get_phyner_from_channel(message.channel)
 
-    if True or Support.show_moving_editing_phyner_messages(message.author.id): # TODO ... this ability? show_embed(embed_id, user_id), goes with pass embed_dict to simple bot response idea
+    title = "Moving and Editing Phyner Messages"
 
-        title = "Moving and Editing Phyner Messages"
+    description = f"`{msg.id}` is the Message ID of the [message above]({msg.jump_url}).\n\n"
 
-        description = f"`{msg.id}` is the Message ID of the [message]({msg.jump_url}) above.\n\n"
+    description += f"**Edit Embed:**\n`@{phyner} embed edit {msg.id}\n[edit embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
 
-        description += f"**Edit Embed:**\n`@{phyner} embed edit {msg.id}\n[edit embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
+    description += f"**Copy Message:**\n`@{phyner} copy {msg.id} [some_msg_id] ... <#destination>`\n\n" 
 
-        description += f"**Copy Message:**\n`@{phyner} copy {msg.id} [some_msg_id] ... <#destination>`\n\n" 
+    description += f"**Replace Message:**\n`@{phyner} replace <some_phyner_msg_id> {msg.id}`\n\n" 
 
-        description += f"**Replace Message:**\n`@{phyner} replace <some_phyner_msg_id> {msg.id}`\n\n" 
+    description += f"{emojis.x_emoji} to delete this message"
 
-        description += f"{emojis.x_emoji} to never show this message again (also deletes this message)" # TODO ... this ability?
+    msg = await Support.simple_bot_response( 
+        message.channel,
+        title=title,
+        description=description, 
+        footer=help_footer,
+        reply_message=message
+    )
+    await msg.add_reaction(emojis.x_emoji)
 
-        msg = await Support.simple_bot_response( 
-            message.channel,
-            title=title,
-            description=description, 
-            footer=help_footer,
-            reply_message=message
+    def check_x_emoji(payload):
+        return (
+            payload.emoji.name in [emojis.x_emoji] and
+            payload.message_id == msg.id and
+            payload.user_id == message.author.id
         )
-        await msg.add_reaction(emojis.x_emoji)
+    # end reaction_check
 
-        def check_x_emoji(payload):
-            return (
-                payload.emoji.name in [emojis.x_emoji] and
-                payload.message_id == msg.id and
-                payload.user_id == message.author.id
-            )
-        # end reaction_check
-
-        try:
-            await client.wait_for('raw_reaction_add', check=check_x_emoji, timeout=30.0)
-            # Support.show_moving_editing_phyner_messages(message.author.id, show=False) # TODO ... this ability?
-            await msg.delete()
-            
-        except asyncio.TimeoutError:
-            description = "\n".join(description.split("\n")[:-1])
-            embed = msg.embeds[0]
-            embed.description = description
-            await msg.edit(embed=embed)
-            await msg.remove_reaction(emojis.x_emoji, client.user)
+    try:
+        await client.wait_for('raw_reaction_add', check=check_x_emoji, timeout=30.0)
+        # Support.show_moving_editing_phyner_messages(message.author.id, show=False) # TODO ... this ability?
+        await msg.delete()
+        
+    except asyncio.TimeoutError:
+        description = "\n".join(description.split("\n")[:-1])
+        embed = msg.embeds[0]
+        embed.description = description
+        await msg.edit(embed=embed)
+        await msg.remove_reaction(emojis.x_emoji, client.user)
 
     if errors:
         await send_embed_attr_errors(message, msg.id, errors)

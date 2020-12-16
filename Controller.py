@@ -51,8 +51,8 @@ log("startup", f"Events: {len(events)}")
 phyner_webhook_ids = Events.get_object_ids(events, "webhook")
 log("startup", f"Phyner Webhook IDs: {len(phyner_webhook_ids)}")
 
-phyner_emoji_ids = Events.get_object_ids(events, "emoji")
-log("startup", f"Phyner Emoji IDs: {len(phyner_emoji_ids)}")
+phyner_reaction_adds = Events.get_event_events(events, "reaction_add")
+log("startup", f"Phyner Reaction Add Events: {len(phyner_reaction_adds)}")
 
 restart = 0 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
@@ -62,7 +62,6 @@ restart_interval = 60 # time between restart/shutdown command and action
 
 ''' FUNCTIONS '''
 
-''' can't edit message after command
 @client.event
 async def on_raw_message_edit(payload):
     if not connected: # we aint ready yet
@@ -98,7 +97,6 @@ async def on_raw_message_edit(payload):
     if error:
         await Logger.log_error(client, error)
 # end on_raw_message_edit
-'''
 
 
 @client.event
@@ -114,14 +112,7 @@ async def on_message(message):
     error = False
     try:
         # prep message content for use
-        mc = message.content 
-        mc = re.sub(r"[“”]", '"', message.content)
-        mc = re.sub(r"[\n\t\r]", ' ', message.content)
-        mc += " "
-        while "  " in mc:
-            mc = mc.replace("  ", " ")
-        args = mc.split(" ")
-
+        args, mc = Support.get_args_from_content(message.content)
 
         ## BEGIN CHECKS ##
 
@@ -199,9 +190,15 @@ async def on_message(message):
                         return
 
                     elif args[1] in ["close", "shutdown", "stop", "restart"]:
-                        restart = await Support.restart(client, message, restart_interval, restart=args[1] == "restart")
+                        restart, msg  = await Support.restart(client, message, restart_interval, restart=args[1] == "restart")
+
                         restart_time = datetime.utcnow() + relativedelta(seconds=restart_interval) # set new restart time
                         await asyncio.sleep(restart_interval)
+
+                        if msg:
+                            msg.embeds[0].description = "**Restarting**" if restart else "**Shutting Down**"
+                            await msg.edit(embed=msg.embeds[0])
+                            
                         await client.close()
                         
                 
@@ -251,6 +248,9 @@ async def on_message(message):
                         if event.object.type == "webhook":
                             phyner_webhook_ids = Events.get_object_ids(Events.get_events(), "webhook")
 
+                        if event.event == "reaction_add":
+                            phyner_reaction_adds = Events.get_event_events(Eventst.get_events(), "reaction_add")
+
 
                 ## ROLE ##
 
@@ -288,32 +288,51 @@ async def on_raw_reaction_add(payload):
     channel = client.get_channel(channel_id)
     message_id = payload.message_id
 
-    msg = None
+    message = None
     user = None
     is_dm = None
     error = False
     try:
 
-        msg = await channel.fetch_message(message_id)
-        if not msg:
+        message = await channel.fetch_message(message_id)
+        if not message:
             return
 
-        is_dm = msg.channel.type == discord.ChannelType.private
+        is_dm = message.channel.type == discord.ChannelType.private
 
-        user = [user for user in (msg.channel.members if not is_dm else [msg.channel.recipient]) if user.id == user_id]
+        user = [user for user in (message.channel.members if not is_dm else [message.channel.recipient]) if user.id == user_id]
         user = user[0] if user else user
 
         remove_reaction = False
-        if msg and user:
+        if message and user:
+            print('yes')
 
             if not user.bot: # not bot reaction
+                print('yes')
 
                 # TODO check if emoji object + message condition + reaction_add event
                 restart_delta = (restart_time - datetime.utcnow()).seconds
                 if restart_delta < restart_interval:
                     return
 
-                embed = msg.embeds[0] if msg.embeds else []
+
+                ## PHYNER REACTION ADD CHECKS 
+
+                for event in phyner_reaction_adds:
+                    print(event.to_string())
+                    print(message.guild.id, message.id, payload.emoji)
+                    if all([
+                        event.guild_id == message.guild.id if message.guild else False,
+                        event.condition.id == message.id,
+                        str(event.object.id) == str(payload.emoji)
+                    ]):
+                        print('yes')
+                        await Events.perform_action(client, message, user, event)
+
+
+                ## EMBED CHECKS ##
+
+                embed = message.embeds[0] if message.embeds else []
 
                 if embed: # has embed
                     pass
@@ -323,7 +342,7 @@ async def on_raw_reaction_add(payload):
     
 
         if remove_reaction and not is_dm:
-            await msg.remove_reaction(payload.emoji, user)
+            await message.remove_reaction(payload.emoji, user)
 
     except AttributeError: # possibly NoneType.fetch_message, happens in DMs after bot is restarted
         error = traceback.format_exc()

@@ -56,6 +56,43 @@ remove_aliases = ["remove", "-"]
 
 ''' SUPPORT FUNCTIONS '''
 
+def get_args_from_content(content):
+    content = re.sub(r"[“”]", '"', content)
+    content = re.sub(r"[\n\t\r]", ' ', content)
+    content += " "
+    while "  " in content:
+        content = content.replace("  ", " ")
+    args = content.split(" ")
+
+    return args, content
+# end get_args_from_content
+
+
+def confirm_input_last_field(embed):
+    embed = embed.to_dict()
+    field_footer = embed["fields"][-1]["value"]
+    embed["fields"][-1]["value"] = "**Confirming Input...**"
+    embed = discord.Embed().from_dict(embed)
+    return field_footer, embed
+# end confirm_input_last_field
+
+def revert_confirm_input_last_field(field_footer, embed):
+    embed = embed.to_dict()
+    embed["fields"][-1]["value"] = field_footer
+    embed = discord.Embed().from_dict(embed)
+    return embed
+# end revert_confirm_input_last_field
+
+def revert_confirm_input_last_field_exclamation(field_footer, embed):
+    lines = field_footer.split("\n")
+    lines[-2] = f"**{lines[-2]} {emojis.exclamation_emoji}**"
+
+    embed = embed.to_dict()
+    embed["fields"][-1]["value"] = "\n".join(lines)
+    embed = discord.Embed().from_dict(embed)
+    return embed
+# end revert_confirm_input_last_field
+
 def delete_last_field(embed):
     embed = embed.to_dict() if type(embed) != dict else embed
     del embed["fields"][-1]
@@ -191,13 +228,10 @@ async def restart(client, message, restart_interval, restart=True):
             )
         )
 
-        await simple_bot_response(
+        msg = await simple_bot_response(
             message.channel, 
             description=f"**{'Restarting' if restart else 'Shutting down'} in {restart_interval} seconds.**"
         )
 
-    if not restart:
-        Logger.log("Connection", f"{host} Shutting Down")
-
-    return 1 if restart else 0
+    return (1 if restart else 0), msg
 # end restart  
