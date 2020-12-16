@@ -249,7 +249,7 @@ async def on_message(message):
                             phyner_webhook_ids = Events.get_object_ids(Events.get_events(), "webhook")
 
                         if event.event == "reaction_add":
-                            phyner_reaction_adds = Events.get_event_events(Eventst.get_events(), "reaction_add")
+                            phyner_reaction_adds = Events.get_event_events(Events.get_events(), "reaction_add")
 
 
                 ## ROLE ##

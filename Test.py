@@ -16,15 +16,27 @@ from Support import simple_bot_response
 ## TETS ##
 
 async def test(message, args):
-    for arg in args:
-        print(arg)
-        print(arg == "😎")
-        print(arg == ":sunglasses:")
 
     # await new_slash_cmd()
 
+    await gspread_testing()
+
     await message.channel.send('test done', delete_after=3)
 # end test
+
+
+def gspread_testing():
+    import gspread
+
+    gc = gspread.service_account(filename="Secrets/phyner-a9859c6daae5.json")
+
+    sh = gc.open("Random Testing")
+
+    print(sh.sheet1.get("a3"))
+
+
+# end gspread_testing
+gspread_testing()
 
 '''
 ## NEW SLASH CMD
