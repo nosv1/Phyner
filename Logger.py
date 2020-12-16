@@ -11,7 +11,7 @@ import Support
 
 ''' CONSTANTS '''
 
-time_format = "%d %b %y %H.%M.%S"
+time_format = "%Y %b %d %H.%M.%S"
 
 
 
