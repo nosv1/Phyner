@@ -305,10 +305,8 @@ async def on_raw_reaction_add(payload):
 
         remove_reaction = False
         if message and user:
-            print('yes')
 
             if not user.bot: # not bot reaction
-                print('yes')
 
                 # TODO check if emoji object + message condition + reaction_add event
                 restart_delta = (restart_time - datetime.utcnow()).seconds
@@ -319,14 +317,11 @@ async def on_raw_reaction_add(payload):
                 ## PHYNER REACTION ADD CHECKS 
 
                 for event in phyner_reaction_adds:
-                    print(event.to_string())
-                    print(message.guild.id, message.id, payload.emoji)
                     if all([
                         event.guild_id == message.guild.id if message.guild else False,
                         event.condition.id == message.id,
                         str(event.object.id) == str(payload.emoji)
                     ]):
-                        print('yes')
                         await Events.perform_action(client, message, user, event)
 
 
