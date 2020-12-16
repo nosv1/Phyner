@@ -10,14 +10,15 @@ import traceback
 import gspread
 import mysql.connector
 from types import SimpleNamespace
-import os
 import re
 
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
 
 import Logger
+from Logger import log
 import Database
 import Support
 import Help
@@ -27,7 +28,10 @@ import Delete
 import Guilds
 import CustomCommands
 import Events
+import Role
 
+
+Logger.create_log_file()
 
 
 ''' CONSTANTS '''
@@ -39,9 +43,18 @@ connected = None
 host = os.getenv("HOST")
 
 guild_prefixes = Guilds.get_guild_prefixes()
-phyner_webhooks = Events.get_webhook_ids()
+log("startup", f"Guild Prefixes: {len(guild_prefixes)}")
 
-restart = 1 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
+events = Events.get_events()
+log("startup", f"Events: {len(events)}")
+
+phyner_webhook_ids = Events.get_object_ids(events, "webhook")
+log("startup", f"Phyner Webhook IDs: {len(phyner_webhook_ids)}")
+
+phyner_emoji_ids = Events.get_object_ids(events, "emoji")
+log("startup", f"Phyner Emoji IDs: {len(phyner_emoji_ids)}")
+
+restart = 0 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
 restart_interval = 60 # time between restart/shutdown command and action
 
@@ -49,28 +62,7 @@ restart_interval = 60 # time between restart/shutdown command and action
 
 ''' FUNCTIONS '''
 
-@client.event
-async def on_ready():
-    error = None
-    try:
-        global connected
-        connected = True
-        Logger.log("Connection", f"{host} Controller Connected")
-
-        await client.change_presence(
-            activity=discord.Activity(
-                type=discord.ActivityType.playing, name="@Phyner is finer."
-            )
-        )
-    
-    except:
-        error = traceback.format_exc()
-
-    if error:
-        await Logger.log_error(client, error)
-# end on_ready
-
-
+''' can't edit message after command
 @client.event
 async def on_raw_message_edit(payload):
     if not connected: # we aint ready yet
@@ -98,7 +90,7 @@ async def on_raw_message_edit(payload):
                 pass
 
     except discord.errors.NotFound:
-        await Logger.log("message edit erorr", traceback.format_exc())
+        await log("message edit erorr", traceback.format_exc())
     
     except:
         error = traceback.format_exc()
@@ -106,6 +98,7 @@ async def on_raw_message_edit(payload):
     if error:
         await Logger.log_error(client, error)
 # end on_raw_message_edit
+'''
 
 
 @client.event
@@ -113,7 +106,7 @@ async def on_message(message):
     global restart 
     global restart_time
     global guild_prefixes
-    global phyner_webhooks
+    global phyner_webhook_ids
 
     if not connected: # we aint ready yet
         return
@@ -129,12 +122,13 @@ async def on_message(message):
             mc = mc.replace("  ", " ")
         args = mc.split(" ")
 
-        ''' BEGIN CHECKS '''
 
+        ## BEGIN CHECKS ##
 
         try:
-            is_webhook = message.webhook_id in phyner_webhooks
-        except KeyError:
+            is_webhook = message.webhook_id in phyner_webhook_ids
+        except:
+            log("webhook error", traceback.format_exc())
             return
 
         if not message.author.bot or is_webhook: # not a bot and webhook we care about
@@ -157,7 +151,7 @@ async def on_message(message):
                         (args[0] == "``p") # ..p command
                 )
             ):
-                Logger.log("COMMAND", f"{message.author.id}, '{message.content}'\n")
+                log("COMMAND", f"{message.author.id}, '{message.content}'\n")
 
                 phyner = Support.get_phyner_from_channel(message.channel)
                 is_mo = message.author.id == Support.ids.mo_id
@@ -166,7 +160,7 @@ async def on_message(message):
                 author_perms = Support.get_member_perms(message.channel, message.author)
 
 
-                ''' COMMAND CHECKS '''
+                ## COMMAND CHECKS ##
                     
                 # \TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
                 # TODO Invite Phyner Support
@@ -176,7 +170,6 @@ async def on_message(message):
                 # TODO @Phyner copy
                 # TODO @Phyner replace
                 # TODO @Phyner command create/edit
-                # TODO @Phyne watch -- <webhook_id> Events handling from webhooks
 
 
                 ## CHECK FOR UPCOMING RESTART ##
@@ -196,16 +189,16 @@ async def on_message(message):
 
                 if is_mo:
                     if args[1] == "test":
-                        await message.channel.send("test done")
+                        import Test
+                        await Test.test(message, args)
                         return
                         
                     elif args[1] == "setavatar":
                         with open('Images/9a9c9f.png', 'rb') as f:
                             await client.user.edit(avatar=f.read())
-                        await message.channel.send("avatar set")
                         return
 
-                    elif args[1] in ["close", "restart"]:
+                    elif args[1] in ["close", "shutdown", "stop", "restart"]:
                         restart = await Support.restart(client, message, restart_interval, restart=args[1] == "restart")
                         restart_time = datetime.utcnow() + relativedelta(seconds=restart_interval) # set new restart time
                         await asyncio.sleep(restart_interval)
@@ -252,10 +245,17 @@ async def on_message(message):
 
                 ## WATCH ##
 
-                elif args[1] in Events.events_aliases:
-                    invoker = await Events.main(client, message, args[2:], author_perms)
-                    if type(invoker) == Events.Webhook:
-                        phyner_webhooks = invoker[1]
+                elif args[1] in Events.events_aliases + Events.watching_aliases:
+                    event = await Events.main(client, message, args[1:], author_perms)
+                    if event:
+                        if event.object.type == "webhook":
+                            phyner_webhook_ids = Events.get_object_ids(Events.get_events(), "webhook")
+
+
+                ## ROLE ##
+
+                elif args[1] in Role.role_aliases:
+                    await Role.main(client, message, args[2:], author_perms)
 
 
 
@@ -265,10 +265,7 @@ async def on_message(message):
                 ''' END COMMAND CHECKS '''
 
     except RuntimeError:
-        Logger.log("Connection", f"{host} Disconnected")
-
-    except SystemExit:
-        pass
+        log("Connection", f"{host} Disconnected")
     
     except:
         error = traceback.format_exc()
@@ -278,7 +275,110 @@ async def on_message(message):
 # end on_message
 
 
-Logger.create_log_file()
-Logger.log("Connection", f"{host} Controller Connecting")
-client.run(os.getenv("DISCORD_TOKEN"))
+@client.event
+async def on_raw_reaction_add(payload):
+    global restart 
+    global restart_time
+
+    if not connected: # we aint ready yet
+        return
+
+    user_id = payload.user_id
+    channel_id = payload.channel_id
+    channel = client.get_channel(channel_id)
+    message_id = payload.message_id
+
+    msg = None
+    user = None
+    is_dm = None
+    error = False
+    try:
+
+        msg = await channel.fetch_message(message_id)
+        if not msg:
+            return
+
+        is_dm = msg.channel.type == discord.ChannelType.private
+
+        user = [user for user in (msg.channel.members if not is_dm else [msg.channel.recipient]) if user.id == user_id]
+        user = user[0] if user else user
+
+        remove_reaction = False
+        if msg and user:
+
+            if not user.bot: # not bot reaction
+
+                # TODO check if emoji object + message condition + reaction_add event
+                restart_delta = (restart_time - datetime.utcnow()).seconds
+                if restart_delta < restart_interval:
+                    return
+
+                embed = msg.embeds[0] if msg.embeds else []
+
+                if embed: # has embed
+                    pass
+
+                    if embed.title: # has title 
+                        pass
+    
+
+        if remove_reaction and not is_dm:
+            await msg.remove_reaction(payload.emoji, user)
+
+    except AttributeError: # possibly NoneType.fetch_message, happens in DMs after bot is restarted
+        error = traceback.format_exc()
+
+    #except discord.errors.NotFound: # bot aint finding messages...
+     #   Logger.log_error(traceback.format_exc())
+      #  return
+
+    except discord.errors.Forbidden:
+        error = traceback.format_exc()
+    
+    except:
+        error = traceback.format_exc()
+
+    if error:
+        await Logger.log_error(client, error)
+# end on_reaction_add
+
+
+
+''' STARTUP '''
+
+''' 
+@client.event this appears to simply not be needed
+async def on_ready():
+    error = None
+    try:
+    
+    except:
+        error = traceback.format_exc()
+
+    if error:
+        await Logger.log_error(client, error)
+# end on_ready
+'''
+
+async def startup():
+    global connected
+    global restart
+    await client.wait_until_ready()
+
+    connected = True
+    restart = 1
+    log("Connection", f"{host} Controller Connected")
+
+    await client.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.playing, name="@Phyner is finer."
+        )
+    )
+# end startup
+
+log("Connection", f"{host} Controller Connecting")
+
+client.loop.create_task(startup())
+
+client.run(os.getenv("TOKEN"))
 print(restart)

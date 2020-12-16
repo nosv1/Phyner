@@ -1,4 +1,5 @@
 ''' IMPORTS '''
+
 import discord
 from types import SimpleNamespace
 from bs4 import BeautifulSoup as bsoup
@@ -6,6 +7,7 @@ import requests
 import re
 import os
 import sys
+import traceback
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -46,9 +48,33 @@ emojis = SimpleNamespace(**{
     'exclamation_emoji' : "❗",
 })
 
+## COMMON ALIASES ##
+add_aliases = ["add", "+"]
+remove_aliases = ["remove", "-"]
+
 
 
 ''' SUPPORT FUNCTIONS '''
+
+def delete_last_field(embed):
+    embed = embed.to_dict() if type(embed) != dict else embed
+    del embed["fields"][-1]
+    return discord.Embed().from_dict(embed)
+# end delete_last_field
+
+def switch_last_two_fields(embed):
+    embed = embed.to_dict() if type(embed) != dict else embed
+    t_field = embed["fields"][-2]
+    del embed["fields"][-2]
+    embed["fields"].append(t_field)
+    return discord.Embed().from_dict(embed)
+# end switch_last_two_fields
+
+
+def quote(s):
+    return f"'{s}'"
+# end quote
+
 
 async def clear_reactions(msg):
     try:
@@ -56,6 +82,15 @@ async def clear_reactions(msg):
     except discord.errors.Forbidden:
         pass
 # end clear_reactions
+
+async def remove_reactions(msg, user, reactions):
+    for reaction in reactions:
+        try:
+            await msg.remove_reaction(reaction, user)
+        except:
+            pass
+# end remove_reactions
+
 
 def is_DMChannel(channel):
     return channel.type == discord.ChannelType.private
@@ -152,7 +187,7 @@ async def restart(client, message, restart_interval, restart=True):
         await client.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.playing, 
-                name=f"{'restart' if restart else 'hut down'} soon!"
+                name=f"{'Restarting' if restart else 'Temporarily shutting down'} soon!"
             )
         )
 

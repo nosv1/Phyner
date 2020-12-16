@@ -73,7 +73,15 @@ async def help(message):
 
     phyner = Support.get_phyner_from_channel(message.channel)
 
-    description = f"`@{phyner} help`\n"
+    description = f"{phyner.mention} is a work in progress, but here is a list of functionalish commands.\n"
+    description += f"For some commands you can do `@{phyner} <command> help` to learn more about the command usage.\n\n"
+
+    description += "`<>` indicates a required argument\n"
+    description += "`[]` indicates the argument is optional\n"
+    description += "`...` it indicates multiple of the same type of argument\n"
+    description += "You do not include these characters in the command.\n\n"
+
+    description += f"`@{phyner} help`\n"
     description += f"`@{phyner} ping`\n"
     description += f"`@{phyner} ? <search_words>`\n\n"
 
@@ -88,6 +96,8 @@ async def help(message):
     description += f"`@{phyner} prefix <new_prefix>`\n\n"
 
     description += f"`@{phyner} watch webhook [webhook_id]`\n\n"
+
+    description += f"`@{phyner} role <add/remove> <role_id/@Role> [role_id/@Role ...] <user_id/@user/User#0000> [user_id/@user/User#0000 ...]`\n\n"
 
     embed = await Support.simple_bot_response(message.channel,
         title="General Help (WIP)", # TODO Help.help()
