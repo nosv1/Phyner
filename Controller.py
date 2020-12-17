@@ -198,7 +198,10 @@ async def on_message(message):
 
                         if msg:
                             msg.embeds[0].description = "**Restarting**" if restart else "**Shutting Down**"
-                            await msg.channel.delete_messages([msg, message])
+                            try:
+                                await msg.channel.delete_messages([msg, message])
+                            except:
+                                pass
                             
                         await client.close()
                         
