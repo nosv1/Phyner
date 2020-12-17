@@ -956,7 +956,7 @@ async def create_private_text_channel(client, message, user, event):
     )
 
     channel = await message.guild.create_text_channel(
-        name=f"{user.display_name} {user.discriminator}",
+        name=f"{source.name} {user.display_name} {user.discriminator}",
         overwrites=overwrites,
         category=source.category if type(source) == discord.channel.TextChannel else source,
         position=sys.maxsize,

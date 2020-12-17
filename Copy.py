@@ -14,6 +14,7 @@ from Support import simple_bot_response
 ''' CONSTANTS '''
 
 copy_aliases = ["copy", "duplicate"]
+replace_aliases = ["replace"]
 
 
 
