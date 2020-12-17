@@ -348,11 +348,12 @@ async def on_raw_reaction_add(payload):
                 # this is used to enable testing whilst running pi version
                 okay_mobot_support = Support.ids.mobot_support_id if os.getenv("HOST") == "PC" else 0
 
-                if message.guild.id in [ # Templar Leagues
-                    TemplarLeagues.templar_leagues_id, 
-                    okay_mobot_support
-                ]:
-                    await TemplarLeagues.on_reaction_add(client, message, user, payload)
+                if message.guild:
+                    if message.guild.id in [ # Templar Leagues
+                        TemplarLeagues.templar_leagues_id, 
+                        okay_mobot_support
+                    ]:
+                        await TemplarLeagues.on_reaction_add(client, message, user, payload)
     
 
         if remove_reaction and not is_dm:

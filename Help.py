@@ -71,51 +71,8 @@ async def help(message):
         Help Message
     """
 
-    phyner = Support.get_phyner_from_channel(message.channel)
-
-    description = f"{phyner.mention} is a work in progress, but here is a list of functionalish commands.\n"
-    description += f"For some commands you can do `@{phyner} <command> help` to learn more about the command usage.\n\n"
-
-    description += "`<>` indicates a required argument\n"
-    description += "`[]` indicates the argument is optional\n"
-    description += "`...` it indicates multiple of the same type of argument\n"
-    description += "You do not include these characters in the command.\n\n"
-
-    description += f"`@{phyner} help`\n"
-    description += f"`@{phyner} ping`\n"
-    description += f"`@{phyner} ? <search_words>`\n\n"
-
-    description += f"`@{phyner} say <message>`\n"
-    description += f"`@{phyner} embed create`\n"
-    description += f"`@{phyner} embed edit/save <message_id> [#channel]`\n"
-    description += "No Help\n\n"
-
-    description += f"`@{phyner} delete <count> [#channel]`\n"
-    description += f"`@{phyner} delete <top_message_id> [#channel]`\n"
-    description += f"`@{phyner} delete <top_message_id> <bottom_message_id> [#channel]`\n\n"
-
-    description += f"`@{phyner} prefix`\n"
-    description += f"`@{phyner} prefix <new_prefix>`\n"
-    description += "No Help\n\n"
-
-    description += f"`@{phyner} watch webhook [webhook_id]`\n"
-    description += f"`@{phyner} watch emoji <emoji> <message_id> [#channel] <action_id>`\n"
-    description += "No Help\n\n"
-
-    description += f"`@{phyner} role <add/remove> <role_id/@Role> [role_id/@Role ...] <user_id/@user/User#0000> [user_id/@user/User#0000 ...]`\n"
-    description += "No Error Messages, No Help\n\n"
-
-    description += f"`@{phyner} copy <message_id> [#message_location] [#destination]`\n"
-    description += f"`@{phyner} copy <role_id/@role> [new_role_name]`\n"
-    description += f"`@{phyner} copy <channel_id/#channel> [#destination] [new_channel_name] `\n"
-    description += f"`@{phyner} copy <category_id> [new_category_name]`\n"
-    description += "No Error Messages, No Help\n\n"
-
-    embed = await Support.simple_bot_response(message.channel,
-        title="General Help (WIP)", # TODO Help.help()
-        description=description,
-        reply_message=message
-    )
+    embed = Support.load_embed_from_Embeds(link="https://discord.com/channels/789181254120505386/789181637748588544/789187242006020126")
+    await message.channel.send(embed=embed)
 
     Logger.log("Bot reponse", "Help Message")
 # end help

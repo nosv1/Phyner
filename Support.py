@@ -102,7 +102,8 @@ def find_value_in_range(r, value, lower=False):
 # end find_value_in_range
 
 
-def load_embed_from_Embeds(guild_id, channel_id, message_id):
+def load_embed_from_Embeds(link):
+    guild_id, channel_id, message_id = tuple(link.split("/")[-3:])
 
     embed = None
     embed_file_name = f"{guild_id}-{channel_id}-{message_id}"

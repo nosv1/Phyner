@@ -480,7 +480,7 @@ async def save_embed(message, args): # TODO proper command
 
         embed = mesge.embeds[0] if mesge.embeds else None
 
-        file_name = f"{mesge.guild.id}-{mesge.channel.id}-{mesge.id}"
+        file_name = f"{mesge.guild.id if mesge.guild.id else message.author.id}-{mesge.channel.id}-{mesge.id}"
         path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json"
         with open(path, "w+") as embeds:
             json.dump(embed.to_dict(), embeds, indent=4, sort_keys=True)
