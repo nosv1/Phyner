@@ -485,8 +485,8 @@ async def save_embed(message, args): # TODO proper command
         with open(path, "w+") as embeds:
             json.dump(embed.to_dict(), embeds, indent=4, sort_keys=True)
 
-            await Support.process_complete_reaction(message)
-            Logger.log("embed save", f"embed saved - {path}")
+        await Support.process_complete_reaction(message)
+        Logger.log("embed save", f"embed saved - {path}")
         
 # end save_embed
 
