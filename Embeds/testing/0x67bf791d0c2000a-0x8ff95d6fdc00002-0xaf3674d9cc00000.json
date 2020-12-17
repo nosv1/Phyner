@@ -1,0 +1,17 @@
+{
+    "author": {
+        "icon_url": "https://cdn.discordapp.com/icons/467239192007671818/5be4b19b30da3507679207acb28d68c7.webp?size=1024",
+        "name": "Templar Leagues Series Report",
+        "proxy_icon_url": "https://images-ext-1.discordapp.net/external/FXDfANE5IUQe5zGUZozaxqfTwCjzcVQIY8NypggogBg/%3Fsize%3D1024/https/cdn.discordapp.com/icons/467239192007671818/5be4b19b30da3507679207acb28d68c7.webp"
+    },
+    "color": 16777214,
+    "description": "Big test......",
+    "fields": [
+        {
+            "inline": false,
+            "name": "\u2800",
+            "value": "\ud83c\udd97 to begin"
+        }
+    ],
+    "type": "rich"
+}

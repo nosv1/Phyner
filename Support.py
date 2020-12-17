@@ -5,10 +5,11 @@ from types import SimpleNamespace
 from bs4 import BeautifulSoup as bsoup
 import requests
 import re
-import os
 import sys
 import traceback
+import json
 
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -55,6 +56,17 @@ remove_aliases = ["remove", "-"]
 
 
 ''' SUPPORT FUNCTIONS '''
+
+def load_embed_from_Embeds(guild_id, channel_id, message_id):
+
+    embed = None
+    embed_file_name = f"{hex(guild_id)}-{hex(channel_id)}-{hex(message_id)}"
+    with open(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{embed_file_name}.json", "r") as embed_file:
+        embed = discord.Embed().from_dict(json.load(embed_file))
+
+    return embed
+# end load_embed_from_Embeds
+
 
 def messageOrMsg(msg):  
     """
@@ -182,7 +194,7 @@ def get_member_perms(channel, member):
 # end get_member_perms
 
 
-async def simple_bot_response(channel, title=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
+async def simple_bot_response(channel, author=discord.Embed().Empty, author_icon_url=discord.Embed().Empty, title=discord.Embed().Empty, thumbnail_url=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
     """
         Bot sends message as basic embed
         reply_message is defaulted to False, but expects a discord.Message if declared in call
@@ -194,7 +206,16 @@ async def simple_bot_response(channel, title=discord.Embed().Empty, description=
     embed = discord.Embed()
     embed.colour = colors.phyner_grey if is_dm else phyner.roles[-1].color
 
+    if author or author_icon_url:
+        embed.set_author(
+            name=author if author else emojis.space_char,
+            icon_url=author_icon_url
+        )
+
+
     embed.title = title
+    if thumbnail_url:
+        embed.set_thumbnail(url=thumbnail_url)
     embed.description = description
 
     if footer:

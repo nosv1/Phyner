@@ -19,11 +19,19 @@ from Support import simple_bot_response
 async def test(message, args):
 
     # await new_slash_cmd()
-
-    await gspread_testing()
+    # await gspread_testing()
+    await templar_test(message)
 
     await message.channel.send('test done', delete_after=3)
 # end test
+
+
+async def templar_test(message):
+    from Servers import TemplarLeagues
+
+    channel = message.guild.get_channel(648401621977399298)
+    await TemplarLeagues.prepare_series_report_channel(channel, message.author)
+# end templar_test
 
 
 def gspread_testing():
@@ -34,10 +42,7 @@ def gspread_testing():
     sh = gc.open("Random Testing")
 
     print(sh.sheet1.get("a3"))
-
-
 # end gspread_testing
-gspread_testing()
 
 '''
 ## NEW SLASH CMD

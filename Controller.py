@@ -159,7 +159,6 @@ async def on_message(message):
                 # TODO request feature for money
                 # TODO Donations
                 # TODO @Phyner ids
-                # TODO @Phyner copy
                 # TODO @Phyner replace
                 # TODO @Phyner command create/edit
 

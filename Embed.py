@@ -5,6 +5,12 @@ import asyncio
 import traceback
 import re
 import validators
+import json
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 import Logger
 import Support
@@ -41,6 +47,22 @@ embed_attrs = [
 ]
 
 embed_aliases = ["embed"]
+# TODO embed colors
+''' 
+embed_colors = {
+    ".phyner_grey" : Support.colors.phyner_grey,
+    ".white" : ,
+    ".black" : ,
+    ".grey" : ,
+    ".red" : ,
+    ".blue" : ,
+    ".green" : ,
+    ".orange" : ,
+    ".pink" : ,
+    ".brown" : ,
+    ".purple" : ,
+    ".yellow" : ,
+}'''
 
 
 ''' FUNCTIONS '''
@@ -68,13 +90,18 @@ async def main(client, message, args, author_perms):
         else:
             await send_permissions_needed(message, message.author)
 
+    elif args[2] == "save":
+
+        await save_embed(message, args[3:])
+
     return
 # end main
 
 
+
 ## FUNCTIONALITY ##
 
-def get_embed_from_content(client, content, roles=[], embed=discord.Embed()):
+def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
     """ 
     Creating a discord.Embed() from the content of a message, or simply from a string.
     returns embed and list of readable error messages
@@ -91,7 +118,7 @@ def get_embed_from_content(client, content, roles=[], embed=discord.Embed()):
     {.attr} {attr_value}`
     """
 
-    content = content.replace("\\s", emojis.space_char)
+    content = message.content.replace("\\s", emojis.space_char)
     msg_content = emojis.space_char
     attrs = []
 
@@ -140,6 +167,7 @@ def get_embed_from_content(client, content, roles=[], embed=discord.Embed()):
 
         attr = attr.strip()
         value = value if ".empty" not in value else discord.Embed().Empty
+        value = str(message.guild.icon_url) if ".guild_icon" in str(value) else value
 
         if attr in ['.content']:
             msg_content = value if value else emojis.space_char
@@ -151,7 +179,7 @@ def get_embed_from_content(client, content, roles=[], embed=discord.Embed()):
                 color = role_color[0].value if role_color else (color if color else value)
 
                 if not value or color <= 16777216: # really it's supposed to be < 16777215, but fixing that below
-                    embed.color = abs(color + (1 if color == 0 else -2)) if color else value
+                    embed.color = abs(color + (1 if color == 0 else -2)) if str(color).isnumeric() else value
 
                 else:
                     errors.append([f"**Attribute:** `{attr}`", f"**Value:** `{value}` is not a role id or is too large of a hex value"])
@@ -306,7 +334,7 @@ def get_embed_from_content(client, content, roles=[], embed=discord.Embed()):
 
 async def create_user_embed(client, message):
     embed, content, errors = get_embed_from_content(
-        client, message.content, 
+        client, message, 
         roles=message.guild.roles if message.guild else [] # may be dm channel
     )
 
@@ -363,34 +391,28 @@ async def create_user_embed(client, message):
 
 async def edit_user_embed(client, message, args):
     phyner = Support.get_phyner_from_channel(message.channel)
+
+    # get msg source channel
+    channel_id = Support.get_id_from_str(args[4])
+    channel_id = int(channel_id[0]) if channel_id else message.channel.id
+    channel = [c for c in message.guild.channels if c.id == channel_id]
+    channel = channel[0] if channel else None
     
+    # get msg
     msg = None
-    msg_id = args[3]
-
-    try: # try to find msg in current channel first
-        msg = await message.channel.fetch_message(msg_id)
-
+    msg_id = Support.get_id_from_str(args[3])
+    msg_id = int(msg_id[0]) if msg_id else None
+    try:
+        msg = await channel.fetch_message(msg_id) if channel and msg_id else None    
     except discord.errors.NotFound:
-        await message.channel.trigger_typing()
-
-        for channel in message.guild.channels:
-            try:
-                msg = await channel.fetch_message(msg_id)
-
-            except AttributeError: # channel is not text channel
-                pass
-            except discord.errors.NotFound: # msg not found
-                pass
-
-    except discord.errors.HTTPException: # not a valid msg_id
-        pass
+        pass # error message below
 
     if msg and msg.author.id == Support.ids.phyner_id: # msg found and phyner is author
         embed = msg.embeds[0] if msg.embeds else None
         embed, content, errors = get_embed_from_content(
             client,
-            message.content, 
-            message.guild.roles, 
+            message, 
+            roles=message.guild.roles, 
             embed=embed if embed else discord.Embed()
         )
         await msg.edit(content=content, embed=embed)
@@ -413,8 +435,9 @@ async def edit_user_embed(client, message, args):
             Logger.log('embed', "could not edit another author's message")
 
         else: # msg not found, by deduction
-            description = f"The message_id, `{msg_id}`, could not be found in any of the channels {client.user.mention} is in.\n\n"
+            description = f"The message_id, `{msg_id}`, could not be found in {channel.mention}. If this channel is not where the message is located, edit your [message above]({message.jump_url}) to match the syntax below to specify where {phyner.mention} should look for the message.\n\n"
 
+            description += f"`@{phyner} embed edit {msg_id} <#channel> [set_embed_attributes]`\n\n"
             description += f"`@{phyner} ids` to learn how to get message_ids.\n"
             
             msg = await Support.simple_bot_response(message.channel,
@@ -442,6 +465,23 @@ async def edit_user_embed(client, message, args):
         except asyncio.TimeoutError:
             await msg.remove_reaction(emojis.ok_emoji, client.user)
 # end edit_user_embed
+
+
+async def save_embed(message, args): # TODO proper command
+    channel = message.channel_mentions[0] if message.channel_mentions else message.channel
+
+    mesge_id = Support.get_id_from_str(message.content)
+    if mesge_id:
+        mesge = await channel.fetch_message(mesge_id[0])
+
+        embed = mesge.embeds[0] if mesge.embeds else None
+
+        file_name = f"{hex(mesge.guild.id)}-{hex(mesge.channel.id)}-{hex(mesge.id)}"
+        with open(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json", "w+") as embeds:
+            json.dump(embed.to_dict(), embeds, indent=4, sort_keys=True)
+        
+# end save_embed
+
 
 
 ## RESPONSES ##
@@ -476,5 +516,5 @@ async def send_embed_attr_errors(message, msg_id, errors):
     for error in errors:
         description += f"{error[0]}\n{error[1]}\n\n"
 
-    await Support.simple_bot_response(message.channel, title, description, reply_message=message)
+    await Support.simple_bot_response(message.channel, title=title, description=description, reply_message=message)
 # end send_embed_attr_errors

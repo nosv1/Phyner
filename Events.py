@@ -928,12 +928,12 @@ async def watch_webhook(client, message, args):
 async def perform_action(client, message, user, event):
 
     if event.action.action == "create_private_text_channel":
-        await create_private_text_channel(client, message, user, event)
+        channel = await create_private_text_channel(client, message, user, event)
 
         if event.guild_id == TemplarLeagues.templar_leagues_id:
             if event.condition.id == "some_message_id":
                 if event.object.id == "some_emoji":
-                    log("templar leagues", "submit series report")
+                    await TemplarLeagues.series_report(channel, user)
 
     
 # end perform_action
@@ -964,5 +964,5 @@ async def create_private_text_channel(client, message, user, event):
     )
 
     log("reaction_add event", f"private text channel created {event.to_string()}")
-
+    return channel
 # end create_private_text_channel
