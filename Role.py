@@ -130,7 +130,6 @@ async def edit_user_roles(message, args, author_perms, add=False, remove=False):
 
             embed.description = ""
         
-    print(len(description))
     embed.description += description
 
 

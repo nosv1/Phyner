@@ -12,7 +12,7 @@ from Support import simple_bot_response
 
 ''' CONSTANTS '''
 
-templar_leagues = 437936224402014208
+templar_leagues_id = 437936224402014208
 aliases = ["", ]
 
 

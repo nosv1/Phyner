@@ -17,18 +17,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+import Copy
+import CustomCommands
+import Database
+import Delete
+import Embed
+import Events
+import General
+import Guilds
+import Help
 import Logger
 from Logger import log
-import Database
-import Support
-import Help
-import Embed
-import General
-import Delete
-import Guilds
-import CustomCommands
-import Events
 import Role
+import Support
 
 
 Logger.create_log_file()
@@ -220,6 +221,18 @@ async def on_message(message):
                     await General.say(message, args)
 
 
+                
+                ## COPY ##
+
+                elif args[1] in Copy.copy_aliases:
+                    await Copy.main(message, args, author_perms)
+
+                
+                ## CUSTOM COMMANDS ##
+
+                # elif args[1] in CustomCommands.custom_command_aliases:
+                    # await CustomCommands.main(args, author_perms)
+
 
                 ## EMBED ##
 
@@ -233,11 +246,11 @@ async def on_message(message):
                 elif args[1] == "prefix":
                     phyner_guild, guild_prefixes = await Guilds.set_prefix(message, args, author_perms)
 
-                
-                ## CUSTOM COMMANDS ##
 
-                # elif args[1] in CustomCommands.custom_command_aliases:
-                    # await CustomCommands.main(args, author_perms)
+                ## ROLE ##
+
+                elif args[1] in Role.role_aliases:
+                    await Role.main(client, message, args[2:], author_perms)
 
 
                 ## WATCH ##
@@ -250,12 +263,6 @@ async def on_message(message):
 
                         if event.event == "reaction_add":
                             phyner_reaction_adds = Events.get_event_events(Events.get_events(), "reaction_add")
-
-
-                ## ROLE ##
-
-                elif args[1] in Role.role_aliases:
-                    await Role.main(client, message, args[2:], author_perms)
 
 
 

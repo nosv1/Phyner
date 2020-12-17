@@ -87,17 +87,28 @@ async def help(message):
 
     description += f"`@{phyner} say <message>`\n"
     description += f"`@{phyner} embed create/edit`\n\n"
+    description += "No Help\n\n"
 
     description += f"`@{phyner} delete <count> [#channel]`\n"
     description += f"`@{phyner} delete <top_message_id> [#channel]`\n"
     description += f"`@{phyner} delete <top_message_id> <bottom_message_id> [#channel]`\n\n"
 
     description += f"`@{phyner} prefix`\n"
-    description += f"`@{phyner} prefix <new_prefix>`\n\n"
+    description += f"`@{phyner} prefix <new_prefix>`\n"
+    description += "No Help\n\n"
 
-    description += f"`@{phyner} watch webhook [webhook_id]`\n\n"
+    description += f"`@{phyner} watch webhook [webhook_id]`\n"
+    description += f"`@{phyner} watch emoji <emoji> <message_id> [#channel] <action_id>`\n"
+    description += "No Help\n\n"
 
-    description += f"`@{phyner} role <add/remove> <role_id/@Role> [role_id/@Role ...] <user_id/@user/User#0000> [user_id/@user/User#0000 ...]`\n\n"
+    description += f"`@{phyner} role <add/remove> <role_id/@Role> [role_id/@Role ...] <user_id/@user/User#0000> [user_id/@user/User#0000 ...]`\n"
+    description += "No Error Messages, No Help\n\n"
+
+    description += f"`@{phyner} copy <message_id> [#message_location] [#destination]`\n"
+    description += f"`@{phyner} copy <role_id/@role> [new_role_name]`\n"
+    description += f"`@{phyner} copy <channel_id/#channel> [#destination] [new_channel_name] `\n"
+    description += f"`@{phyner} copy <category_id> [new_category_name]`\n"
+    description += "No Error Messages, No Help\n\n"
 
     embed = await Support.simple_bot_response(message.channel,
         title="General Help (WIP)", # TODO Help.help()

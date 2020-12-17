@@ -56,6 +56,35 @@ remove_aliases = ["remove", "-"]
 
 ''' SUPPORT FUNCTIONS '''
 
+def messageOrMsg(msg):  
+    """
+        figure out if bot msg or user message, once again got tired of typing this :D
+        returns embed, message, msg
+    """
+
+    embed = msg.embeds[0] if msg and msg.embeds else discord.Embed()
+    message = None if msg and msg.author.id in [ids.phyner_id] else msg  # is user message
+    msg = None if message else msg  # is bot msg
+
+    return embed, message, msg
+# end messageOrMsg
+
+def get_phyner_from_channel(channel):
+    if channel.type != discord.ChannelType.private:
+        return [member for member in channel.members if member.id == ids.phyner_id][0]
+    else:
+        return channel.me
+# end get_phyner_member_from_channel
+
+
+def get_id_from_str(str):
+    """
+        returns list
+    """
+    return re.findall(r"(\d{17,})", str)
+# end get_id_from_str
+
+
 def get_args_from_content(content):
     content = re.sub(r"[“”]", '"', content)
     content = re.sub(r"[\n\t\r]", ' ', content)
@@ -67,6 +96,8 @@ def get_args_from_content(content):
     return args, content
 # end get_args_from_content
 
+
+## embed stuff ##
 
 def confirm_input_last_field(embed):
     embed = embed.to_dict()
@@ -113,6 +144,8 @@ def quote(s):
 # end quote
 
 
+## clearing reactions ##
+
 async def clear_reactions(msg):
     try:
         await msg.clear_reactions()
@@ -147,14 +180,6 @@ def get_member_perms(channel, member):
     author_perms = SimpleNamespace(**author_perms) # converts dict back to class
     return author_perms
 # end get_member_perms
-
-
-def get_phyner_from_channel(channel):
-    if channel.type != discord.ChannelType.private:
-        return [member for member in channel.members if member.id == ids.phyner_id][0]
-    else:
-        return channel.me
-# end get_phyner_member_from_channel
 
 
 async def simple_bot_response(channel, title=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
