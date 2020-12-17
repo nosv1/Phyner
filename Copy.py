@@ -26,6 +26,7 @@ async def main(message, args, author_perms):
         @Phyner copy <role_id/@role> [new_role_name]
         @Phyenr copy <channel_id/#channel> [#destination] [new_channel_name] 
         @Phyner copy <category_id> [new_category_name]
+        @Phyner replace <message_id> [#message_location] <replacement_message_id> [#replacement_message_location]
     """
 
     # TODO copy help

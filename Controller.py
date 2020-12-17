@@ -107,6 +107,7 @@ async def on_message(message):
     global restart_time
     global guild_prefixes
     global phyner_webhook_ids
+    global phyner_reaction_adds
 
     if not connected: # we aint ready yet
         return

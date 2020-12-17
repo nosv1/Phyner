@@ -930,7 +930,7 @@ async def perform_action(client, message, user, event):
         if event.guild_id == TemplarLeagues.templar_leagues_id:
             if event.condition.id == "some_message_id":
                 if event.object.id == "some_emoji":
-                    await TemplarLeagues.series_report(channel, user)
+                    await TemplarLeagues.series_report(client, channel, user)
                     remove_reaction = True
 
 
@@ -955,13 +955,20 @@ async def create_private_text_channel(client, message, user, event):
         send_messages=True
     )
 
-    channel = await message.guild.create_text_channel(
-        name=f"{source.name} {user.display_name} {user.discriminator}",
-        overwrites=overwrites,
-        category=source.category if type(source) == discord.channel.TextChannel else source,
-        position=sys.maxsize,
-    )
+    name = f"{source.name} {user.display_name} {user.discriminator}"
+    exists = [c for c in message.guild.channels if c.name == name]
+    
+    if not exists:
+        channel = await message.guild.create_text_channel(
+            name=f"{source.name} {user.display_name} {user.discriminator}",
+            overwrites=overwrites,
+            category=source.category if type(source) == discord.channel.TextChannel else source,
+            position=sys.maxsize,
+        )
 
-    log("reaction_add event", f"private text channel created {event.to_string()}")
-    return channel
+        log("reaction_add event", f"private text channel created {event.to_string()}")
+        return channel
+
+    else:
+        log('reaction add event', "failed to create channel, name already exists ;)")
 # end create_private_text_channel
