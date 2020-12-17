@@ -105,7 +105,7 @@ def find_value_in_range(r, value, lower=False):
 def load_embed_from_Embeds(guild_id, channel_id, message_id):
 
     embed = None
-    embed_file_name = f"{hex(guild_id)}-{hex(channel_id)}-{hex(message_id)}"
+    embed_file_name = f"{guild_id}-{channel_id}-{message_id}"
     with open(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{embed_file_name}.json", "r") as embed_file:
         embed = discord.Embed().from_dict(json.load(embed_file))
 
