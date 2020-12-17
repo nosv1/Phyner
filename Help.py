@@ -86,8 +86,8 @@ async def help(message):
     description += f"`@{phyner} ? <search_words>`\n\n"
 
     description += f"`@{phyner} say <message>`\n"
-    description += f"`@{phyner} embed create\n"
-    description += f"`@{phyner} embed edit/save <message_id> [#channel]`\n\n"
+    description += f"`@{phyner} embed create`\n"
+    description += f"`@{phyner} embed edit/save <message_id> [#channel]`\n"
     description += "No Help\n\n"
 
     description += f"`@{phyner} delete <count> [#channel]`\n"

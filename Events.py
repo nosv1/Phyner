@@ -171,11 +171,7 @@ async def main(client, message, args, author_perms):
                     return await watch_emoji(client, message, args[2:])
 
             except:
-                phyner = Support.get_phyner_from_channel(message.channel)
-                await simple_bot_response(message.channel,
-                    description=f"**The previous action caused an error, and {phyner.mention} Support has been notified. Sorry for the inconvenience. See `@{phyner} bug help` for options about reporting issues and getting help.**"
-                )
-                await Logger.log_error(client, traceback.format_exc())
+                await Support.previous_action_error(client, message.channel)
 
 
         elif args[0] in watching_aliases:
@@ -927,6 +923,7 @@ async def watch_webhook(client, message, args):
 
 async def perform_action(client, message, user, event):
 
+    remove_reaction = False
     if event.action.action == "create_private_text_channel":
         channel = await create_private_text_channel(client, message, user, event)
 
@@ -934,8 +931,10 @@ async def perform_action(client, message, user, event):
             if event.condition.id == "some_message_id":
                 if event.object.id == "some_emoji":
                     await TemplarLeagues.series_report(channel, user)
+                    remove_reaction = True
 
-    
+
+    return remove_reaction
 # end perform_action
 
 
@@ -959,7 +958,7 @@ async def create_private_text_channel(client, message, user, event):
     channel = await message.guild.create_text_channel(
         name=f"{user.display_name} {user.discriminator}",
         overwrites=overwrites,
-        category=source.category if type(source) == type(message.channel) else source,
+        category=source.category if type(source) == discord.channel.TextChannel else source,
         position=sys.maxsize,
     )
 

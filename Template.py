@@ -1,9 +1,12 @@
 ''' IMPORTS '''
 
+import asyncio
 import discord
+import traceback
 
 
 import Database
+import Logger
 from Logger import log
 import Support
 from Support import simple_bot_response

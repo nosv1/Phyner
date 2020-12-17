@@ -47,22 +47,22 @@ embed_attrs = [
 ]
 
 embed_aliases = ["embed"]
-# TODO embed colors
-''' 
+
 embed_colors = {
     ".phyner_grey" : Support.colors.phyner_grey,
-    ".white" : ,
-    ".black" : ,
-    ".grey" : ,
-    ".red" : ,
-    ".blue" : ,
-    ".green" : ,
-    ".orange" : ,
-    ".pink" : ,
-    ".brown" : ,
-    ".purple" : ,
-    ".yellow" : ,
-}'''
+    ".phyner_gray" : Support.colors.phyner_grey,
+    ".white" : 0xffffff,
+    ".black" : 0x1, # 1 and not 0 cause fucks up if statments
+    ".grey" : 0x808080,
+    ".pink" : 0xffc0cb,
+    ".red" : 0xff0000,
+    ".orange" : 0xFFA500,
+    ".yellow" : 0xFFFF00,
+    ".green" : 0x008000,
+    ".blue" : 0x0000ff,
+    ".purple" : 0x800080,
+    ".brown" : 0x964B00,
+}
 
 
 ''' FUNCTIONS '''
@@ -118,7 +118,7 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
     {.attr} {attr_value}`
     """
 
-    content = message.content.replace("\\s", emojis.space_char)
+    content = message.content.replace("\\s", emojis.space_char).replace("\\b", emojis.bullet)
     msg_content = emojis.space_char
     attrs = []
 
@@ -175,11 +175,14 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
         elif attr in [".color", ".colour"]:
             try:
                 role_color = [r.color for r in roles if str(r.id) == value] # get role color
-                color = abs(int(value.replace("#", ""), 16) + 1) if not role_color and value else role_color
+                color = embed_colors[[c for c in embed_colors if c == value.strip()][0]] if any(c == value.strip() for c in embed_colors) else role_color
+                color = abs(int(value.replace("#", ""), 16)) if not color and value else color # use given hex else role_color
                 color = role_color[0].value if role_color else (color if color else value)
 
-                if not value or color <= 16777216: # really it's supposed to be < 16777215, but fixing that below
-                    embed.color = abs(color + (1 if color == 0 else -2)) if str(color).isnumeric() else value
+                color = (16777214 if color >= 16777215 else 1 if color <= 0 else color) if color else color
+
+                if not value or color:
+                    embed.color = color if color else value
 
                 else:
                     errors.append([f"**Attribute:** `{attr}`", f"**Value:** `{value}` is not a role id or is too large of a hex value"])
@@ -416,6 +419,7 @@ async def edit_user_embed(client, message, args):
             embed=embed if embed else discord.Embed()
         )
         await msg.edit(content=content, embed=embed)
+        await Support.process_complete_reaction(message)
         
         if errors:
             await send_embed_attr_errors(message, msg_id, errors)
@@ -477,8 +481,12 @@ async def save_embed(message, args): # TODO proper command
         embed = mesge.embeds[0] if mesge.embeds else None
 
         file_name = f"{hex(mesge.guild.id)}-{hex(mesge.channel.id)}-{hex(mesge.id)}"
-        with open(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json", "w+") as embeds:
+        path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json"
+        with open(path, "w+") as embeds:
             json.dump(embed.to_dict(), embeds, indent=4, sort_keys=True)
+
+            await Support.process_complete_reaction(message)
+            Logger.log("embed save", f"embed saved - {path}")
         
 # end save_embed
 

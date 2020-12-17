@@ -1,13 +1,16 @@
 ''' IMPORTS '''
 
-import discord
-from types import SimpleNamespace
+import asyncio
 from bs4 import BeautifulSoup as bsoup
-import requests
+import discord
+from datetime import datetime
+import gspread
+import json
 import re
+import requests
 import sys
 import traceback
-import json
+from types import SimpleNamespace
 
 import os
 from dotenv import load_dotenv
@@ -28,6 +31,9 @@ ids = SimpleNamespace(**{
 
     # guild ids
     'mobot_support_id' : 467239192007671818,
+
+    # channel ids
+    'random_storage' : 649014730622763019,
 })
 
 
@@ -56,6 +62,45 @@ remove_aliases = ["remove", "-"]
 
 
 ''' SUPPORT FUNCTIONS '''
+
+async def save_image_to_random_storage(client, attachment): # FIXME THIS COULD CHANGE IF NEW SERVER!
+    guild = client.get_guild(ids.mobot_support_id)
+    channel = guild.get_channel(ids.random_storage)
+
+    msg = await channel.send(file=await attachment.to_file())
+
+    return msg.attachments[0].url
+# end saveImageReturnURL
+
+
+async def previous_action_error(client, channel):
+    phyner = get_phyner_from_channel(channel)
+    await simple_bot_response(channel,
+        description=f"**The previous action caused an error. {phyner.mention} Support has been notified, and they are very sorry for the inconvenience. See `@{phyner} bug help` for options about reporting issues and getting help.**"
+    )
+    await Logger.log_error(client, traceback.format_exc())
+# end previous_action_error
+
+
+## gspread stuff
+
+def get_g_client():
+    gc = gspread.service_account(filename="Secrets/phyner-a9859c6daae5.json")
+    return gc
+# return gc
+
+def find_value_in_range(r, value, lower=False):
+    """
+        returns index of value
+    """
+
+    for i, c in enumerate(r):
+        if c.value == value or (lower and c.value.lower() == value.lower()):
+            return i
+
+    return -1
+# end find_value_in_range
+
 
 def load_embed_from_Embeds(guild_id, channel_id, message_id):
 
@@ -166,6 +211,7 @@ async def clear_reactions(msg):
 # end clear_reactions
 
 async def remove_reactions(msg, user, reactions):
+    reactions = [reactions] if type(reactions) != list else reactions
     for reaction in reactions:
         try:
             await msg.remove_reaction(reaction, user)
@@ -234,6 +280,12 @@ async def simple_bot_response(channel, author=discord.Embed().Empty, author_icon
     else:
         return embed
 # end botResponse
+
+async def process_complete_reaction(message):
+    await message.add_reaction(emojis.tick_emoji)
+    await asyncio.sleep(3)
+    await remove_reactions(message, get_phyner_from_channel(message.channel), emojis.tick_emoji)
+# end process_complete_reaction
 
 
 def search_github(query):

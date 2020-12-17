@@ -29,7 +29,7 @@ async def test(message, args):
 async def templar_test(message):
     from Servers import TemplarLeagues
 
-    channel = message.guild.get_channel(648401621977399298)
+    channel = message.guild.get_channel(547274914319826944)
     await TemplarLeagues.prepare_series_report_channel(channel, message.author)
 # end templar_test
 
