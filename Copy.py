@@ -46,13 +46,36 @@ async def main(message, args, author_perms):
 async def replace(message, args, author_perms):
 
     mesge_id = Support.get_id_from_str(args[0])
-    mesge_channel = message.channel_mentions[0] if message.channel_mentions else message.channel
+    mesge_id = int(mesge_id[0]) if mesge_id else None
+    mesge_channel = message.channel_mentions[0] if "#" in args[1] else message.channel
 
-    replacement_channel = message.channel_mentions[-1] if message.channel_mentions else message.channel
+    replacement_mesge_id = Support.get_id_from_str(args[2 if "#" in args[1] else 1])
+    replacement_mesge_id = int(replacement_mesge_id[0]) if replacement_mesge_id else None
+    replacement_mesge_channel = message.channel_mentions[-1] if "#" in args[-1] else message.channel
 
 
+    if mesge_id and replacement_mesge_id:
+        try:
+            mesge = await mesge_channel.fetch_message(mesge_id)
+            try:
+                replacement_mesge = await replacement_mesge_channel.fetch_message(replacement_mesge_id)
+            except discord.errors.NotFound:
+                replacement_mesge = None
+        except discord.errors.NotFound:
+            mesge = None
 
+    if mesge and replacement_mesge:
+        await mesge.edit(
+            content=replacement_mesge.content,
+            embed=replacement_mesge.embeds[0] if replacement_mesge else None
+        )
+        await Support.process_complete_reaction(message)
 
+    elif not mesge:
+        log("replace error", "no mesge")
+
+    elif not replacement_mesge:
+        log("replace erorr", "no replacement_mesge")
 # end replace
 
 

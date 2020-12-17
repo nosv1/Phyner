@@ -31,9 +31,10 @@ ids = SimpleNamespace(**{
 
     # guild ids
     'mobot_support_id' : 467239192007671818,
+    'phyner_support_id' : 789181254120505386,
 
     # channel ids
-    'random_storage' : 649014730622763019,
+    'random_storage' : 789218327473160243,
 })
 
 
@@ -64,10 +65,10 @@ remove_aliases = ["remove", "-"]
 ''' SUPPORT FUNCTIONS '''
 
 async def save_image_to_random_storage(client, attachment): # FIXME THIS COULD CHANGE IF NEW SERVER!
-    guild = client.get_guild(ids.mobot_support_id)
+    guild = client.get_guild(ids.phyner_support_id)
     channel = guild.get_channel(ids.random_storage)
 
-    msg = await channel.send(file=await attachment.to_file())
+    msg = await channel.send(file=await attachment.to_file(spoiler=True))
 
     return msg.attachments[0].url
 # end saveImageReturnURL

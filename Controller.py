@@ -155,14 +155,6 @@ async def on_message(message):
 
 
                 ## COMMAND CHECKS ##
-                    
-                # \TODO @phyner todo, encrpyt, and how to intuitiviely remove a todo
-                # TODO Invite Phyner Support
-                # TODO request feature for money
-                # TODO Donations
-                # TODO @Phyner ids
-                # TODO @Phyner replace
-                # TODO @Phyner command create/edit
 
 
                 ## CHECK FOR UPCOMING RESTART ##
@@ -228,7 +220,7 @@ async def on_message(message):
                 
                 ## COPY ##
 
-                elif args[1] in Copy.copy_aliases:
+                elif args[1] in Copy.copy_aliases + Copy.replace_aliases:
                     await Copy.main(message, args[1:], author_perms)
 
                 

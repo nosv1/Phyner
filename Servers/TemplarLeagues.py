@@ -112,7 +112,7 @@ async def series_report(client, message, user):
     embed.add_field(name="**Proof**", value=Support.emojis.space_char, inline=False)
 
     def restart(reason):
-        embed.add_field(name=f"**{reason}**", value=f"To restart, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji}", inline=False)
+        embed.add_field(name=f"**{reason}**", value=f"To restart, go to [this message]({message.jump_url}), then click the {Support.emojis.ok_emoji}", inline=False)
     # end restart
 
 
