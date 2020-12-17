@@ -229,7 +229,7 @@ async def on_message(message):
                 ## COPY ##
 
                 elif args[1] in Copy.copy_aliases:
-                    await Copy.main(message, args, author_perms)
+                    await Copy.main(message, args[1:], author_perms)
 
                 
                 ## CUSTOM COMMANDS ##

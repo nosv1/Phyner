@@ -955,15 +955,15 @@ async def create_private_text_channel(client, message, user, event):
         send_messages=True
     )
 
-    name = f"{source.name} {user.display_name} {user.discriminator}"
+    name = f"{source.name.lower()}-{user.display_name.lower()}-{user.discriminator.lower()}"
     exists = [c for c in message.guild.channels if c.name == name]
-    
+
     if not exists:
         channel = await message.guild.create_text_channel(
-            name=f"{source.name} {user.display_name} {user.discriminator}",
+            name=name,
             overwrites=overwrites,
             category=source.category if type(source) == discord.channel.TextChannel else source,
-            position=sys.maxsize,
+            position=source.category.channels[-1].position + 1,
         )
 
         log("reaction_add event", f"private text channel created {event.to_string()}")

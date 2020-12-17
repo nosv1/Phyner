@@ -31,7 +31,7 @@ spreadsheets = SimpleNamespace(**{
 })
 
 # embeds
-series_report_embed_ids = (467239192007671818, 648401621977399298, 789087942759940096) # change guild id
+series_report_embed_link = "https://discord.com/channels/467239192007671818/648401621977399298/789087942759940096"
 
 aliases = ["", ]
 
@@ -74,7 +74,7 @@ async def on_reaction_add(client, message, user, payload):
 
 async def prepare_series_report_channel(channel, user):
 
-    series_report_embed = Support.load_embed_from_Embeds(*series_report_embed_ids)
+    series_report_embed = Support.load_embed_from_Embeds(series_report_embed_link)
     msg = await channel.send(content=user.mention, embed=series_report_embed)
     await msg.add_reaction(Support.emojis.ok_emoji)
 
@@ -282,7 +282,7 @@ async def series_report(client, message, user):
         ## confirm ##
 
         # prepare to wait 
-        embed.description = f"If the information below look right, click the {Support.emojis.tick_emoji} to submit this match. If there is an error, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji} to restart."
+        embed.description = f"If the information below looks right, click the {Support.emojis.tick_emoji} to submit this match. If there is an error, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji} to restart."
         await msg.edit(embed=embed)
 
         # wait

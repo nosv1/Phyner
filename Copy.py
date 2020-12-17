@@ -29,13 +29,34 @@ async def main(message, args, author_perms):
         @Phyner replace <message_id> [#message_location] <replacement_message_id> [#replacement_message_location]
     """
 
-    # TODO copy help
-    source = await get_copy_source(message, args[2:])
-    if source:
-        await create_copy(*source, author_perms)
+    if args[0] in copy_aliases:
+        # TODO copy help
+        source = await get_copy_source(message, args[1:])
+        if source:
+            await create_copy(*source, author_perms)
+
+    elif args[0] in replace_aliases:
+        await replace(message, args[1:], author_perms)
 
 # end main
 
+
+## RPLACE ##
+
+async def replace(message, args, author_perms):
+
+    mesge_id = Support.get_id_from_str(args[0])
+    mesge_channel = message.channel_mentions[0] if message.channel_mentions else message.channel
+
+    replacement_channel = message.channel_mentions[-1] if message.channel_mentions else message.channel
+
+
+
+
+# end replace
+
+
+## COPY ##
 
 async def get_copy_source(message, args):
     """
