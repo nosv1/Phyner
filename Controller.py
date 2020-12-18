@@ -140,7 +140,7 @@ async def on_message(message):
                         (
                             message.mentions and 
                             message.mentions[0].id == Support.ids.phyner_id and 
-                            str(Support.ids.phyner_support_id) in args[0]
+                            str(Support.ids.phyner_id) in args[0]
                         ) or # @Phyner command
                         mc[:len(str(guild_prefix))+1] == guild_prefix + " " # start of content = guild prefix
                     )
