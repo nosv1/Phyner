@@ -103,23 +103,6 @@ def find_value_in_range(r, value, lower=False):
 # end find_value_in_range
 
 
-def load_embed_from_Embeds(guild_id=None, channel_id=None, message_id=None, link=None):
-    """
-        provide link or guild_id, channel_id, messaage_id
-    """
-    if link:
-        guild_id, channel_id, message_id = tuple(link.split("/")[-3:])
-
-
-    embed = None
-    embed_file_name = f"{guild_id}-{channel_id}-{message_id}"
-    with open(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{embed_file_name}.json", "r") as embed_file:
-        embed = discord.Embed().from_dict(json.load(embed_file))
-
-    return embed
-# end load_embed_from_Embeds
-
-
 def messageOrMsg(msg):  
     """
         figure out if bot msg or user message, once again got tired of typing this :D
@@ -298,10 +281,11 @@ async def simple_bot_response(channel, author=discord.Embed().Empty, author_icon
         return embed
 # end botResponse
 
-async def process_complete_reaction(message):
+async def process_complete_reaction(message, remove=True):
     await message.add_reaction(emojis.tick_emoji)
-    await asyncio.sleep(3)
-    await remove_reactions(message, get_phyner_from_channel(message.channel), emojis.tick_emoji)
+    if remove:
+        await asyncio.sleep(3)
+        await remove_reactions(message, get_phyner_from_channel(message.channel), emojis.tick_emoji)
 # end process_complete_reaction
 
 

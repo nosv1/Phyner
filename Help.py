@@ -1,13 +1,19 @@
 ''' IMPORTS '''
 
-import Support
+import Embeds
 import Logger
+import Support
 
 
 
 ''' CONSTANTS '''
 
-help_aliases = ["help", "h", "?", " ", ""]
+help_aliases = ["help", "h", "?", " ", ""] # these are used for command words' help, not ..p help
+
+# Help Embed Links
+simple_help_link = "https://discord.com/channels/789181254120505386/789566872139726938/789566903605002270"
+general_help_link = "https://discord.com/channels/789181254120505386/789181637748588544/789187242006020126"
+ids_help_link = "https://discord.com/channels/789181254120505386/789523955751976970/789565197312065546"
 
 
 
@@ -66,33 +72,18 @@ async def search(message, args): # TODO copy paste embed contents to the wiki, i
 
 ''' HELP EMBEDS '''
 
-async def help(message):
+async def send_help_embed(channel, embed_link):
     """
-        Help Message
-    """
-
-    embed = Support.load_embed_from_Embeds(link="https://discord.com/channels/789181254120505386/789181637748588544/789187242006020126")
-    await message.channel.send(embed=embed)
-
-    Logger.log("Bot reponse", "Help Message")
-# end help
-
-async def simple_help(message):
-    """
-        simple help message
+        Help embeds are saved in /Embeds as well as in Phyner Support's HELP EMBEDS category
+        The links are saved in the global variables at the top of this channel and sent using the saved versions in /Embeds
     """
 
-    phyner = Support.get_phyner_from_channel(message.channel)
+    embed = Embeds.load_embed_from_Embeds(link=embed_link)
+
+    phyner = Support.get_phyner_from_channel(channel)
+    embed.color = phyner.roles[-1].color if phyner.roles else Support.colors.phyner_grey
     
-    description = f"`@{phyner} help` - general help\n"
-    description += f"`@{phyner} <command> help` - specific help\n"
-    description += f"`@{phyner} ? <search_words>` - search help\n"
+    await channel.send(embed=embed)
 
-    await Support.simple_bot_response(message.channel, 
-        title="No Comamnd Recognized",
-        description=description,
-        reply_message=message
-    )
-    
-    Logger.log("Bot reponse", "Simple Help Message")
-# end simple_help
+    Logger.log("Help Embed", embed_link)
+# end send_help_embed

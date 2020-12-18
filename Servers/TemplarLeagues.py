@@ -74,7 +74,7 @@ async def on_reaction_add(client, message, user, payload):
 
 async def prepare_series_report_channel(channel, user):
 
-    series_report_embed = Support.load_embed_from_Embeds(series_report_embed_link)
+    series_report_embed = Embeds.load_embed_from_Embeds(series_report_embed_link)
     msg = await channel.send(content=user.mention, embed=series_report_embed)
     await msg.add_reaction(Support.emojis.ok_emoji)
 

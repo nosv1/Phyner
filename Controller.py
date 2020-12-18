@@ -209,7 +209,10 @@ async def on_message(message):
                     await Help.search(message, args)
 
                 elif args[1] in ["help", "h"]:
-                    await Help.help(message)
+                    await Help.send_help_embed(message.channel, Help.general_help_link)
+
+                elif args[1] in ["ids", "id"]:
+                    await Help.send_help_embed(message.channel, Help.ids_help_link)
 
                 elif args[1] == "ping":
                     await General.send_ping(client, message.channel)
@@ -267,7 +270,7 @@ async def on_message(message):
 
 
                 else:
-                    await Help.simple_help(message)
+                    await Help.send_help_embed(message.channel, Help.simple_help_link)
 
                 ''' END COMMAND CHECKS '''
 

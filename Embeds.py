@@ -14,7 +14,7 @@ load_dotenv()
 
 
 from Guilds import get_guild_prefix
-from Help import help_aliases
+import Help
 import Logger
 import Support
 from Support import emojis
@@ -99,7 +99,7 @@ class SavedEmbed:
 
 async def main(client, message, args, author_perms):
 
-    if args[2] in help_aliases: # @Phyner <command> or @Phyner command help
+    if args[2] in Help.help_aliases: # @Phyner <command> or @Phyner command help
         await send_embed_help(message)
 
 
@@ -138,7 +138,7 @@ def get_saved_embeds():
     save_embeds = []
     for embed_file in embed_files:
         guild_id, channel_id, message_id = tuple(re.findall(r"\d+", str(embed_file)))
-        save_embeds.append(Support.load_embed_from_Embeds(guild_id, channel_id, message_id))
+        save_embeds.append(load_embed_from_Embeds(guild_id, channel_id, message_id))
 
     return save_embeds
 # end get_saved_embeds
@@ -148,8 +148,24 @@ async def generate_saved_embeds_display(saved_embeds, guild): # TODO view embeds
     embed.title = f"{guild.name}'s Saved Embeds"
     embed.description = "Click the link to go to the saved embed (assuming it still exists).\n"
     embed.description += f"`{get_guild_prefix(guild.id)} embed send <saved_embed_id> [#destination]`"
-
 # end generate_saved_embeds_display
+
+
+def load_embed_from_Embeds(guild_id=None, channel_id=None, message_id=None, link=None):
+    """
+        provide link or guild_id, channel_id, messaage_id
+    """
+    if link:
+        guild_id, channel_id, message_id = tuple(link.split("/")[-3:])
+
+
+    embed = None
+    embed_file_name = f"{guild_id}-{channel_id}-{message_id}"
+    with open(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{embed_file_name}.json", "r") as embed_file:
+        embed = discord.Embed().from_dict(json.load(embed_file))
+
+    return embed
+# end load_embed_from_Embeds
 
 
 
@@ -531,9 +547,12 @@ async def save_embed(message, args): # TODO proper command
 
     mesge_id = Support.get_id_from_str(message.content)
     if mesge_id:
-        mesge = await channel.fetch_message(mesge_id[0])
+        try:
+            mesge = await channel.fetch_message(mesge_id[0])
+        except discord.errors.NotFound:
+            Logger.log("embed save", "mesge not found") # TODO embed save error
 
-        embed = mesge.embeds[0] if mesge.embeds else None
+        embed = mesge.embeds[0] if mesge and mesge.embeds else None
         if embed:
             embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed)
             embed = embed.save_embed()

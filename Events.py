@@ -440,7 +440,7 @@ async def watch_emoji(client, message, args):
 
     # identify message id
 
-    channel = message.channel_mentions[0] if message.channel_mentions else message.channel # BUG
+    channel = message.channel_mentions[0] if message.channel_mentions else message.channel 
     mesge_id = None
     mesge = None
     while not mesge:
