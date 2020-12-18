@@ -110,9 +110,11 @@ async def series_report(client, message, user):
     embed.add_field(name="**Home Team Wins**", value=Support.emojis.space_char, inline=True)
     embed.add_field(name="**Away Team Wins**", value=Support.emojis.space_char, inline=True)
     embed.add_field(name="**Proof**", value=Support.emojis.space_char, inline=False)
+    embed.add_field(name="**Instruction**", value=Support.emojis.space_char, inline=False)
+    instruction_field_name = "**Instruction**"
 
     def restart(reason):
-        embed.add_field(name=f"**{reason}**", value=f"To restart, go to [this message]({message.jump_url}), then click the {Support.emojis.ok_emoji}", inline=False)
+        embed.add_field(name=f"**{reason.upper()}**", value=f"To restart, go to [this message]({message.jump_url}), then click the {Support.emojis.ok_emoji}", inline=False)
     # end restart
 
 
@@ -123,7 +125,8 @@ async def series_report(client, message, user):
 
     msg = None
     try:
-        ## get Match ID
+        
+        ''' GET MATCH ID '''
 
         fixtures_template_sheet = [ws for ws in worksheets if ws.id == spreadsheets.season_6_league_database.fixtures_template][0]
 
@@ -132,7 +135,8 @@ async def series_report(client, message, user):
         while not match_id:
 
             # prepare to wait
-            embed.description = f"Input the **Match ID** of the match you are submitting.\n{Support.emojis.space_char}"
+            value = f"Input the **Match ID** of the match you are submitting."
+            Support.edit_field_value_with_name(embed, instruction_field_name, value)
             if msg:
                 await msg.edit(embed=embed) 
 
@@ -179,15 +183,16 @@ async def series_report(client, message, user):
         embed = discord.Embed().from_dict(embed)
 
 
-        ## get home team wins ##
-        ## get away team wins ##
+        ''' GET HOME TEAM WINS '''
+        ''' GET AWAY TEAM WINS '''
 
         home_team_wins = -1
         away_team_wins = -1
         while home_team_wins < 0 or away_team_wins < 0:
 
             # prepare to wait
-            embed.description = f"Input the number of wins for **{home_team if home_team_wins < 0 else away_team}**.\n{Support.emojis.space_char}"
+            value = f"Input the number of wins for **{home_team if home_team_wins < 0 else away_team}**."
+            embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
             await msg.edit(embed=embed)
 
             # wait
@@ -228,7 +233,7 @@ async def series_report(client, message, user):
         # end reaction_check
 
 
-        ## get proof ##
+        ''' GET PROOF '''
 
         stop = False
         phyner_tick_added = False
@@ -237,8 +242,11 @@ async def series_report(client, message, user):
         while not stop:
 
             # prepare to wait
-            embed.description = f"Attach all forms of proof you have (links or screenshots). All that is needed, though, is one https://ballchasing.com/group/... link. When you have sent all of your proof, click the {Support.emojis.tick_emoji} to continue - you have 5 minutes before the submission times out.\n{Support.emojis.space_char}"
+            value = f"Attach all forms of proof you have (links or screenshots). All that is needed, though, is one https://ballchasing.com/group/... link. When you have sent all of your proof, click the {Support.emojis.tick_emoji} to continue - you have 5 minutes before the submission times out."
+            embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
+
             await msg.edit(embed=embed)
+
             if not phyner_tick_added:
                 await msg.add_reaction(Support.emojis.tick_emoji)
                 phyner_tick_added = True
@@ -268,7 +276,8 @@ async def series_report(client, message, user):
 
             if not stop: # not satisfied
                 embed.set_footer(text="No ballchasing link provided. Must have at least one link per game otherwise. ")
-                await Support.remove_reactions(msg, user, Support.emojis.tick_emoji)
+
+            await Support.remove_reactions(msg, user, Support.emojis.tick_emoji)
 
             # add proof to embed
             embed = embed.to_dict()
@@ -279,10 +288,11 @@ async def series_report(client, message, user):
         # end while
 
 
-        ## confirm ##
+        ''' CONFIRM '''
 
         # prepare to wait 
-        embed.description = f"If the information below looks right, click the {Support.emojis.tick_emoji} to submit this match. If there is an error, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji} to restart."
+        value = f"If the information below looks right, click the {Support.emojis.tick_emoji} to submit this match. If there is an error, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji} to restart."
+        embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
         await msg.edit(embed=embed)
 
         # wait
@@ -291,12 +301,6 @@ async def series_report(client, message, user):
         # tease user
         embed.set_footer(text="Submitting...")
         await msg.edit(embed=embed)
-
-
-
-
-
-
 
 
     except asyncio.TimeoutError:

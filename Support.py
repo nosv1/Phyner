@@ -158,6 +158,16 @@ def get_args_from_content(content):
 
 ## embed stuff ##
 
+def edit_field_value_with_name(embed, name, value):
+    embed = embed.to_dict()
+    for i in range(len(embed["fields"])):
+        if name in embed["fields"][i]["name"]:
+            embed["fields"][i]["value"] = value
+            break
+    embed = discord.Embed().from_dict(embed)
+    return embed
+# end edit_field_value_with_name
+
 def confirm_input_last_field(embed):
     embed = embed.to_dict()
     field_footer = embed["fields"][-1]["value"]

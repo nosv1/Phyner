@@ -276,7 +276,7 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
                 fields[field_index]['value'] = value
 
             elif '_inline' in attr:
-                fields[field_index]['inline'] = value.strip() in ['True', 'true', '1']                
+                fields[field_index]['inline'] = value.strip() in ['True', 'true', '1']
 
 
         ### FOOTER ###
@@ -324,8 +324,9 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
     for i, field_index in enumerate(field_indexes):
         field = fields[field_index]
         if field['name'] or field['value']: # both not Embed.Empty
-            fields[field_index]['name'] = field['name'] if field['name'] else emojis.space_char
-            fields[field_index]['value'] = field['value'] if field['value'] else emojis.space_char
+
+            fields[field_index]['name'] = field['name'] if field['name'] and field['name'].strip() else emojis.space_char
+            fields[field_index]['value'] = field['value'] if field['value'] and field['value'].strip() else emojis.space_char
             embed['fields'].append(field)
 
     embed = discord.Embed().from_dict(embed)
