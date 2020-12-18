@@ -1,21 +1,23 @@
 ''' IMPORTS '''
 
-import discord
 import asyncio
-import traceback
-import re
-import validators
+import discord
 import json
+import pathlib
+import re
+import traceback
+import validators
 
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
 
+from Guilds import get_guild_prefix
+from Help import help_aliases
 import Logger
 import Support
 from Support import emojis
-from Help import help_aliases
 
 
 
@@ -65,6 +67,34 @@ embed_colors = {
 }
 
 
+''' CLASS '''
+
+class SavedEmbed:
+    """
+        embed should be discord.Embed()
+    """
+    def __init__(self, guild_id, channel_id, message_id, embed, path=None):
+        self.guild_id = guild_id
+        self.channel_id = channel_id
+        self.message_id = message_id
+        self.embed = embed # should be discord.Embed() by now
+        self.path = path
+    # end __init__
+
+
+    def save_embed(self):
+        file_name = f"{self.guild_id}-{self.channel_id}-{self.message_id}"
+        self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json"
+
+        with open(self.path, "w+") as embeds:
+            json.dump(self.embed.to_dict(), embeds, indent=4, sort_keys=True)
+
+        return self
+    # send save_embed
+# end SavedEmbed
+
+
+
 ''' FUNCTIONS '''
 
 async def main(client, message, args, author_perms):
@@ -96,6 +126,30 @@ async def main(client, message, args, author_perms):
 
     return
 # end main
+
+
+
+## SAVED EMBEDS ##
+
+def get_saved_embeds():
+    embeds_folder = pathlib.Path(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}")
+    embed_files = sorted(embeds_folder.iterdir(), key=os.path.getctime)
+
+    save_embeds = []
+    for embed_file in embed_files:
+        guild_id, channel_id, message_id = tuple(re.findall(r"\d+", str(embed_file)))
+        save_embeds.append(Support.load_embed_from_Embeds(guild_id, channel_id, message_id))
+
+    return save_embeds
+# end get_saved_embeds
+
+async def generate_saved_embeds_display(saved_embeds, guild): # TODO view embeds and send them!
+    embed = discord.Embed()
+    embed.title = f"{guild.name}'s Saved Embeds"
+    embed.description = "Click the link to go to the saved embed (assuming it still exists).\n"
+    embed.description += f"`{get_guild_prefix(guild.id)} embed send <saved_embed_id> [#destination]`"
+
+# end generate_saved_embeds_display
 
 
 
@@ -480,15 +534,18 @@ async def save_embed(message, args): # TODO proper command
         mesge = await channel.fetch_message(mesge_id[0])
 
         embed = mesge.embeds[0] if mesge.embeds else None
+        if embed:
+            embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed)
+            embed = embed.save_embed()
 
-        file_name = f"{mesge.guild.id if mesge.guild.id else message.author.id}-{mesge.channel.id}-{mesge.id}"
-        path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json"
-        with open(path, "w+") as embeds:
-            json.dump(embed.to_dict(), embeds, indent=4, sort_keys=True)
+            await Support.process_complete_reaction(message)
+            Logger.log("embed save", f"embed saved - {embed.path}")
 
-        await Support.process_complete_reaction(message)
-        Logger.log("embed save", f"embed saved - {path}")
-        
+        else:
+            Logger.log("embed save error", "embed does not exist at this location") # TODO embed save error
+
+    else:
+        Logger.log("embed save error", "no message id given") # TODO embed save error 
 # end save_embed
 
 

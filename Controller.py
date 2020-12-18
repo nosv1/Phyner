@@ -21,7 +21,7 @@ import Copy
 import CustomCommands
 import Database
 import Delete
-import Embed
+import Embeds
 import Events
 import General
 import Guilds
@@ -236,8 +236,8 @@ async def on_message(message):
 
                 ## EMBED ##
 
-                elif args[1] in Embed.embed_aliases:
-                    await Embed.main(client, message, args, author_perms)
+                elif args[1] in Embeds.embed_aliases:
+                    await Embeds.main(client, message, args, author_perms)
 
 
 

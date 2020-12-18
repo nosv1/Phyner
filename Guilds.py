@@ -100,6 +100,11 @@ def get_phyner_guild(guild_id):
     return phyner_guild
 # end get_phyner_guild
 
+def get_guild_prefix(guild_id):
+    phyner_guild = get_phyner_guild(guild_id)
+    return phyner_guild.prefix if phyner_guild else "@Phyner#2797"
+# end get_guild_prefix
+
 
 def get_guild_prefixes():
     """
