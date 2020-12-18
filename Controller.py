@@ -137,7 +137,11 @@ async def on_message(message):
                 (
                     host == "PI4" and # is PI4
                     (
-                        (message.mentions and message.mentions[0].id == Support.ids.phyner_id) or # @Phyner command
+                        (
+                            message.mentions and 
+                            message.mentions[0].id == Support.ids.phyner_id and 
+                            str(Support.ids.phyner_support_id) in args[0]
+                        ) or # @Phyner command
                         mc[:len(str(guild_prefix))+1] == guild_prefix + " " # start of content = guild prefix
                     )
                 ) or (

@@ -13,7 +13,7 @@ help_aliases = ["help", "h", "?", " ", ""]
 
 ''' FUNCTIONS '''
 
-async def search(message, args):
+async def search(message, args): # TODO copy paste embed contents to the wiki, instead of rewriting everything
     """
         Sending a git hub search result
         https://github.com/nosv1/Phyner/search?q=&type=wikis
