@@ -123,7 +123,7 @@ async def main(client, message, args, author_perms):
 
     elif args[2] == "save":
 
-        await save_embed(client, message, args[3:])
+        await save_embed(client, message, args[3:-1])
 
     return
 # end main
@@ -570,7 +570,7 @@ async def save_embed(client, message, args): # TODO proper command
 
         embed = mesge.embeds[0] if mesge.embeds else None
         if embed:
-            name = "_".join(args[:-1])
+            name = "_".join(args)
             embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed, name=name)
             embed = embed.save_embed()
 
