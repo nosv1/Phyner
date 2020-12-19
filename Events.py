@@ -171,14 +171,14 @@ async def main(client, message, args, author_perms):
                     return await watch_emoji(client, message, args[2:])
 
             except:
-                await Support.previous_action_error(client, message.channel)
+                await Support.previous_action_error(client, message)
 
 
         elif args[0] in watching_aliases:
             log('events', 'display events') # TODO display events
 
     else:
-        await Support.previous_action_error(client, message.channel)
+        await Support.previous_action_error(client, message)
         log("Events", "missig perms") # TODO missing perms
 # end main
 

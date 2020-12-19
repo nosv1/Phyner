@@ -122,7 +122,7 @@ async def main(client, message, args, author_perms):
 
     elif args[2] == "save":
 
-        await save_embed(message, args[3:])
+        await save_embed(client, message, args[3:])
 
     return
 # end main
@@ -544,7 +544,7 @@ async def edit_user_embed(client, message, args):
 # end edit_user_embed
 
 
-async def save_embed(message, args): # TODO proper command
+async def save_embed(client, message, args): # TODO proper command
     channel = message.channel_mentions[0] if message.channel_mentions else message.channel
 
     mesge_id = Support.get_id_from_str(message.content)
@@ -552,7 +552,7 @@ async def save_embed(message, args): # TODO proper command
         try:
             mesge = await channel.fetch_message(mesge_id[0])
         except discord.errors.NotFound:
-            await Support.previous_action_error(client, message.channel)
+            await Support.previous_action_error(client, message)
             Logger.log("embed save", "mesge not found") # TODO embed save error
             return
 
@@ -565,12 +565,12 @@ async def save_embed(message, args): # TODO proper command
             Logger.log("embed save", f"embed saved - {embed.path}")
 
         else:
-            await Support.previous_action_error(client, message.channel)
+            await Support.previous_action_error(client, message)
             Logger.log("embed save error", "embed does not exist at this location") # TODO embed save error
             return
 
     else:
-        await Support.previous_action_error(client, message.channel)
+        await Support.previous_action_error(client, message)
         Logger.log("embed save error", "no message id given") # TODO embed save error 
         return
 # end save_embed

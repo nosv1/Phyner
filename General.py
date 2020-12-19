@@ -22,31 +22,63 @@ edit_aliases = ["edit"]
 
 async def say(client, message, args, is_edit=False):
     """
-        say and edit command
+        ..p say [#channel] [markdown] content
+        ..p edit <msg_id> [#channel] [markdown] content
     """
     
-    markdown = "markdown" in args[1]
+    # get the channel
+    channel = Support.get_id_from_str(args[1 if is_edit else 0]) if "#" in args[1 if is_edit else 0] else []
+    channel = int(channel[0]) if channel and len(channel) == 1 else message.channel
+    if channel != message.channel: # channel may be given
 
+        channel = [c for c in message.guild.channels if c.id == channel]
+        if channel: # channel given
+            channel = channel[0]
+            del args[1 if is_edit else 0]
+
+        else: # channel not given, or not found
+            await Support.previous_action_error(client, message)
+            log("say/edit error", "given channel not found")
+            return
+
+
+    # find a msg to edit
     msg = None
     if is_edit:
-        del args[0] # deletes the edit bit in ..p edit msg_id <content>
-
         msg_id = Support.get_id_from_str(args[0])
         msg_id = int(msg_id[0]) if msg_id else None
+        del args[0]
 
         try:
-            msg = await message.channel.fetch_message(msg_id)
+            msg = await channel.fetch_message(msg_id)
 
         except discord.errors.NotFound:
-            await Support.previous_action_error(client, message.channel)
+            await Support.previous_action_error(client, message)
             log("edit msg error", "msg not found")
+            return
 
-    content = message.content[message.content.index(args[0])+len(args[0]):]
-    content = content if len(content.strip()) > 0 else Support.emojis.space_char
-    content = f"```{content}```" if markdown else content
 
-    await msg.edit(content=content) if msg else await message.channel.send(content=content)
-    log("edit", "edit command") if msg else log("say", 'say command')
+    # markdown?
+    markdown = "markdown" in args[0]
+    if markdown:
+        del args[0]
+
+
+    # send it
+    if args[0].strip(): # content left over
+        content = message.content[message.content.index(args[0]):]
+        content = content[len(channel.mention):] if args[0] == channel.mention else content
+        content = f"```{content}```" if markdown else content
+
+        await msg.edit(content=content) if msg else await channel.send(content=content)
+        if is_edit:
+            await Support.process_complete_reaction(message)
+        log("edit", "edit command") if msg else log("say", 'say command')
+
+    else: # we aint tryna edit a blank message
+        await Support.process_complete_reaction(message, rejected=True)
+        log("edit", "edit command rejected") if msg else log("say", 'say command rejected')
+
 # end say
 
 

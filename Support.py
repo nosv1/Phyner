@@ -74,12 +74,39 @@ async def save_image_to_random_storage(client, attachment): # FIXME THIS COULD C
 # end saveImageReturnURL
 
 
-async def previous_action_error(client, channel):
-    phyner = get_phyner_from_channel(channel)
-    await simple_bot_response(channel,
-        description=f"**The previous action caused an error. {phyner.mention} Support has been notified, and they are very sorry for the inconvenience. See `@{phyner} bug help` for options about reporting issues and getting help.**"
+async def previous_action_error(client, message):
+    phyner = get_phyner_from_channel(message.channel)
+
+    description = f"**The previous action caused an error. {phyner.mention} Support has been notified, and they are very sorry for the inconvenience.**\n\n"
+    description += f"If you just inputted a command, double check your input, and see the `@{phyner} <your_command> help` message. Also feel free to check `@{phyner} bug help` for other options about reporting issues and getting help."
+
+    embed = await simple_bot_response(message.channel,
+        description=description,
+        send=False
     )
+    embed.add_field(name=emojis.space_char, value=f"{emojis.x_emoji} to dismiss")
+
+    msg = await message.reply(embed=embed)
+    await msg.add_reaction(emojis.x_emoji)
+
     await Logger.log_error(client, traceback.format_exc())
+
+    def reaction_check(reaction, r_user):
+        return (
+            reaction.message == msg and
+            r_user.id != client.user.id and
+            str(reaction.emoji) in [emojis.x_emoji]
+        )
+    # end reaction_check
+
+    try:
+        reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=90)
+        await msg.delete()
+
+    except asyncio.TimeoutError:
+        embed = delete_last_field(embed)
+        await msg.edit(embed=embed)
+        await remove_reactions(msg, client.user, emojis.x_emoji)
 # end previous_action_error
 
 
@@ -281,8 +308,8 @@ async def simple_bot_response(channel, author=discord.Embed().Empty, author_icon
         return embed
 # end botResponse
 
-async def process_complete_reaction(message, remove=True):
-    await message.add_reaction(emojis.tick_emoji)
+async def process_complete_reaction(message, remove=True, rejected=False):
+    await message.add_reaction(emojis.tick_emoji if not rejected else emojis.x_emoji)
     if remove:
         await asyncio.sleep(3)
         await remove_reactions(message, get_phyner_from_channel(message.channel), emojis.tick_emoji)

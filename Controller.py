@@ -209,13 +209,13 @@ async def on_message(message):
                     await Help.search(message, args)
 
                 elif args[1] in ["help", "h"]:
-                    await Help.send_help_embed(message.channel, Help.general_help_link)
+                    await Help.send_help_embed(message, Help.general_help_link)
 
                 elif args[1] in ["commands", "cmds"]:
-                    await Help.send_help_embed(message.channel, Help.command_list_link)
+                    await Help.send_help_embed(message, Help.command_list_link)
 
                 elif args[1] in ["ids", "id"]:
-                    await Help.send_help_embed(message.channel, Help.ids_help_link)
+                    await Help.send_help_embed(message, Help.ids_help_link)
 
                 elif args[1] == "ping":
                     await General.send_ping(client, message.channel)
@@ -224,10 +224,10 @@ async def on_message(message):
                     await Delete.main(client, message, args, author_perms)
 
                 elif args[1] in General.say_aliases:
-                    await General.say(client, message, args[1:])
+                    await General.say(client, message, args[2:])
 
                 elif args[1] in General.edit_aliases:
-                    await General.say(client, message, args[1:], is_edit=True)
+                    await General.say(client, message, args[2:], is_edit=True)
 
 
                 
@@ -276,7 +276,7 @@ async def on_message(message):
 
 
                 else:
-                    await Help.send_help_embed(message.channel, Help.simple_help_link)
+                    await Help.send_help_embed(message, Help.simple_help_link)
 
                 ''' END COMMAND CHECKS '''
 

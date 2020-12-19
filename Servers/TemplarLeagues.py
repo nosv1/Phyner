@@ -310,6 +310,6 @@ async def series_report(client, message, user):
         # this may produce a not found error if a message it attempted to be edited after the channel is gone... 
 
     except:
-        await Support.previous_action_error(client, message.channel)
+        await Support.previous_action_error(client, message)
 
 # end series_report

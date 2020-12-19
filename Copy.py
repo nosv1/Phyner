@@ -51,7 +51,7 @@ async def replace(client, message, args, author_perms):
         mesge_channel = message.channel_mentions[0] if "#" in args[1] else message.channel
 
     except IndexError:
-        await Support.previous_action_error(client, message.channel)
+        await Support.previous_action_error(client, message)
         log("replace error", "no message ids") # TODO replace error
         return
 
@@ -78,12 +78,12 @@ async def replace(client, message, args, author_perms):
         await Support.process_complete_reaction(message)
 
     elif not mesge:
-        await Support.previous_action_error(client, message.channel)
+        await Support.previous_action_error(client, message)
         log("replace error", "no mesge") # TODO replace error
         return
 
     elif not replacement_mesge:
-        await Support.previous_action_error(client, message.channel)
+        await Support.previous_action_error(client, message)
         log("replace erorr", "no replacement_mesge") # TODO replace error
         return
 # end replace
@@ -102,7 +102,7 @@ async def get_copy_source(client, message, args):
     source_id = int(source_id[0]) if source_id else None
 
     if not source_id:
-        await Support.previous_action_error(client, message.channel)
+        await Support.previous_action_error(client, message)
         log("copy error", "no source id") # TODO copy error
         return
 
@@ -148,7 +148,7 @@ async def get_copy_source(client, message, args):
             source = [await source_channel.fetch_message(source_id) for source_id in source_ids]
 
         except discord.errors.NotFound:
-            await Support.previous_action_error(client, message.channel)
+            await Support.previous_action_error(client, message)
             log("copy error", "no mesge found in current channel if no channel_id given") # TODO copy error
             return
 
@@ -177,18 +177,18 @@ async def create_copy(client, message, sources, destination, new_name, author_pe
                 )
 
             except discord.errors.Forbidden:
-                await Support.previous_action_error(client, message.channel)
+                await Support.previous_action_error(client, message)
                 log("copy role error", "phyner missing perms") # TODO copy role error
                 return
 
             except discord.errors.HTTPException:
-                await Support.previous_action_error(client, message.channel)
+                await Support.previous_action_error(client, message)
                 log("copy role error", "failed to create role, possible max role count") # TODO copy role error
                 return
 
 
         else:
-            await Support.previous_action_error(client, message.channel)    
+            await Support.previous_action_error(client, message)    
             log("copy role error", "missing perms") # TODO copy role error
             return
 
@@ -207,18 +207,18 @@ async def create_copy(client, message, sources, destination, new_name, author_pe
                 )
 
             except discord.errors.Forbidden:
-                await Support.previous_action_error(client, message.channel)
+                await Support.previous_action_error(client, message)
                 log("copy channel error", "phyner missing perms") # TODO copy channel error
                 return
 
             except discord.errors.HTTPException:
-                await Support.previous_action_error(client, message.channel)
+                await Support.previous_action_error(client, message)
                 log("copy channel error", "failed to create role, possible max role count") # TODO copy channel error
                 return
 
 
         else:
-            await Support.previous_action_error(client, message.channel)
+            await Support.previous_action_error(client, message)
             log("copy channel error", "missing perms") # TODO copy channel error
             return
 
@@ -239,14 +239,14 @@ async def create_copy(client, message, sources, destination, new_name, author_pe
                     description += f"**Copy: **[message]({source_copy.jump_url})\n\n"
 
                 except discord.errors.Forbidden:
-                    await Support.previous_action_error(client, message.channel)
+                    await Support.previous_action_error(client, message)
                     log("copy message error", "phyner missing perms") # TODO copy message error
 
             await simple_bot_response(message.channel, description=description)
 
 
         else:
-            await Support.previous_action_error(client, message.channel)
+            await Support.previous_action_error(client, message)
             log("copy message error", "missing perms") # TODO copy message error
             return
 # end create_copy

@@ -3,7 +3,10 @@
 import discord
 from datetime import datetime
 import pathlib
+
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 import Support
 
@@ -95,6 +98,8 @@ async def log_error(client, traceback):
     log_file.close()
 
     log_file = open_active_log_file(read_binary=True)
-    await client.get_user(Support.ids.mo_id).send(content=f"```{traceback}```", file=discord.File(log_file, now.strftime(time_format)))
+
+    if os.getenv("HOST") != "PC":
+        await client.get_user(Support.ids.mo_id).send(content=f"```{traceback}```", file=discord.File(log_file, now.strftime(time_format)))
     log_file.close()
 # end log_error
