@@ -73,17 +73,18 @@ class SavedEmbed:
     """
         embed should be discord.Embed()
     """
-    def __init__(self, guild_id, channel_id, message_id, embed, path=None):
+    def __init__(self, guild_id, channel_id, message_id, embed, name="", path=None):
         self.guild_id = guild_id
         self.channel_id = channel_id
         self.message_id = message_id
         self.embed = embed # should be discord.Embed() by now
+        self.name = name
         self.path = path
     # end __init__
 
 
     def save_embed(self):
-        file_name = f"{self.guild_id}-{self.channel_id}-{self.message_id}"
+        file_name = f"{self.guild_id}-{self.channel_id}-{self.message_id}" + f"-{self.name}" if self.name else ""
         self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json"
 
         with open(self.path, "w+") as embeds:
@@ -131,17 +132,26 @@ async def main(client, message, args, author_perms):
 
 ## SAVED EMBEDS ##
 
-def get_saved_embeds():
+def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""):
+    """
+        returns [embed] if link or ids and name provided otherwise [embed, ...]
+    """
+
     embeds_folder = pathlib.Path(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}")
     embed_files = sorted(embeds_folder.iterdir(), key=os.path.getctime)
 
+    embed_ids = link.split("/")[-3:] if link else [str(guild_id), str(channel_id), str(message_id)] # will be at least ['']
+
     save_embeds = []
     for embed_file in embed_files:
-        guild_id, channel_id, message_id = tuple(re.findall(r"\d+", str(embed_file)))
-        save_embeds.append(load_embed_from_Embeds(guild_id, channel_id, message_id))
+        file_ids = re.findall(r"\d+", str(embed_file))
+
+        if not embed_ids[0] or file_ids == embed_ids: # no link provided or matching ids
+            save_embeds.append(load_embed_from_Embeds(str(embed_file)))
 
     return save_embeds
 # end get_saved_embeds
+
 
 async def generate_saved_embeds_display(saved_embeds, guild): # TODO view embeds and send them!
     embed = discord.Embed()
@@ -151,17 +161,13 @@ async def generate_saved_embeds_display(saved_embeds, guild): # TODO view embeds
 # end generate_saved_embeds_display
 
 
-def load_embed_from_Embeds(guild_id=None, channel_id=None, message_id=None, link=None):
+def load_embed_from_Embeds(path):
     """
-        provide link or guild_id, channel_id, messaage_id
+        in path
+        return embed
     """
-    if link:
-        guild_id, channel_id, message_id = tuple(link.split("/")[-3:])
 
-
-    embed = None
-    embed_file_name = f"{guild_id}-{channel_id}-{message_id}"
-    with open(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{embed_file_name}.json", "r") as embed_file:
+    with open(path, "r") as embed_file:
         embed = discord.Embed().from_dict(json.load(embed_file))
 
     return embed
@@ -421,7 +427,7 @@ async def create_user_embed(client, message):
 
     description += f"**Edit Embed:**\n`@{phyner} embed edit {msg.id}\n[edit embed attributes]`\n*send a new message, or edit your existing [embed create message]({message.jump_url})*\n\n"
 
-    description += f"**Copy Message:**\n`@{phyner} copy {msg.id} [some_msg_id] ... <#destination>`\n\n" 
+    description += f"**Copy Message:**\n`@{phyner} copy {msg.id} [some_msg_id ...] [#msg_location] <#destination>`\n\n" 
 
     description += f"**Replace Message:**\n`@{phyner} replace <some_phyner_msg_id> {msg.id}`\n\n" 
 
@@ -545,9 +551,15 @@ async def edit_user_embed(client, message, args):
 
 
 async def save_embed(client, message, args): # TODO proper command
+    """
+        ..p embed save <msg_id> [#channel] [embed_name]
+    """
     channel = message.channel_mentions[0] if message.channel_mentions else message.channel
+    if message.channel.mention in message.content:
+        del args[1]
 
     mesge_id = Support.get_id_from_str(message.content)
+    del args[0]
     if mesge_id:
         try:
             mesge = await channel.fetch_message(mesge_id[0])
@@ -558,7 +570,8 @@ async def save_embed(client, message, args): # TODO proper command
 
         embed = mesge.embeds[0] if mesge.embeds else None
         if embed:
-            embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed)
+            name = "_".join(args[:-1])
+            embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed, name=name)
             embed = embed.save_embed()
 
             await Support.process_complete_reaction(message)
