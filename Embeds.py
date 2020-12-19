@@ -48,7 +48,7 @@ embed_attrs = [
     '.image_url ',
 ]
 
-embed_aliases = ["embed"]
+embed_aliases = ["embed", "embeds"]
 
 embed_colors = {
     ".phyner_grey" : Support.colors.phyner_grey,
@@ -83,7 +83,7 @@ class SavedEmbed:
     # end __init__
 
 
-    def save_embed(self):
+    def save_embed(self): # TODO check if guild + name exist
         file_name = f"{self.guild_id}-{self.channel_id}-{self.message_id}" + f"-{self.name}" if self.name else ""
         self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json"
 
@@ -121,9 +121,13 @@ async def main(client, message, args, author_perms):
         else:
             await send_permissions_needed(message, message.author)
 
-    elif args[2] == "save":
 
+    elif args[2] == "save":
         await save_embed(client, message, args[3:-1])
+    
+
+    elif args[2] == "saved":
+        await message.channel.send(embed=generate_saved_embeds_display(get_saved_embeds(), message.guild))
 
     return
 # end main
@@ -147,17 +151,33 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
         file_ids = re.findall(r"\d+", str(embed_file))
 
         if not embed_ids[0] or file_ids == embed_ids: # no link provided or matching ids
-            save_embeds.append(load_embed_from_Embeds(str(embed_file)))
+            name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after channel_id and .json at the end
+            save_embeds.append(SavedEmbed(int(file_ids[0]), int(file_ids[1]), int(file_ids[2]), load_embed_from_Embeds(str(embed_file)), name, str(embed_file)))
 
     return save_embeds
 # end get_saved_embeds
 
 
-async def generate_saved_embeds_display(saved_embeds, guild): # TODO view embeds and send them!
-    embed = discord.Embed()
+def generate_saved_embeds_display(saved_embeds, guild):
+    """
+        saved_embeds should be [SavedEmbed, ...] not [discord.Embed(), ...]
+    """
+
+    embed = discord.Embed(color=Support.colors.phyner_grey)
     embed.title = f"{guild.name}'s Saved Embeds"
-    embed.description = "Click the link to go to the saved embed (assuming it still exists).\n"
-    embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed send <saved_embed_id> [#destination]`"
+    embed.description = "Click the link to go to the saved embed (assuming it still exists).\n\n"
+
+    for saved_embed in saved_embeds:
+        if saved_embed.guild_id == guild.id:
+            embed.description += f"[{saved_embed.name if saved_embed.name else saved_embed.message_id}](https://discord.com/channels/{saved_embed.guild_id}/{saved_embed.channel_id}/{saved_embed.message_id})\n"
+
+    embed.description += f"\nSend a Saved Embed:\n"
+    embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed send <embed_name> [#destination]`\n\n" # TODO embed send
+
+    embed.description += f"Convert Saved Embed to `{Guilds.get_guild_prefix(guild.id)} embed create` message:\n" # TODO convert saved embed to `embed create` message
+    embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed convert <embed_name>`"
+
+    return embed
 # end generate_saved_embeds_display
 
 
@@ -554,9 +574,14 @@ async def save_embed(client, message, args): # TODO proper command
     """
         ..p embed save <msg_id> [#channel] [embed_name]
     """
-    channel = message.channel_mentions[0] if message.channel_mentions else message.channel
-    if message.channel.mention in message.content:
+
+    if message.channel_mentions:
+        channel = message.channel_mentions[0]
         del args[1]
+
+    else:
+        channel = message.channel
+
 
     mesge_id = Support.get_id_from_str(message.content)
     del args[0]
@@ -568,7 +593,7 @@ async def save_embed(client, message, args): # TODO proper command
             Logger.log("embed save", "mesge not found") # TODO embed save error
             return
 
-        embed = mesge.embeds[0] if mesge.embeds else None
+        embed = mesge.embeds[0] if mesge.embeds else None # BUG error when saving in dms
         if embed:
             name = "_".join(args)
             embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed, name=name)
