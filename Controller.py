@@ -146,7 +146,7 @@ async def on_message(message):
                     )
                 ) or (
                     host == "PC" and # is PC
-                        (args[0] == "11p") # 11p command
+                        (args[0] in ["11p", "``p"]) # 11p command
                 )
             ):
                 log("COMMAND", f"{message.author.id}, '{message.content}'\n")
@@ -211,6 +211,9 @@ async def on_message(message):
                 elif args[1] in ["help", "h"]:
                     await Help.send_help_embed(message.channel, Help.general_help_link)
 
+                elif args[1] in ["commands", "cmds"]:
+                    await Help.send_help_embed(message.channel, Help.command_list_link)
+
                 elif args[1] in ["ids", "id"]:
                     await Help.send_help_embed(message.channel, Help.ids_help_link)
 
@@ -221,14 +224,17 @@ async def on_message(message):
                     await Delete.main(client, message, args, author_perms)
 
                 elif args[1] in General.say_aliases:
-                    await General.say(message, args)
+                    await General.say(client, message, args[1:])
+
+                elif args[1] in General.edit_aliases:
+                    await General.say(client, message, args[1:], is_edit=True)
 
 
                 
                 ## COPY ##
 
                 elif args[1] in Copy.copy_aliases + Copy.replace_aliases:
-                    await Copy.main(message, args[1:], author_perms)
+                    await Copy.main(client, message, args[1:], author_perms)
 
                 
                 ## CUSTOM COMMANDS ##

@@ -178,6 +178,7 @@ async def main(client, message, args, author_perms):
             log('events', 'display events') # TODO display events
 
     else:
+        await Support.previous_action_error(client, message.channel)
         log("Events", "missig perms") # TODO missing perms
 # end main
 

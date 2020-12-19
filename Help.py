@@ -13,6 +13,7 @@ help_aliases = ["help", "h", "?", " ", ""] # these are used for command words' h
 # Help Embed Links
 simple_help_link = "https://discord.com/channels/789181254120505386/789566872139726938/789566903605002270"
 general_help_link = "https://discord.com/channels/789181254120505386/789181637748588544/789187242006020126"
+command_list_link = "https://discord.com/channels/789181254120505386/789586399975178252/789586453978021898"
 ids_help_link = "https://discord.com/channels/789181254120505386/789523955751976970/789565197312065546"
 
 
@@ -72,18 +73,21 @@ async def search(message, args): # TODO copy paste embed contents to the wiki, i
 
 ''' HELP EMBEDS '''
 
-async def send_help_embed(channel, embed_link):
+async def send_help_embed(msg, embed_link):
     """
         Help embeds are saved in /Embeds as well as in Phyner Support's HELP EMBEDS category
         The links are saved in the global variables at the top of this channel and sent using the saved versions in /Embeds
     """
+
+    channel = msg.channel
+    embed, message, msg = Support.messageOrMsg(msg)
 
     embed = Embeds.load_embed_from_Embeds(link=embed_link)
 
     phyner = Support.get_phyner_from_channel(channel)
     embed.color = phyner.roles[-1].color if phyner.roles else Support.colors.phyner_grey
     
-    await channel.send(embed=embed)
+    await msg.edit(embed=embed) if msg else await channel.send(embed=embed)
 
     Logger.log("Help Embed", embed_link)
 # end send_help_embed

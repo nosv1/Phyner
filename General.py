@@ -14,16 +14,39 @@ from Help import help_aliases
 ''' CONSTANTS '''
 
 say_aliases = ["say", "speak"]
+edit_aliases = ["edit"]
 
 
 
 ''' FUNCTIONS '''
 
-async def say(message, args, markdown=False):
-    content = message.content[message.content.index(args[1])+len(args[1]):]
+async def say(client, message, args, is_edit=False):
+    """
+        say and edit command
+    """
+    
+    markdown = "markdown" in args[1]
+
+    msg = None
+    if is_edit:
+        del args[0] # deletes the edit bit in ..p edit msg_id <content>
+
+        msg_id = Support.get_id_from_str(args[0])
+        msg_id = int(msg_id[0]) if msg_id else None
+
+        try:
+            msg = await message.channel.fetch_message(msg_id)
+
+        except discord.errors.NotFound:
+            await Support.previous_action_error(client, message.channel)
+            log("edit msg error", "msg not found")
+
+    content = message.content[message.content.index(args[0])+len(args[0]):]
+    content = content if len(content.strip()) > 0 else Support.emojis.space_char
     content = f"```{content}```" if markdown else content
-    await message.channel.send(content=content)
-    log("say", 'say command')
+
+    await msg.edit(content=content) if msg else await message.channel.send(content=content)
+    log("edit", "edit command") if msg else log("say", 'say command')
 # end say
 
 

@@ -4,6 +4,7 @@ import mysql.connector
 
 import Database
 from Database import replace_chars
+import Help
 from Logger import log
 import Support
 from Support import simple_bot_response
@@ -100,11 +101,13 @@ def get_phyner_guild(guild_id):
     return phyner_guild
 # end get_phyner_guild
 
+
+## PREFIXES ##
+
 def get_guild_prefix(guild_id):
     phyner_guild = get_phyner_guild(guild_id)
     return phyner_guild.prefix if phyner_guild else "@Phyner#2797"
 # end get_guild_prefix
-
 
 def get_guild_prefixes():
     """
@@ -124,12 +127,12 @@ def get_guild_prefixes():
     return guild_prefixes
 # end get_guild_prefixes
 
-
 async def set_prefix(message, args, author_perms):
     """
         @Phyner prefix - view current prefix
         @Phyner prefix [new_prefix] - set prefix
     """
+    phyner = Support.get_phyner_from_channel(message.channel)
     # TODO prefix help
 
     prefix = message.content[message.content.index(args[1])+len(args[1]):].strip()
@@ -147,14 +150,27 @@ async def set_prefix(message, args, author_perms):
 
         if len(prefix) <= max_prefix_length: # good to go
 
-            phyner_guild.prefix = prefix
-            await phyner_guild.display_prefix(message.channel, new_prefix=True)
+            if prefix not in Help.help_aliases: # good to go
+
+                phyner_guild.prefix = prefix
+                await phyner_guild.display_prefix(message.channel, new_prefix=True)
+
+            else:
+
+                description = f"Your server's {phyner.mention} prefix cannot be an alias for {phyner.mention}'s help messages - `{'`, `'.join(Help.help_aliases)}`."
+
+                await simple_bot_response(message.channel,
+                    title="Invalid Prefix",
+                    description=description,
+                    reply_message=message
+                )
+                log("guild prefix", "invalid prefix")
+
 
         else: # too long
-            phyner = Support.get_phyner_from_channel(message.channel)
 
             description = f"A {phyner.mention} prefix cannot be longer than {max_prefix_length} characters.\n"
-            description += f"`{prefix}` is {len(prefix)} characters.\n\n"
+            description += f"`{prefix}` has {len(prefix)} characters.\n\n"
 
             description += f"`@{phyner} prefix <new_prefix>`"
 

@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-from Guilds import get_guild_prefix
+import Guilds
 import Help
 import Logger
 import Support
@@ -147,7 +147,7 @@ async def generate_saved_embeds_display(saved_embeds, guild): # TODO view embeds
     embed = discord.Embed()
     embed.title = f"{guild.name}'s Saved Embeds"
     embed.description = "Click the link to go to the saved embed (assuming it still exists).\n"
-    embed.description += f"`{get_guild_prefix(guild.id)} embed send <saved_embed_id> [#destination]`"
+    embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed send <saved_embed_id> [#destination]`"
 # end generate_saved_embeds_display
 
 
@@ -446,7 +446,6 @@ async def create_user_embed(client, message):
 
     try:
         await client.wait_for('raw_reaction_add', check=check_x_emoji, timeout=30.0)
-        # Support.show_moving_editing_phyner_messages(message.author.id, show=False) # TODO ... this ability?
         await msg.delete()
         
     except asyncio.TimeoutError:
@@ -538,7 +537,10 @@ async def edit_user_embed(client, message, args):
             await msg.delete()
 
         except asyncio.TimeoutError:
-            await msg.remove_reaction(emojis.ok_emoji, client.user)
+            try:
+                await msg.remove_reaction(emojis.ok_emoji, client.user)
+            except:
+                pass
 # end edit_user_embed
 
 
@@ -550,9 +552,11 @@ async def save_embed(message, args): # TODO proper command
         try:
             mesge = await channel.fetch_message(mesge_id[0])
         except discord.errors.NotFound:
+            await Support.previous_action_error(client, message.channel)
             Logger.log("embed save", "mesge not found") # TODO embed save error
+            return
 
-        embed = mesge.embeds[0] if mesge and mesge.embeds else None
+        embed = mesge.embeds[0] if mesge.embeds else None
         if embed:
             embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed)
             embed = embed.save_embed()
@@ -561,10 +565,14 @@ async def save_embed(message, args): # TODO proper command
             Logger.log("embed save", f"embed saved - {embed.path}")
 
         else:
+            await Support.previous_action_error(client, message.channel)
             Logger.log("embed save error", "embed does not exist at this location") # TODO embed save error
+            return
 
     else:
+        await Support.previous_action_error(client, message.channel)
         Logger.log("embed save error", "no message id given") # TODO embed save error 
+        return
 # end save_embed
 
 
