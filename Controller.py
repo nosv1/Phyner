@@ -164,7 +164,7 @@ async def on_message(message):
                 ## CHECK FOR UPCOMING RESTART ##
 
                 restart_delta = (restart_time - datetime.utcnow()).seconds
-                if restart_delta < restart_interval:
+                if restart_delta < restart_interval and not is_mo:
                     description = f"**{phyner.mention} is about to {'restart' if restart else 'shut down'}. "
                     if restart:
                         description += f"Try again in {restart_delta + restart_interval} seconds, or watch for its status to change.**" 
