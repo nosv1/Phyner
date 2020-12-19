@@ -82,7 +82,7 @@ async def send_help_embed(msg, embed_link):
     channel = msg.channel
     embed, message, msg = Support.messageOrMsg(msg)
 
-    embed = Embeds.load_embed_from_Embeds(link=embed_link)
+    embed = Embeds.get_saved_embeds(link=embed_link)[0]
 
     phyner = Support.get_phyner_from_channel(channel)
     embed.color = phyner.roles[-1].color if phyner.roles else Support.colors.phyner_grey
