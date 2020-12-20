@@ -6,6 +6,7 @@ import json
 import pathlib
 import re
 import traceback
+from discord.enums import _is_descriptor
 import validators
 
 import os
@@ -122,6 +123,10 @@ async def main(client, message, args, author_perms):
             await send_permissions_needed(message, message.author)
 
 
+    elif args[2] == "send":
+        await send_saved_embed_from_message(message, args[3:-1])
+
+
     elif args[2] == "save":
         await save_embed(client, message, args[3:-1])
     
@@ -150,8 +155,10 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
     for embed_file in embed_files:
         file_ids = re.findall(r"\d+", str(embed_file))
 
-        if not embed_ids[0] or file_ids == embed_ids: # no link provided or matching ids
+        if not embed_ids[0] or file_ids == embed_ids or embed_ids[0] == file_ids[0]: # no link provided or matching ids or matching guild ids
             name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after channel_id and .json at the end
+            name = file_ids[-1] if not name else name # name is either name or message_id now
+
             save_embeds.append(SavedEmbed(int(file_ids[0]), int(file_ids[1]), int(file_ids[2]), load_embed_from_Embeds(str(embed_file)), name, str(embed_file)))
 
     return save_embeds
@@ -165,17 +172,27 @@ def generate_saved_embeds_display(saved_embeds, guild):
 
     embed = discord.Embed(color=Support.colors.phyner_grey)
     embed.title = f"{guild.name}'s Saved Embeds"
-    embed.description = "Click the link to go to the saved embed (assuming it still exists).\n\n"
 
-    for saved_embed in saved_embeds:
-        if saved_embed.guild_id == guild.id:
-            embed.description += f"[{saved_embed.name if saved_embed.name else saved_embed.message_id}](https://discord.com/channels/{saved_embed.guild_id}/{saved_embed.channel_id}/{saved_embed.message_id})\n"
+    if saved_embeds:
 
-    embed.description += f"\nSend a Saved Embed:\n"
-    embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed send <embed_name> [#destination]`\n\n" # TODO embed send
+        embed.description = "Click the link to go to the saved embed (assuming it still exists).\n\n"
 
-    embed.description += f"Convert Saved Embed to `{Guilds.get_guild_prefix(guild.id)} embed create` message:\n" # TODO convert saved embed to `embed create` message
-    embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed convert <embed_name>`"
+        for saved_embed in saved_embeds:
+            if saved_embed.guild_id == guild.id:
+                embed.description += f"[{saved_embed.name if saved_embed.name else saved_embed.message_id}](https://discord.com/channels/{saved_embed.guild_id}/{saved_embed.channel_id}/{saved_embed.message_id})\n"
+
+
+        embed.description += f"\nSend a Saved Embed:\n"
+        embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed send <embed_name> [#destination]`\n\n" # TODO embed send
+
+        embed.description += f"Convert Saved Embed to `{Guilds.get_guild_prefix(guild.id)} embed create` message:\n" # TODO convert saved embed to `embed create` message
+        embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed convert <embed_name>`"
+
+    else:
+        embed.description += f"No embeds have been saved in {guild.name}.\n\n"
+
+        embed.description += f"Save an Embed:"
+        embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed save <message_id> [embed_name]`"
 
     return embed
 # end generate_saved_embeds_display
@@ -192,6 +209,25 @@ def load_embed_from_Embeds(path):
 
     return embed
 # end load_embed_from_Embeds
+
+async def send_saved_embed_from_message(message, args):
+
+    # get destination channel 
+    channel = message.channel_mentions[-1] if message.channel_mentions else message.channel
+    if message.channel_mentions:
+        del args[-1]
+
+
+    embed_name = "_".join(args)
+    saved_embeds = get_saved_embeds(guild_id=message.guild.id)
+    saved_embed = [s for s in saved_embeds if s.name == embed_name]
+
+    if saved_embed:
+        await channel.send(embed=saved_embed[0].embed)
+
+    else:
+        await channel.send(embed=generate_saved_embeds_display(saved_embeds, message.guild))
+# end send_saved_embed
 
 
 
@@ -570,7 +606,7 @@ async def edit_user_embed(client, message, args):
 # end edit_user_embed
 
 
-async def save_embed(client, message, args): # TODO proper command
+async def save_embed(client, message, args):
     """
         ..p embed save <msg_id> [#channel] [embed_name]
     """

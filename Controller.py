@@ -324,7 +324,6 @@ async def on_raw_reaction_add(payload):
 
             if not user.bot: # not bot reaction
 
-                # TODO check if emoji object + message condition + reaction_add event
                 restart_delta = (restart_time - datetime.utcnow()).seconds
                 if restart_delta < restart_interval:
                     return
@@ -352,7 +351,7 @@ async def on_raw_reaction_add(payload):
                         pass
 
 
-                ## SERVER CHECKS
+                ## SERVER CHECKS ##
 
                 # this is used to enable testing whilst running pi version
                 okay_mobot_support = Support.ids.mobot_support_id if os.getenv("HOST") == "PC" else 0
