@@ -32,7 +32,6 @@ async def main(message, args, author_perms):
 
 # end main
 
-'''
 def command_used(command, arg_2, success=False):
     """
         the idea is in controller, or command's main, you update its used += 1, if it succeeds, you update its success += 1
@@ -52,4 +51,3 @@ def command_used(command, arg_2, success=False):
         db.connection.commit()
     db.connection.close()
 # end command_used
-'''

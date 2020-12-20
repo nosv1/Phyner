@@ -327,11 +327,3 @@ def get_tables(guild_id="%%"):
     db.connection.close()
     return [get_table_from_entry(entry) for entry in db.cursor.fetchall()]
 # end Tables
-
-
-tables = get_tables(guild_id=789181254120505386)
-table = tables[0]
-table.cells = table.get_cells()
-table.cell_values = table.get_cell_values()
-tables = table.get_table_displays()
-[print(f"{table}\n---\n") for table in tables]

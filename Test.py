@@ -19,6 +19,16 @@ from Support import simple_bot_response
 
 async def test(message, args):
 
+    import Tables
+    tables = Tables.get_tables(guild_id=789181254120505386)
+    table = tables[1]
+    table.cells = table.get_cells()
+    table.cell_values = table.get_cell_values()
+    tables = table.get_table_displays()
+    await simple_bot_response(message.channel,
+        description = tables[0]
+    )
+
     # await new_slash_cmd()
     # await gspread_testing()
     await templar_test(message)
