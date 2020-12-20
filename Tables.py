@@ -127,23 +127,24 @@ class Table:
 
                 if (
                     is_single_markdown and 
-                    row_col_in_range(i + row_offset, j + col_offset, self.no_markdown_cols)
+                    not row_col_in_range(i + row_offset, j + col_offset, self.no_markdown_cols)
                 ): # wrap in ``, once wrapped later, it will reverse the effect
-                    v = f"`{value}`"
+                    v = f"`{v}`"
 
                 line.append(v)
 
 
-            line = f"{'|' if is_multi_markdown or is_single_markdown else '-'}".join(line)
+            line = f"{'|' if is_multi_markdown else ' '}".join(line)
 
 
-            if is_single_markdown: 
-                line = f"`{line}`\n"
-                if row_col_in_range(i + row_offset, 1, self.no_markdown_rows): # remove ` if no markdown row
-                    line = line.replace("`", "")
+            if (
+                is_single_markdown and
+                row_col_in_range(i + row_offset, 1, self.no_markdown_rows)
+            ): # remove ` if no markdown row
+                line = line.replace("`", "")
 
-            else:
-                line = f"{line}\n"
+            
+            line = f"{line}\n"
                 
             
             if len(tables[-1] + line) < table_length: # yes, new table = new message
@@ -327,10 +328,10 @@ def get_tables(guild_id="%%"):
     return [get_table_from_entry(entry) for entry in db.cursor.fetchall()]
 # end Tables
 
-'''
+
 tables = get_tables(guild_id=789181254120505386)
 table = tables[0]
 table.cells = table.get_cells()
 table.cell_values = table.get_cell_values()
-table.get_table_displays()
-'''
+tables = table.get_table_displays()
+[print(f"{table}\n---\n") for table in tables]
