@@ -69,6 +69,7 @@ async def say(client, message, args, is_edit=False):
         content = message.content[message.content.index(args[0]):]
         content = content[len(channel.mention):] if args[0] == channel.mention else content
         content = f"```{content}```" if markdown else content
+        content = content.replace("\\s", Support.emojis.space_char).replace("\\b", Support.emojis.bullet)
 
         await msg.edit(content=content) if msg else await channel.send(content=content)
         if is_edit:

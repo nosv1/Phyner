@@ -29,6 +29,7 @@ import Help
 import Logger
 from Logger import log
 import Role
+from Stats import command_used
 from Servers import TemplarLeagues
 import Support
 

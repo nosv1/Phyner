@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+from Stats import command_used
 import Support
 from Support import simple_bot_response
 
