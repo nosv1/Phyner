@@ -93,6 +93,7 @@ async def send_help_embed(client, msg, embed_link, demo=False):
         The links are saved in the global variables at the top of this channel and sent using the saved versions in /Embeds
     """
 
+    guild_prefix = Guilds.get_guild_prefix(msg.guild.id if msg.guild else msg.author.id)
     reactions = []
     message_author = None
     def reaction_check(reaction, r_user):
@@ -118,7 +119,6 @@ async def send_help_embed(client, msg, embed_link, demo=False):
         # add a footer if needed
         footer = []
         reactions = []
-        guild_prefix = Guilds.get_guild_prefix(msg.guild.id)
         if embed_link not in [help_links.general]: # not general help embed
             footer.append(f"{Support.emojis.question_emoji} `{guild_prefix} help`")
             reactions.append(Support.emojis.question_emoji)
