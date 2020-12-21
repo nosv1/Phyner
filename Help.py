@@ -27,7 +27,7 @@ help_links = SimpleNamespace(**{
     "ids" : {
         "link" : "https://discord.com/channels/789181254120505386/789523955751976970/789565197312065546",
 
-        "dem" : ""
+        "demo" : "https://cdn.discordapp.com/attachments/789218327473160243/790481979794653215/ids.gif"
         },
 })
 
@@ -128,7 +128,7 @@ async def send_help_embed(client, msg, embed_link, demo=False):
             reactions.append(Support.emojis.clipboard_emoji)
 
         if "demo" in embed_link: # has demo
-            footer.append(f"{Support.emojis.film_frames_emoji} Demo")
+            footer.append(f"{Support.emojis.film_frames_emoji} `Demo`")
             reactions.append(Support.emojis.film_frames_emoji)
 
         if footer:
@@ -159,7 +159,7 @@ async def send_help_embed(client, msg, embed_link, demo=False):
         # wait
         if footer:
             try:
-                reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=60)
+                reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
 
                 if str(reaction.emoji) == Support.emojis.question_emoji:
                     embed_link = help_links.general
@@ -168,7 +168,7 @@ async def send_help_embed(client, msg, embed_link, demo=False):
                     embed_link = help_links.command_list_1
 
                 elif str(reaction.emoji) == Support.emojis.film_frames_emoji:
-                    demo = True
+                    demo = not demo
 
             except asyncio.TimeoutError:
                 await Support.clear_reactions(msg)
