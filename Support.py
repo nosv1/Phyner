@@ -356,9 +356,9 @@ async def restart(client, message, restart_interval, restart=True):
         await client.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.playing, 
-                name=f"{'Restarting' if restart else 'Temporarily shutting down'} soon!",
-                status=discord.Status.idle
-            )
+                name=f"{'Restarting' if restart else 'Temporarily shutting down'} soon!"
+            ),
+            status=discord.Status.idle
         )
 
         msg = await simple_bot_response(
