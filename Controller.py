@@ -188,6 +188,18 @@ async def on_message(message):
                             await client.user.edit(avatar=f.read())
                         return
 
+                    elif args[1] == "guild":
+                        guild = client.get_guild(int(args[2]))
+
+                        description = f"**Members:** {len(guild.members)}\n"
+                        description += f"**Joined:** {datetime.strftime(phyner.joined_at, Support.short_date_1)}\n"
+
+                        await Support.simple_bot_response(message.channel,
+                            title=guild.name,
+                            description=description,
+                            thumbnail_url=guild.icon_url
+                        )
+
                     elif args[1] in ["close", "shutdown", "stop", "restart"]:
                         restart, msg  = await Support.restart(client, message, restart_interval, restart=args[1] == "restart")
 

@@ -19,6 +19,7 @@ from Support import simple_bot_response
 
 async def test(message, args):
 
+
     import Tables
     tables = Tables.get_tables(guild_id=789181254120505386)
     table = tables[1]

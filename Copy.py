@@ -41,7 +41,7 @@ async def main(client, message, args, author_perms):
 # end main
 
 
-## RPLACE ##
+## REPLACE ##
 
 async def replace(client, message, args, author_perms):
 

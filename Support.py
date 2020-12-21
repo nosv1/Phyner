@@ -23,6 +23,8 @@ import Logger
 
 host = os.getenv("HOST")
 
+short_date_1 = "%b. %d, %Y %H:%M"
+
 ## IDs ##
 ids = SimpleNamespace(**{
     # user ids
@@ -46,6 +48,7 @@ colors = SimpleNamespace(**{
 
 ## CHARACTERS / EMOJIS ##
 emojis = SimpleNamespace(**{
+    'zero_width' : chr(8203), # or the thing in bewteen the dashes -​-
     'space_char' : "⠀",
     'bullet' : "•",
     'x_emoji' : "❌",
