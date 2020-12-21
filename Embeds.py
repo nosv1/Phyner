@@ -7,6 +7,7 @@ import pathlib
 import re
 import traceback
 from discord.enums import _is_descriptor
+from gspread.utils import filter_dict_values
 import validators
 
 import os
@@ -85,8 +86,7 @@ class SavedEmbed:
 
 
     def save_embed(self): # TODO check if guild + name exist
-        file_name = f"{self.guild_id}-{self.channel_id}-{self.message_id}" + f"-{self.name}" if self.name else ""
-        self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{file_name}.json"
+        self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{self.name}.json"
 
         with open(self.path, "w+") as embeds:
             json.dump(self.embed.to_dict(), embeds, indent=4, sort_keys=True)
@@ -155,8 +155,12 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
     for embed_file in embed_files:
         file_ids = re.findall(r"\d+", str(embed_file))
 
-        if not embed_ids[0] or file_ids == embed_ids or embed_ids[0] == file_ids[0]: # no link provided or matching ids or matching guild ids
-            name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after channel_id and .json at the end
+        if (
+            not embed_ids[0] or # nothing provided
+            file_ids == embed_ids or # exact match
+            (not embed_ids[1] and embed_ids[0] == file_ids[0]) # if only guild given
+        ):
+            name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after message_id and .json at the end
             name = file_ids[-1] if not name else name # name is either name or message_id now
 
             save_embeds.append(SavedEmbed(int(file_ids[0]), int(file_ids[1]), int(file_ids[2]), load_embed_from_Embeds(str(embed_file)), name, str(embed_file)))
@@ -632,8 +636,10 @@ async def save_embed(client, message, args):
 
         embed = mesge.embeds[0] if mesge.embeds else None # BUG error when saving in dms
         if embed:
-            name = "_".join(args)
-            embed = SavedEmbed(mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id, embed, name=name)
+            gcm = (mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id) # guild channel message
+            gcm_str = f"{'-'.join([str(i) for i in gcm])}"
+            name = f"-{'_'.join(args)}" 
+            embed = SavedEmbed(*gcm, embed, name=gcm_str + (name if len(name) > 1 else ""))
             embed = embed.save_embed()
 
             await Support.process_complete_reaction(message)

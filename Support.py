@@ -54,6 +54,9 @@ emojis = SimpleNamespace(**{
     'i_emoji' : "🛈",
     'number_emojis' : ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"],
     'exclamation_emoji' : "❗",
+    'question_emoji' : "❓",
+    'clipboard_emoji' : "📋",
+    'film_frames_emoji' : "🎞️",
 })
 
 ## COMMON ALIASES ##

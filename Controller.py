@@ -210,13 +210,13 @@ async def on_message(message):
                     await Help.search(message, args)
 
                 elif args[1] in ["help", "h"]:
-                    await Help.send_help_embed(message, Help.general_help_link)
+                    await Help.send_help_embed(client, message, Help.help_links.general)
 
                 elif args[1] in ["commands", "cmds"]:
-                    await Help.send_help_embed(message, Help.command_list_link)
+                    await Help.send_help_embed(client, message, Help.help_links.command_list_1)
 
                 elif args[1] in ["ids", "id"]:
-                    await Help.send_help_embed(message, Help.ids_help_link)
+                    await Help.send_help_embed(client, message, Help.help_links.ids)
 
                 elif args[1] == "ping":
                     await General.send_ping(client, message.channel)
@@ -277,7 +277,7 @@ async def on_message(message):
 
 
                 else:
-                    await Help.send_help_embed(message, Help.simple_help_link)
+                    await Help.send_help_embed(client, message, Help.help_links.simple)
 
                 ''' END COMMAND CHECKS '''
 
