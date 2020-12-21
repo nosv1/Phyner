@@ -416,7 +416,8 @@ async def startup():
 
     await client.change_presence(
         activity=discord.Activity(
-            type=discord.ActivityType.playing, name="@Phyner is finer."
+            type=discord.ActivityType.playing, name="@Phyner is finer.",
+            status=discord.Status.online
         )
     )
 # end startup
