@@ -49,7 +49,7 @@ spreadsheets = SimpleNamespace(**{
 })
 
 # embeds
-series_report_embed_link = "https://discord.com/channels/467239192007671818/648401621977399298/789087942759940096"
+series_report_embed_link = "https://discord.com/channels/437936224402014208/519260837727436810/791050164067893329"
 
 aliases = ["", ]
 
