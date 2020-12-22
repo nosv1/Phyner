@@ -199,6 +199,7 @@ async def on_message(message):
                             description=description,
                             thumbnail_url=guild.icon_url
                         )
+                        return
 
                     elif args[1] in ["close", "shutdown", "stop", "restart"]:
                         restart, msg  = await Support.restart(client, message, restart_interval, restart=args[1] == "restart")
@@ -214,6 +215,7 @@ async def on_message(message):
                                 pass
                             
                         await client.close()
+                    
                         
                 
                 ## HELP + GENERAL ##
@@ -403,8 +405,8 @@ async def on_raw_reaction_add(payload):
 
 ''' STARTUP '''
 
-''' 
-@client.event this appears to simply not be needed
+''' this appears to simply not be needed
+@client.event 
 async def on_ready():
     error = None
     try:
