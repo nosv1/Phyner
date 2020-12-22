@@ -151,7 +151,7 @@ async def on_message(message):
                             message.mentions[0].id == Support.ids.phyner_id and 
                             str(Support.ids.phyner_id) in args[0]
                         ) or # @Phyner command
-                        mc[:len(str(guild_prefix))+1] == guild_prefix + " " # start of content = guild prefix
+                        guild_prefix and mc[:len(str(guild_prefix))+1] == guild_prefix + " " # start of content = guild prefix
                     )
                 ) or (
                     host == "PC" and # is PC
