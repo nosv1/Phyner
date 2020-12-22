@@ -288,6 +288,8 @@ async def clear_reactions(msg):
         await msg.clear_reactions()
     except discord.errors.Forbidden:
         pass
+    except discord.errors.NotFound:
+        pass
 # end clear_reactions
 
 async def remove_reactions(msg, user, reactions):
