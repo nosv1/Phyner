@@ -237,6 +237,9 @@ async def on_message(message):
                 elif args[1] in ["commands", "cmds"]:
                     await Help.send_help_embed(client, message, Help.help_links.command_list_1)
 
+                elif args[1] in ["invite"]:
+                    await Help.send_help_embed(client, message, Help.help_links.invite_phyner)
+
                 elif args[1] in ["ids", "id"]:
                     await Help.send_help_embed(client, message, Help.help_links.ids)
 

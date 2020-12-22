@@ -27,12 +27,12 @@ templar_leagues_id = 437936224402014208
 staff_templar_leagues_id = 752990198077587569
 
 # channels
-approved_results_id = 791028324762648577
+approved_results_id = 791035599812427816
 staff_league_results_log_id = 753207723499192383
 staff_stats_log_id = 789066825093611550
 
 # roles
-staff_moderator_id = 0
+staff_moderator_id = 753005514232692737
 staff_support_id = 753005661771792506
 staff_stats_id = 753005951832948839
 
@@ -348,10 +348,9 @@ async def series_report(client, message, user):
         del embed["footer"]
         embed = discord.Embed().from_dict(embed)
 
-        # staff_guild = client.get_guild(staff_templar_leagues_id)
-        # league_results_log = staff_guild.get_channel(staff_league_results_log_id)
-        # msg = league_results_log.send(embed=embed)
-        msg = await message.channel.send(content="@Mo#9991 PING ROLES", embed=embed)
+        staff_guild = client.get_guild(staff_templar_leagues_id)
+        league_results_log = staff_guild.get_channel(staff_league_results_log_id)
+        msg = league_results_log.send(content=f"`<@&{staff_moderator_id}> <@&{staff_support_id}>`", embed=embed)
         await msg.add_reaction(Support.emojis.tick_emoji)
 
         await message.channel.send("delete this channel now")
@@ -380,18 +379,15 @@ async def verify_series_report(client, message):
     embed = Support.delete_last_field(embed)
 
     # send embed staff_stats and main_approved
-    '''staff_guild = client.get_guild(staff_templar_leagues_id)
+    staff_guild = client.get_guild(staff_templar_leagues_id)
     main_guild = client.get_guild(templar_leagues_id)
 
     staff_stats = staff_guild.get_channel(staff_stats_id)
     main_approved_results = main_guild.get_channel(approved_results_id)
 
-    await staff_stats.send(embed=embed)
-    await main_approved_results.send(embed=embed)'''
+    await staff_stats.send(content=f"`<@&{staff_stats_id}>`", embed=embed)
+    await main_approved_results.send(embed=embed)
 
-    await message.channel.send(content="to staff stats", embed=embed)
-    await message.channel.send(content="to league results", embed=embed)
+    await message.edit(embed=embed) # edit the verified message now
 
-    await message.edit(embed=embed)
-
-# end verify_series_report
+# end verify_series_repor

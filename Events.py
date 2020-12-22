@@ -365,7 +365,7 @@ async def watch_emoji(client, message, args):
     while not emoji:
 
         emoji = re.findall(r"(<a?:\S+:\d{17,}>)", message.content) # match ' <a:emoji_name:emoji_id> ' or ' <:emoji_name:emoji_id> '
-        emoji = emoji[0].strip() if emoji and args[0] in emoji[0] else args[1] if len(args[0]) == 1 else None
+        emoji = emoji[0].strip() if emoji and args[0] in emoji[0] else args[1] if len(args[1]) == 1 else None
         # if match use emoji else use args[1] if it's length is 1 else None
 
         embed = await simple_bot_response(message.channel,

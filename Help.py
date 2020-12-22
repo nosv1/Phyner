@@ -24,6 +24,8 @@ help_links = SimpleNamespace(**{
 
     "command_list_1" : {"link" : "https://discord.com/channels/789181254120505386/789586399975178252/789586453978021898"},
 
+    "invite_phyner" : {"link" : "https://discord.com/channels/789181254120505386/791034004174405642/791034163230408724"},
+
     "ids" : {
         "link" : "https://discord.com/channels/789181254120505386/789523955751976970/789565197312065546",
 
