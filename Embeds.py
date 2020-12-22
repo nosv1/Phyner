@@ -167,7 +167,6 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
 
     save_embeds = []
     for embed_file in embed_files:
-        print(embed_file)
         file_ids = re.findall(r"(\d+)", str(embed_file))
 
         if (
@@ -175,7 +174,6 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
             file_ids == embed_ids or # exact match
             (not embed_ids[1] and embed_ids[0] == file_ids[0]) # if only guild given
         ):
-            print(file_ids)
             name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after message_id and .json at the end
             name = file_ids[-1] if not name else name # name is either name or message_id now
 
