@@ -284,7 +284,7 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
     {.attr} {attr_value}`
     """
 
-    content = message.content.replace("\\s", emojis.space_char).replace("\\b", emojis.bullet)
+    content = message.content.replace("\\s", emojis.space_char).replace("\\b", emojis.bullet).replace("\\z", emojis.zero_width)
     msg_content = emojis.space_char
     attrs = []
 

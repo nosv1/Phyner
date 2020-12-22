@@ -222,7 +222,7 @@ def convert_embed_dict_to_create_messages(embed_dict):
 
 
     create_messages[-1] += "```"
-    return [c_m.replace(f"{emojis.space_char}", "\\s").replace(f"{emojis.bullet}", "\\b") for c_m in create_messages]
+    return [c_m.replace(f"{emojis.space_char}", "\\s").replace(f"{emojis.bullet}", "\\b").replace(f"{emojis.zero_width}", "\\z") for c_m in create_messages]
 
 # end convert_embed_dict_to_create_messages
 
