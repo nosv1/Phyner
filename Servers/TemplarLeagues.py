@@ -98,7 +98,7 @@ async def on_reaction_add(client, message, user, payload):
 
 async def prepare_series_report_channel(channel, user):
 
-    await channel.edit(name=f"series-report-{user.display_name}-{user.discriminator}")
+    await channel.edit(name=f"series-report-{user.display_name}")
 
     series_report_embed = Embeds.get_saved_embeds(link=series_report_embed_link)[0].embed
     msg = await channel.send(content=user.mention, embed=series_report_embed)
@@ -361,6 +361,8 @@ async def series_report(client, message, user):
         # delete submission channel
         await message.channel.delete()
 
+        log("templar leagues series report", "submitted")
+
     except asyncio.TimeoutError:
         restart("Timed Out")
         await msg.edit(embed=embed)
@@ -395,5 +397,7 @@ async def verify_series_report(client, message):
     await main_approved_results.send(embed=embed)
 
     await message.edit(embed=embed) # edit the verified message now
+
+    log("templar leagues series report", "verified")
 
 # end verify_series_repor
