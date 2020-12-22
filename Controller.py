@@ -1,6 +1,7 @@
 ''' IMPORTS '''
 
 import asyncio
+import copy
 import discord
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -57,6 +58,9 @@ log("startup", f"Phyner Webhook IDs: {len(phyner_webhook_ids)}")
 phyner_reaction_adds = Events.get_event_events(events, "reaction_add")
 log("startup", f"Phyner Reaction Add Events: {len(phyner_reaction_adds)}")
 
+phyner_reaction_removes = Events.get_event_events(events, "reaction_remove")
+log("startup", f"Phyner Reaction Remove Events: {len(phyner_reaction_removes)}")
+
 restart = 0 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
 restart_interval = 60 # time between restart/shutdown command and action
@@ -109,6 +113,7 @@ async def on_message(message):
     global guild_prefixes
     global phyner_webhook_ids
     global phyner_reaction_adds
+    global phyner_reaction_removes
 
     if not connected: # we aint ready yet
         return
@@ -280,13 +285,17 @@ async def on_message(message):
                 ## WATCH ##
 
                 elif args[1] in Events.events_aliases + Events.watching_aliases:
-                    event = await Events.main(client, message, args[1:], author_perms)
-                    if event:
-                        if event.object.type == "webhook":
+                    events = await Events.main(client, message, args[1:], author_perms)
+
+                    if events:
+                        if events[0].object.type == "webhook":
                             phyner_webhook_ids = Events.get_object_ids(Events.get_events(), "webhook")
 
-                        if event.event == "reaction_add":
+                        elif events[0].event == "reaction_add":
                             phyner_reaction_adds = Events.get_event_events(Events.get_events(), "reaction_add")
+
+                        elif events[0].event == "reaction_remove":
+                            phyner_reaction_removes = Events.get_event_events(Events.get_events(), "reaction_remove")
 
 
 
@@ -355,6 +364,24 @@ async def on_raw_reaction_add(payload):
                         remove_reaction = await Events.perform_action(client, message, user, event)
 
 
+                ## PHYNER REACTION REMOVE CHECKS 
+
+                for event in phyner_reaction_removes:
+                    if all([
+                        event.guild_id == message.guild.id if message.guild else False,
+                        event.condition.id == message.id,
+                        str(event.object.id) == str(payload.emoji)
+                    ]):
+                        t_event = copy.deepcopy(event)
+
+                        # need to do inverse
+                        t_event.action.action = "role_remove" if event.action.action == "role_add" else t_event.action.action
+                        t_event.action.action = "role_add" if event.action.action == "role_remove" else t_event.action.action
+
+                        if t_event.action.action != event.action.action:
+                            await Events.perform_action(client, message, user, t_event)
+
+
                 ## EMBED CHECKS ##
 
                 embed = message.embeds[0] if message.embeds else []
@@ -401,6 +428,92 @@ async def on_raw_reaction_add(payload):
         await Logger.log_error(client, error)
 # end on_reaction_add
 
+
+@client.event
+async def on_raw_reaction_remove(payload):
+    global restart 
+    global restart_time
+
+    if not connected: # we aint ready yet
+        return
+
+    user_id = payload.user_id
+    channel_id = payload.channel_id
+    channel = client.get_channel(channel_id)
+    message_id = payload.message_id
+
+    message = None
+    user = None
+    is_dm = None
+    error = False
+    try:
+
+        message = await channel.fetch_message(message_id)
+        if not message:
+            return
+
+        is_dm = message.channel.type == discord.ChannelType.private
+
+        user = [user for user in (message.channel.members if not is_dm else [message.channel.recipient]) if user.id == user_id]
+        user = user[0] if user else user
+
+
+        if message and user:
+
+            if not user.bot: # not bot reaction
+
+                restart_delta = (restart_time - datetime.utcnow()).seconds
+                if restart_delta < restart_interval:
+                    return
+
+
+                ## PHYNER REACTION ADD CHECKS 
+
+                for event in phyner_reaction_adds:
+                    if all([
+                        event.guild_id == message.guild.id if message.guild else False,
+                        event.condition.id == message.id,
+                        str(event.object.id) == str(payload.emoji)
+                    ]):
+                        t_event = copy.deepcopy(event)
+
+                        # need to do inverse
+                        t_event.action.action = "role_remove" if event.action.action == "role_add" else t_event.action.action
+                        t_event.action.action = "role_add" if event.action.action == "role_remove" else t_event.action.action
+
+                        if t_event.action.action != event.action.action:
+                            await Events.perform_action(client, message, user, t_event)
+
+
+                ## PHYNER REACTION REMOVE CHECKS 
+
+                for event in phyner_reaction_removes:
+                    if all([
+                        event.guild_id == message.guild.id if message.guild else False,
+                        event.condition.id == message.id,
+                        str(event.object.id) == str(payload.emoji)
+                    ]):
+                        await Events.perform_action(client, message, user, event)
+
+    except AttributeError: # possibly NoneType.fetch_message, happens in DMs after bot is restarted
+        error = traceback.format_exc()
+
+    #except discord.errors.NotFound: # bot aint finding messages...
+     #   Logger.log_error(traceback.format_exc())
+      #  return
+
+    except discord.errors.Forbidden:
+        error = traceback.format_exc()
+    
+    except:
+        error = traceback.format_exc()
+
+    if error:
+        await Logger.log_error(client, error)
+# end on_reaction_add
+
+
+# end on_reaction_remove
 
 
 ''' STARTUP '''

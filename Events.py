@@ -1,22 +1,25 @@
 ''' IMPORTS '''
 
-import discord
 import asyncio
+import copy
+from datetime import datetime
+from typing import Tuple
+import discord
 import mysql.connector
 import re
-from datetime import datetime
-import traceback
 import sys
+import traceback
 
 
 import Database
 import Logger
 from Logger import log
+import Help
+import Role
+from Servers import TemplarLeagues
 import Support
 from Support import simple_bot_response
 from Support import quote
-import Help
-from Servers import TemplarLeagues
 
 
 
@@ -79,7 +82,7 @@ class Event:
         self.object = obj
         self.condition = condition
         self.event = event
-        self.action = action # TODO this may need to be a list ... event role_add multiple roles ??
+        self.action = action
     # end __init__
 
 
@@ -109,8 +112,9 @@ class Event:
                 sql += "`action_id` = %s " % (quote(self.action.id) if self.action else 'NULL ')
                 sql += " WHERE "
                 sql += f"guild_id = '{self.guild_id}' AND "
-                sql += f"object = '{self.object.type}' AND "
-                sql += f"object_id = '{self.object.id}'"
+                sql += f"object_id = '{self.object.id}' AND"
+                sql += f"condition_id = '{self.condition.id}' AND"
+                sql += f"action_id = '{self.action.id}'"
                 sql += ";"
                 existing_event = True
                 break
@@ -224,6 +228,10 @@ def get_event_from_entry(entry):
 # end get_event_from_entry
 
 def get_events():
+    """
+        returns all events
+    """
+
     db = Database.connect_database()
     db.cursor.execute(f"""
         SELECT * FROM Events
@@ -242,7 +250,7 @@ def get_object_ids(events, type):
 
 def get_event_events(events, event):
     """
-        Returns [Event, ...]
+        Returns [Event, ...] based on event given
     """
     return [e for e in events if e.event == event]
 # end get_object_ids
@@ -584,7 +592,7 @@ async def watch_emoji(client, message, args):
     number_emojis_used = []
     action = None
 
-    possible_actions = ["create_private_text_channel", ] # "role_add (wip)", "role_remove (wip)"]
+    possible_actions = ["create_private_text_channel", "role_add", "role_remove"]
 
     # build description
     embed.description = f"Choose from the list below what {phyner.mention} needs to do when {emoji} is {'added to' if event == 'reaction_add' else 'removed from'} this [message]({message.jump_url}).\n\n"
@@ -645,53 +653,75 @@ async def watch_emoji(client, message, args):
 
     # identify action id
 
-    action_id = None
-    action_source = None
-    while not action_source:
+    action_ids = []
+    action_sources = []
+    while not action_sources:
 
-        action_id = re.findall(r"\d{17,}", args[0])
-        action_id = int(action_id[0]) if action_id else None
+        action_ids = re.findall(r"\d{17,}", ' '.join(args))
+        action_ids = [int(a_id) for a_id in action_ids]
+
+        print(action_ids)
 
         try:
-            if action_id and not action_source:
-                if action == "create_private_text_channel":
+            if len(action_sources) < len(action_ids): # no way for action_sources to be > action_ids
+                if action in ["create_private_text_channel"]:
                     categories = message.guild.categories # check categories
-                    action_source = [category_channel for category_channel in categories if category_channel.id == action_id]
+                    action_sources = [category_channel for category_channel in categories if category_channel.id in action_ids]
                     
-                    if not action_source: # check channels
+                    if not action_sources: # check channels
                         channels = message.guild.channels
-                        action_source = [chnnl for chnnl in channels if chnnl.id == action_id]
+                        action_sources = [chnnl for chnnl in channels if chnnl.id in action_ids]
+
+                if action in ["role_add", "role_remove"]:
+                    roles = message.guild.roles # check roles
+                    action_sources = [r for r in roles if r.id in action_ids]
 
         except: # this may not be needed, but same template as while not mesge: seen above
             pass
+
 
         action_source_types = []
         if action in ["create_private_text_channel"]:
             action_source_types = ["text channels", "categories"]
 
-        if action_source:
-            action_source = action_source[0]
+        elif action in ["role_add", "role_remove"]:
+            action_source_types = ["roles"]
+
+
+        need_syntax = False
+        if len(action_sources) == len(action_ids): # every id given lead to a source
 
             action_source_type = ""
             
             # categories and text channels
-            action_source_type = 'category' if str(action_source.type) == "category" else 'text channel' if str(action_source.type) == 'text' else None # unlikely this is ends up being none
+            action_source_type = 'category' if type(action_sources[0]) == discord.channel.CategoryChannel else None
+            action_source_type = 'text channel' if type(action_sources[0]) == discord.channel.TextChannel else None
 
-            # action_source_type = ... if role or something
+            # roles
+            action_source_type = "role" if type(action_sources[0]) == discord.role.Role else None
+            # it's very unlikely, if not impossible for action_source_type to end up None
 
-            embed.description = f"Is the below {action_source_type} the {action_source_type} you would like {phyner.mention} to use for {action}?\n\n"
+            embed.description = f"Is the below {action_source_type}(s) the {action_source_type}(s) you would like {phyner.mention} to use for {action}?\n\n"
 
-            embed.description += f"{action_source.mention}"
+            for a_s in action_sources:
+                embed.description += f"{a_s.mention}\n"
 
-        elif action_id and not action_source: # no action_source found based on action_id
-            embed.description = f"There were no {' or '.join(action_source_types)} found with the given action ID, {action_id}, in this server. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
-
-        elif not action_id: # no action id provided
+        elif not action_ids: # no action id provided
             embed.description = f"There was not an action ID found in your message. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
+            need_syntax = True
 
-        if not action_source:
+        else: # not every id given lead to a source
+            embed.description = f"There were no {' or '.join(action_source_types)} found with {'any or all of the ' if len(action_ids) > 1 else ''}the given action ID(s), {' or '.join([str(a_id) for a_id in action_ids])}, in this server. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
+            need_syntax = True
+
+
+        if need_syntax:
             embed.description += f"`... <message_id> [#channel] <action_id/action_mention>`\n"
-            embed.description += f"`... {mesge.id} {mesge.channel.mention} 593896370700550154`"
+            embed.description += f"`... {mesge.id} {mesge.channel.mention} 593896370700550154`\n\n"
+            
+            embed.description += f"`... <message_id> [#channel] <action_id/action_mention ...>`\n"
+            embed.description += f"`... {mesge.id} {mesge.channel.mention} 593896370700550154 790915709936599040`\n"
+            embed.description += "You can use multiple ids or mentions - like if you wanted to add multiple roles upon reaction_add."
 
         await msg.edit(embed=embed)
 
@@ -719,7 +749,7 @@ async def watch_emoji(client, message, args):
                 embed = Support.revert_confirm_input_last_field(field_footer, embed)
                 await Support.remove_reactions(msg, message.author, [Support.emojis.tick_emoji])
 
-                if not action_source:
+                if len(action_sources) != len(action_ids):
                     args, _ = Support.get_args_from_content(message.content)
                     args = args[-2:]
 
@@ -735,10 +765,15 @@ async def watch_emoji(client, message, args):
 
     # end while
 
-    emoji_event.action.id = action_source.id
+    emoji_events = []
+    for action_source in action_sources:
+        e_e = copy.deepcopy(emoji_event)
+        e_e.action.id = action_source.id
+        print(e_e.to_string())
+        emoji_events.append(e_e)
 
     embed = Support.delete_last_field(embed)
-    embed.add_field(name=Support.emojis.space_char, value=f"**When** {emoji} **on** [message]({mesge.jump_url}) **is** {event}ed, **do** {action} **using** {action_source.mention}.", inline=False) # may need to make action_source a list
+    embed.add_field(name=Support.emojis.space_char, value=f"**When** {emoji} **on** [message]({mesge.jump_url}) **is** {event}ed, **do** {action} **using** {' and '.join([a_s.mention for a_s in action_sources])}.", inline=False) # may need to make action_source a list
     embed = Support.delete_last_field(Support.switch_last_two_fields(embed))
     embed.title = "Event Confirmation"
     embed.description = discord.Embed().Empty
@@ -791,10 +826,12 @@ async def watch_emoji(client, message, args):
     await Support.clear_reactions(msg)
     await msg.edit(embed=embed)
 
-    emoji_event.edit_event(get_events())
+    for e_e in emoji_events:
+        e_e.edit_event(get_events())
 
-    log("watch emoji", emoji_event.to_string())
-    return emoji_event
+        log("watch emoji", e_e.to_string())
+
+    return emoji_events
 # end watch_emoji
 
 
@@ -933,6 +970,12 @@ async def perform_action(client, message, user, event):
                 if event.object.id == "some_emoji":
                     await TemplarLeagues.series_report(client, channel, user)
                     remove_reaction = True
+
+
+    elif event.action.action in ["role_add", "role_remove"]:
+        success = await Role.add_remove_role(user, event.action.id, add=event.action.action == "role_add", remove=event.action.action == "role_remove")
+        if not success and event.event == "reaction_add": # hopefully it simply just works and no issues
+            remove_reaction = True
 
 
     return remove_reaction

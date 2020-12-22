@@ -1,8 +1,9 @@
 ''' IMPORTS '''
 
+import copy
+from logging import LogRecord
 import discord
 import re
-import copy
 
 import Database
 from Logger import log
@@ -138,3 +139,34 @@ async def edit_user_roles(message, args, author_perms, add=False, remove=False):
 
     await message.channel.send(embed=embed)
 # end edit_user_role
+
+async def add_remove_role(member, role, add=False, remove=False):
+    """
+        role can be either a role_id or a discord.role.Role
+    """
+
+    if role != discord.role.Role:
+        role = [r for r in member.guild.roles if r.id == role]
+        if role:
+            role = role[0]
+
+        else:
+            log("add_remove_role", f"role does not exist, guild: {member.guild.id}, role id: {role}")
+            return False
+
+    try:
+        if add:
+            await member.add_roles(role)
+            log("add_remove_role", f"role added")
+            return True
+
+        elif remove:
+            await member.remove_roles(role)
+            log("add_remove_role", f"role removed")
+            return True
+
+    except discord.errors.Forbidden:
+        log("add_remove_role", f"forbidden, guild: {member.guild.id}, add: {add} remove: {remove}, role_id: {role.id}")
+        return False
+
+# end add_remove_roles
