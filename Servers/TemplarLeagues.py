@@ -27,7 +27,7 @@ templar_leagues_id = 437936224402014208
 staff_templar_leagues_id = 752990198077587569
 
 # channels
-approved_results_id = 791035599812427816
+approved_results_id = 686981857379614746
 staff_league_results_log_id = 753207723499192383
 staff_stats_log_id = 789066825093611550
 
