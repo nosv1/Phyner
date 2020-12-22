@@ -355,9 +355,10 @@ async def series_report(client, message, user):
 
         staff_guild = client.get_guild(staff_templar_leagues_id)
         league_results_log = staff_guild.get_channel(staff_league_results_log_id)
-        msg = await league_results_log.send(content=f"`<@&{staff_moderator_id}> <@&{staff_support_id}>`", embed=embed)
+        msg = await league_results_log.send(content=f"<@&{staff_moderator_id}> <@&{staff_support_id}>", embed=embed)
         await msg.add_reaction(Support.emojis.tick_emoji)
 
+        # delete submission channel
         await message.channel.delete()
 
     except asyncio.TimeoutError:
@@ -390,7 +391,7 @@ async def verify_series_report(client, message):
     staff_stats = staff_guild.get_channel(staff_stats_log_id)
     main_approved_results = main_guild.get_channel(approved_results_id)
 
-    await staff_stats.send(content=f"`<@&{staff_stats_id}>`", embed=embed)
+    await staff_stats.send(content=f"<@&{staff_stats_id}>", embed=embed)
     await main_approved_results.send(embed=embed)
 
     await message.edit(embed=embed) # edit the verified message now
