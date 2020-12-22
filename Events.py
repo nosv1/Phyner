@@ -966,9 +966,9 @@ async def perform_action(client, message, user, event):
         channel = await create_private_text_channel(client, message, user, event)
 
         if event.guild_id == TemplarLeagues.templar_leagues_id:
-            if event.condition.id == "some_message_id":
-                if event.object.id == "some_emoji":
-                    await TemplarLeagues.series_report(client, channel, user)
+            if event.condition.id == TemplarLeagues.series_report_message_id:
+                if event.object.id == Support.emojis.tick_emoji:
+                    await TemplarLeagues.prepare_series_report_channel(client, channel, user)
                     remove_reaction = True
 
 

@@ -36,6 +36,9 @@ staff_moderator_id = 753005514232692737
 staff_support_id = 753005661771792506
 staff_stats_id = 753005951832948839
 
+# messages
+series_report_message_id = 791041462719873074
+
 
 # Spreadsheets
 spreadsheets = SimpleNamespace(**{
@@ -46,7 +49,7 @@ spreadsheets = SimpleNamespace(**{
 })
 
 # embeds
-series_report_embed_link = "https://discord.com/channels/467239192007671818/648401621977399298/789087942759940096"
+series_report_embed_link = "https://discord.com/channels/437936224402014208/533689609830531092/791041462719873074"
 
 aliases = ["", ]
 
@@ -94,6 +97,8 @@ async def on_reaction_add(client, message, user, payload):
 
 
 async def prepare_series_report_channel(channel, user):
+
+    await channel.edit(name=f"series-report-{user.display_name}-{user.discriminator}")
 
     series_report_embed = Embeds.get_saved_embeds(link=series_report_embed_link)[0].embed
     msg = await channel.send(content=user.mention, embed=series_report_embed)
