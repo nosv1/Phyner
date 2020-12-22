@@ -19,7 +19,7 @@ from Support import simple_bot_response
 
 async def test(message, args):
 
-
+    '''
     import Tables
     tables = Tables.get_tables(guild_id=789181254120505386)
     table = tables[1]
@@ -28,7 +28,7 @@ async def test(message, args):
     tables = table.get_table_displays()
     await simple_bot_response(message.channel,
         description = tables[0]
-    )
+    )'''
 
     # await new_slash_cmd()
     # await gspread_testing()
@@ -41,7 +41,7 @@ async def test(message, args):
 async def templar_test(message):
     from Servers import TemplarLeagues
 
-    channel = message.guild.get_channel(547274914319826944)
+    channel = message.guild.get_channel(791018720372981760)
     await TemplarLeagues.prepare_series_report_channel(channel, message.author)
 # end templar_test
 

@@ -1,5 +1,6 @@
 ''' IMPORTS '''
 
+from os import supports_bytes_environ
 import discord
 import asyncio
 import traceback
@@ -13,15 +14,28 @@ import Embeds
 import Logger
 from Logger import log
 import Support
-from Support import simple_bot_response
+from Support import delete_last_field, messageOrMsg, simple_bot_response
 import Delete
 
 
 
 ''' CONSTANTS '''
+# staff_ indicates the id is in the Staff server
 
 # IDs
 templar_leagues_id = 437936224402014208
+staff_templar_leagues_id = 752990198077587569
+
+# channels
+approved_results_id = 791028324762648577
+staff_league_results_log_id = 753207723499192383
+staff_stats_log_id = 789066825093611550
+
+# roles
+staff_moderator_id = 0
+staff_support_id = 753005661771792506
+staff_stats_id = 753005951832948839
+
 
 # Spreadsheets
 spreadsheets = SimpleNamespace(**{
@@ -67,6 +81,12 @@ async def on_reaction_add(client, message, user, payload):
                     await series_report(client, message, user)
                     remove_reaction = True
 
+                elif ( # series report verificaiton + tick_emoji button
+                    "/id=templar_leagues_series_report_verification/" in embed.author.url and 
+                    payload.emoji.name == Support.emojis.tick_emoji
+                ):
+                    await verify_series_report(client, message)
+
     return remove_reaction
 # end on_reaction_add
 
@@ -75,7 +95,7 @@ async def on_reaction_add(client, message, user, payload):
 
 async def prepare_series_report_channel(channel, user):
 
-    series_report_embed = Embeds.load_embed_from_Embeds(series_report_embed_link)
+    series_report_embed = Embeds.get_saved_embeds(link=series_report_embed_link)[0].embed
     msg = await channel.send(content=user.mention, embed=series_report_embed)
     await msg.add_reaction(Support.emojis.ok_emoji)
 
@@ -106,11 +126,18 @@ async def series_report(client, message, user):
         embed["color"] = series_report_embed["color" if "color" in series_report_embed else "colour"]
     embed = discord.Embed().from_dict(embed)
 
+    # prepare description
+    embed.description = "**Match ID:** \n\n" # lines[0]
+    embed.description += "**Home Team:** \n" # lines[2]
+    embed.description += "**Away Team:** \n\n" # lines[3]
+    embed.description += f"**Proof:** \n{Support.emojis.space_char}" # lines[5]
+
+
     # set up fields    
-    embed.add_field(name="**Match ID**", value=Support.emojis.space_char, inline=False)
+    '''embed.add_field(name="**Match ID**", value=Support.emojis.space_char, inline=False)
     embed.add_field(name="**Home Team Wins**", value=Support.emojis.space_char, inline=True)
     embed.add_field(name="**Away Team Wins**", value=Support.emojis.space_char, inline=True)
-    embed.add_field(name="**Proof**", value=Support.emojis.space_char, inline=False)
+    embed.add_field(name="**Proof**", value=Support.emojis.space_char, inline=False)'''
     embed.add_field(name="**Instruction**", value=Support.emojis.space_char, inline=False)
     instruction_field_name = "**Instruction**"
 
@@ -176,10 +203,13 @@ async def series_report(client, message, user):
         home_team = row[2]
         away_team = row[4]
 
+        lines = embed.description.split("\n")
+        lines[0] += f"`{match_id}`"
+        lines[2] = f"**{home_team}:** "
+        lines[3] = f"**{away_team}:** "
+
         embed = embed.to_dict()
-        embed["fields"][0]["value"] = match_id
-        embed["fields"][1]["name"] = f"{home_team} Wins"
-        embed["fields"][2]["name"] = f"{away_team} Wins"
+        embed["description"] = "\n".join(lines)
         del embed["footer"]
         embed = discord.Embed().from_dict(embed)
 
@@ -215,9 +245,12 @@ async def series_report(client, message, user):
 
             await mesge.delete()
 
+            lines = embed.description.split("\n")
+            lines[3] = f"**{away_team}:** " + (f"`{away_team_wins}`" if away_team_wins >= 0 else "")
+            lines[2] = f"**{home_team}:** " + (f"`{home_team_wins}`" if home_team_wins >= 0 else "")
+
             embed = embed.to_dict()
-            embed["fields"][2]["value"] = away_team_wins if away_team_wins >= 0 else Support.emojis.space_char
-            embed["fields"][1]["value"] = home_team_wins if home_team_wins >= 0 else Support.emojis.space_char
+            embed["description"] = "\n".join(lines)
             if wins >= 0: # valid input
                 del embed["footer"]
             embed = discord.Embed().from_dict(embed)
@@ -280,11 +313,14 @@ async def series_report(client, message, user):
 
             await Support.remove_reactions(msg, user, Support.emojis.tick_emoji)
 
-            # add proof to embed
-            embed = embed.to_dict()
-            embed["fields"][3]["value"] = " ".join([f"[:link:]({link})" for link in other_links])
-            del embed["footer"]
-            embed = discord.Embed().from_dict(embed)
+        # add proof to embed
+        lines = embed.description.split("\n")
+        lines[5] = "**Proof:** " + " ".join([f"[link]({link})" for link in other_links])
+
+        embed = embed.to_dict()
+        embed["description"] = "\n".join(lines)
+        del embed["footer"]
+        embed = discord.Embed().from_dict(embed)
 
         # end while
 
@@ -297,12 +333,28 @@ async def series_report(client, message, user):
         await msg.edit(embed=embed)
 
         # wait
-        reaction, user = await client.wait_for("reaction", check=reaction_check, timeout=60)
+        reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=60)
 
         # tease user
         embed.set_footer(text="Submitting...")
         await msg.edit(embed=embed)
 
+        # send to staff leagues log
+        value = f"Please check that the proof matches the result, and verify the score by clicking the {Support.emojis.tick_emoji}!"
+        embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
+
+        embed = embed.to_dict()
+        embed["author"]["url"] = "https://google.com/id=templar_leagues_series_report_verification/"
+        del embed["footer"]
+        embed = discord.Embed().from_dict(embed)
+
+        # staff_guild = client.get_guild(staff_templar_leagues_id)
+        # league_results_log = staff_guild.get_channel(staff_league_results_log_id)
+        # msg = league_results_log.send(embed=embed)
+        msg = await message.channel.send(content="@Mo#9991 PING ROLES", embed=embed)
+        await msg.add_reaction(Support.emojis.tick_emoji)
+
+        await message.channel.send("delete this channel now")
 
     except asyncio.TimeoutError:
         restart("Timed Out")
@@ -312,5 +364,34 @@ async def series_report(client, message, user):
 
     except:
         await Support.previous_action_error(client, message)
-
 # end series_report
+
+async def verify_series_report(client, message):
+    embed = message.embeds[0]
+
+    # tease user
+    embed.set_footer(text="Verifying...")
+    await message.edit(embed=embed)
+
+    # clean up embed
+    embed = embed.to_dict()
+    del embed["footer"]
+    embed["description"] = embed["description"][:-1] # get rid of space char
+    embed = Support.delete_last_field(embed)
+
+    # send embed staff_stats and main_approved
+    '''staff_guild = client.get_guild(staff_templar_leagues_id)
+    main_guild = client.get_guild(templar_leagues_id)
+
+    staff_stats = staff_guild.get_channel(staff_stats_id)
+    main_approved_results = main_guild.get_channel(approved_results_id)
+
+    await staff_stats.send(embed=embed)
+    await main_approved_results.send(embed=embed)'''
+
+    await message.channel.send(content="to staff stats", embed=embed)
+    await message.channel.send(content="to league results", embed=embed)
+
+    await message.edit(embed=embed)
+
+# end verify_series_report

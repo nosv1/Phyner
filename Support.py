@@ -206,15 +206,20 @@ def convert_embed_dict_to_create_messages(embed_dict):
         elif key in ["thumbnail", "image"]:
             line += f".{key}_url {embed_dict[key]['url']}\n"
 
+
+         # if line: # line has been edited, good to continue # TODO DO THIS NOW
+
+
         elif key in ["fields"]:
             for i in range(len(embed_dict[key])):
                 for f_key in embed_dict[key][i]:
                     line += f".{key[:-1]}{i+1}_{f_key} {embed_dict[key][i][f_key]}\n"
 
-                line += "\n"
-
+                
 
         create_messages[0] += f"{line}\n"
+
+
 
     create_messages[-1] += "```"
     return [c_m.replace(f"{emojis.space_char}", "\\s").replace(f"{emojis.bullet}", "\\b") for c_m in create_messages]
