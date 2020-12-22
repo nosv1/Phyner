@@ -358,7 +358,7 @@ async def series_report(client, message, user):
         msg = await league_results_log.send(content=f"`<@&{staff_moderator_id}> <@&{staff_support_id}>`", embed=embed)
         await msg.add_reaction(Support.emojis.tick_emoji)
 
-        await message.channel.send("delete this channel now")
+        await message.channel.delete()
 
     except asyncio.TimeoutError:
         restart("Timed Out")

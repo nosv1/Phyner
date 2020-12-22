@@ -407,7 +407,8 @@ async def on_raw_reaction_add(payload):
 
                 if message.guild:
                     if message.guild.id in [ # Templar Leagues
-                        TemplarLeagues.templar_leagues_id, 
+                        TemplarLeagues.templar_leagues_id,
+                        TemplarLeagues.staff_templar_leagues_id, 
                         okay_mobot_support,
                         okay_phyner_support
                     ]:
