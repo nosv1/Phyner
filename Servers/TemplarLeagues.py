@@ -355,7 +355,7 @@ async def series_report(client, message, user):
 
         staff_guild = client.get_guild(staff_templar_leagues_id)
         league_results_log = staff_guild.get_channel(staff_league_results_log_id)
-        msg = league_results_log.send(content=f"`<@&{staff_moderator_id}> <@&{staff_support_id}>`", embed=embed)
+        msg = await league_results_log.send(content=f"`<@&{staff_moderator_id}> <@&{staff_support_id}>`", embed=embed)
         await msg.add_reaction(Support.emojis.tick_emoji)
 
         await message.channel.send("delete this channel now")
