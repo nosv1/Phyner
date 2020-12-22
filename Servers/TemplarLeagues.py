@@ -387,7 +387,7 @@ async def verify_series_report(client, message):
     staff_guild = client.get_guild(staff_templar_leagues_id)
     main_guild = client.get_guild(templar_leagues_id)
 
-    staff_stats = staff_guild.get_channel(staff_stats_id)
+    staff_stats = staff_guild.get_channel(staff_stats_log_id)
     main_approved_results = main_guild.get_channel(approved_results_id)
 
     await staff_stats.send(content=f"`<@&{staff_stats_id}>`", embed=embed)
