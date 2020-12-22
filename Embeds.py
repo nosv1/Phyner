@@ -85,8 +85,22 @@ class SavedEmbed:
     # end __init__
 
 
-    def save_embed(self): # TODO check if guild + name exist
+    def save_embed(self):
         self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{self.name}.json"
+        gcm = self.name.split("-")[:3]
+        print(gcm)
+
+        saved_embeds = get_saved_embeds(guild_id=self.guild_id)
+        for saved_embed in saved_embeds:
+            existing_gcm = saved_embed.path.split("-")[:3]
+            print(existing_gcm)
+
+            if gcm == existing_gcm: # if gcms match, consider deleting old if new name given
+                if gcm[-1] == ".json": # new name not given
+                    self.path = saved_embed.path # overwrite existing file
+
+                else: # new name given, delete existing file, add new
+                    os.remove(saved_embed.path)
 
         with open(self.path, "w+") as embeds:
             json.dump(self.embed.to_dict(), embeds, indent=4, sort_keys=True)
@@ -153,13 +167,14 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
 
     save_embeds = []
     for embed_file in embed_files:
-        file_ids = re.findall(r"\d+", str(embed_file))
+        file_ids = re.findall(r"(\d+)", str(embed_file))
 
         if (
             not embed_ids[0] or # nothing provided
             file_ids == embed_ids or # exact match
             (not embed_ids[1] and embed_ids[0] == file_ids[0]) # if only guild given
         ):
+            print(file_ids)
             name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after message_id and .json at the end
             name = file_ids[-1] if not name else name # name is either name or message_id now
 

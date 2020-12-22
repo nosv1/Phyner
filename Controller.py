@@ -49,6 +49,8 @@ host = os.getenv("HOST")
 guild_prefixes = Guilds.get_guild_prefixes()
 log("startup", f"Guild Prefixes: {len(guild_prefixes)}")
 
+
+# event stuff
 events = Events.get_events()
 log("startup", f"Events: {len(events)}")
 
@@ -61,6 +63,7 @@ log("startup", f"Phyner Reaction Add Events: {len(phyner_reaction_adds)}")
 phyner_reaction_removes = Events.get_event_events(events, "reaction_remove")
 log("startup", f"Phyner Reaction Remove Events: {len(phyner_reaction_removes)}")
 
+# restart stuff
 restart = 0 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
 restart_interval = 60 # time between restart/shutdown command and action
@@ -510,9 +513,6 @@ async def on_raw_reaction_remove(payload):
 
     if error:
         await Logger.log_error(client, error)
-# end on_reaction_add
-
-
 # end on_reaction_remove
 
 
