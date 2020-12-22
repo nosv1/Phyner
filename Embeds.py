@@ -167,6 +167,7 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
 
     save_embeds = []
     for embed_file in embed_files:
+        print(embed_file)
         file_ids = re.findall(r"(\d+)", str(embed_file))
 
         if (
