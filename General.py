@@ -7,13 +7,13 @@ import Logger
 from Logger import log
 import Support
 from Support import simple_bot_response
-from Help import help_aliases
+import Help
 
 
 
 ''' CONSTANTS '''
 
-say_aliases = ["say", "speak"]
+say_aliases = ["say", "speak", "create"]
 edit_aliases = ["edit"]
 
 

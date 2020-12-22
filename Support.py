@@ -179,6 +179,48 @@ def get_args_from_content(content):
 
 ## embed stuff ##
 
+def convert_embed_dict_to_create_messages(embed_dict):
+
+    create_messages = ["```"]
+
+    for key in embed_dict:
+
+        line = ""
+
+        if key in ["color", "colour"]:
+            line += f".{key} #{str(hex(int(embed_dict[key])))[2:]}\n"
+
+        elif key in ["title", "description"]:
+            line += f".{key} {embed_dict[key]}\n"
+
+
+        elif key in ["author", "footer"]:
+            for f_key in embed_dict[key]:
+                if f_key in ["text", "name"]:
+                    line += f".{key} {embed_dict[key][f_key]}\n"
+
+                elif f_key in ["icon_url"]:
+                    line += f".{key}_{f_key} {embed_dict[key][f_key]}\n"
+
+
+        elif key in ["thumbnail", "image"]:
+            line += f".{key}_url {embed_dict[key]['url']}\n"
+
+        elif key in ["fields"]:
+            for i in range(len(embed_dict[key])):
+                for f_key in embed_dict[key][i]:
+                    line += f".{key[:-1]}{i+1}_{f_key} {embed_dict[key][i][f_key]}\n"
+
+                line += "\n"
+
+
+        create_messages[0] += f"{line}\n"
+
+    create_messages[-1] += "```"
+    return [c_m.replace(f"{emojis.space_char}", "\\s").replace(f"{emojis.bullet}", "\\b") for c_m in create_messages]
+
+# end convert_embed_dict_to_create_messages
+
 def edit_field_value_with_name(embed, name, value):
     embed = embed.to_dict()
     for i in range(len(embed["fields"])):

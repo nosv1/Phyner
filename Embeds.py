@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+import General
 import Guilds
 import Help
 import Logger
@@ -86,17 +87,18 @@ class SavedEmbed:
 
 
     def save_embed(self):
-        self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{self.name}.json"
-        gcm = self.name.split("-")[:3]
-        print(gcm)
+        gcm = [str(self.guild_id), str(self.channel_id), str(self.message_id)]
+        self.path = f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}{'-'.join(gcm)}{'-' + self.name if self.name else ''}.json"
 
         saved_embeds = get_saved_embeds(guild_id=self.guild_id)
         for saved_embed in saved_embeds:
-            existing_gcm = saved_embed.path.split("-")[:3]
+            existing_gcm = saved_embed.path.split("-")[:3] # :3 because there may be a - in embed name
+            existing_gcm[0] = Support.get_id_from_str(existing_gcm[0])[0]
+            existing_gcm[-1] = Support.get_id_from_str(existing_gcm[-1])[0]
             print(existing_gcm)
 
-            if gcm == existing_gcm: # if gcms match, consider deleting old if new name given
-                if gcm[-1] == ".json": # new name not given
+            if gcm == existing_gcm: # if gcms match, delete old if new name given
+                if not self.name: # new name not given
                     self.path = saved_embed.path # overwrite existing file
 
                 else: # new name given, delete existing file, add new
@@ -119,7 +121,7 @@ async def main(client, message, args, author_perms):
         await send_embed_help(message)
 
 
-    elif args[2] == "create":
+    elif args[2] in General.say_aliases:
 
         if author_perms.manage_messages:
             await create_user_embed(client, message)
@@ -138,11 +140,22 @@ async def main(client, message, args, author_perms):
 
 
     elif args[2] == "send":
-        await send_saved_embed_from_message(message, args[3:-1])
+        if author_perms.manage_messages:
+            await send_saved_embed_from_message(message, args[3:-1])
+
+        else:
+            await send_permissions_needed(message, message.author)
 
 
     elif args[2] == "save":
-        await save_embed(client, message, args[3:-1])
+        if author_perms.manage_messages:
+            await save_embed(client, message, args[3:-1])
+
+        else:
+            await send_permissions_needed(message, message.author)
+
+    elif args[2] == "convert":
+        await convert(client, message, args[3:-1])
     
 
     elif args[2] == "saved":
@@ -175,7 +188,7 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
             (not embed_ids[1] and embed_ids[0] == file_ids[0]) # if only guild given
         ):
             name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after message_id and .json at the end
-            name = file_ids[-1] if not name else name # name is either name or message_id now
+            name = file_ids[-1] if not name else name # name is either name or str(message_id) now
 
             save_embeds.append(SavedEmbed(int(file_ids[0]), int(file_ids[1]), int(file_ids[2]), load_embed_from_Embeds(str(embed_file)), name, str(embed_file)))
 
@@ -230,6 +243,8 @@ def load_embed_from_Embeds(path):
 
 
 async def send_saved_embed_from_message(message, args):
+
+    # TODO send saved embed help
 
     # get destination channel 
     channel = message.channel_mentions[-1] if message.channel_mentions else message.channel
@@ -630,6 +645,8 @@ async def save_embed(client, message, args):
         ..p embed save <msg_id> [#channel] [embed_name]
     """
 
+    # TODO embed save help
+
     if message.channel_mentions:
         channel = message.channel_mentions[0]
         del args[1]
@@ -642,7 +659,8 @@ async def save_embed(client, message, args):
     del args[0]
     if mesge_id:
         try:
-            mesge = await channel.fetch_message(mesge_id[0])
+            mesge = await channel.fetch_message(int(mesge_id[0]))
+
         except discord.errors.NotFound:
             await Support.previous_action_error(client, message)
             Logger.log("embed save", "mesge not found") # TODO embed save error
@@ -651,9 +669,8 @@ async def save_embed(client, message, args):
         embed = mesge.embeds[0] if mesge.embeds else None # BUG error when saving in dms
         if embed:
             gcm = (mesge.guild.id if mesge.guild else message.author.id, mesge.channel.id, mesge.id) # guild channel message
-            gcm_str = f"{'-'.join([str(i) for i in gcm])}"
             name = f"-{'_'.join(args)}" 
-            embed = SavedEmbed(*gcm, embed, name=gcm_str + (name if len(name) > 1 else ""))
+            embed = SavedEmbed(*gcm, embed, name=name[1:] if name != "-" else "")
             embed = embed.save_embed()
 
             await Support.process_complete_reaction(message)
@@ -669,6 +686,53 @@ async def save_embed(client, message, args):
         Logger.log("embed save error", "no message id given") # TODO embed save error 
         return
 # end save_embed
+
+
+async def convert(client, message, args):
+    """
+        ..p embed convert <message_id> [#channel]
+        ..p embed convert <embed_name>
+    """
+
+    # TODO embed convert help
+
+    embed_dict = None
+
+    saved_embeds = get_saved_embeds(guild_id=str(message.guild.id))
+    for saved_embed in saved_embeds:
+        if args[0] == saved_embed.name:
+            embed_dict = saved_embed.embed.to_dict()
+
+    if not embed_dict:
+        channel = message.channel_metions[0] if message.channel_mentions else message.channel
+        msg_id = Support.get_id_from_str(args[0])
+        msg_id = int(msg_id[0]) if msg_id else None
+
+        if msg_id:
+            try:
+                msg = await channel.fetch_message(int(args[0]))
+
+                if msg.embeds:
+                    embed_dict = msg.embeds[0].to_dict()
+
+                else:
+                    Logger.log("convert error", "no embed on this msg")
+                    return
+
+            except discord.errors.NotFound:
+                Logger.log("convert embed", "msg not found") # TODO convert embed error
+                return
+
+        else:
+            Logger.log("convert embed", "no msg id given") # TODO convert embed error
+            return
+
+    # should have embed_dict by now
+    create_messages = Support.convert_embed_dict_to_create_messages(embed_dict)
+
+    for c in create_messages:
+        await message.channel.send(c)
+# end convert
 
 
 
