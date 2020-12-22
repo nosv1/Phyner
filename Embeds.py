@@ -176,11 +176,11 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
     embeds_folder = pathlib.Path(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}")
     embed_files = sorted(embeds_folder.iterdir(), key=os.path.getctime)
 
-    embed_ids = link.split("/")[-3:] if link else [str(guild_id), str(channel_id), str(message_id)] # will be at least ['']
+    embed_ids = link.split("/")[-3:] if link else [str(guild_id), str(channel_id), str(message_id)] # will be at least [''] # FIXME this assumes no / in name
 
     save_embeds = []
     for embed_file in embed_files:
-        file_ids = re.findall(r"(\d+)", str(embed_file))
+        file_ids = re.findall(r"(\d{17,})", str(embed_file))
 
         if (
             not embed_ids[0] or # nothing provided
