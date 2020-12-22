@@ -365,9 +365,12 @@ async def series_report(client, message, user):
 
     except asyncio.TimeoutError:
         restart("Timed Out")
-        await msg.edit(embed=embed)
+        
+        try:
+            await msg.edit(embed=embed)
 
-        # this may produce a not found error if a message it attempted to be edited after the channel is gone... 
+        except discord.errors.NotFound:
+            pass
 
     except:
         await Support.previous_action_error(client, message)
