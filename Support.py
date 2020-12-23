@@ -210,17 +210,30 @@ def convert_embed_dict_to_create_messages(embed_dict):
             line += f".{key}_url {embed_dict[key]['url']}\n"
 
 
-         # if line: # line has been edited, good to continue # TODO DO THIS NOW
+        if not line:
+            if key in ["fields"]:
+                for i in range(len(embed_dict[key])):
+                    
+                    f_line = ""
+                    for f_key in embed_dict[key][i]:
+                        f_line += f".{key[:-1]}{i+1}_{f_key} {embed_dict[key][i][f_key]}\n"
+                    
+                    f_line = f_line.replace("```", "`\`\`\`") + "\n"
+                    if len(create_messages[-1] + f_line) < 1000:
+                        create_messages[-1] += f_line
 
+                    else:
+                        create_messages[-1] += "```"
+                        create_messages.append(f"```{f_line}")
+            continue
 
-        elif key in ["fields"]:
-            for i in range(len(embed_dict[key])):
-                for f_key in embed_dict[key][i]:
-                    line += f".{key[:-1]}{i+1}_{f_key} {embed_dict[key][i][f_key]}\n"
+        line = line.replace('```', '\`\`\`') + "\n"
+        if len(create_messages[-1] + line) < 1000:
+            create_messages[-1] += line
 
-                
-
-        create_messages[0] += line.replace('```', '\`\`\`') + "\n"
+        else:
+            create_messages[-1] += "```"
+            create_messages.append(f"```{line}")
 
 
 
