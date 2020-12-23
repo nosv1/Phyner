@@ -62,10 +62,11 @@ async def search(message, args):
             if len(results_description) < 1000:
                 outputted += 1
 
-                # **[title](link)** - `command`
-                title = result['title'].split("`") # title should be >> title `command`
+                # **title** - `command`
+                title = result['title'].split("`") # title should be >> title `command` >> [title, command, '']
                 command = title[1] if len(title) > 1 else ""
-                results_description += f"**[{title[0]}]({result['link']})**" + (f" - `{command}`\n" if command else "\n")
+                results_description += f"**{title[0]}** - `{command}`\n"
+                # results_description += f"**[{title[0]}]({result['link']})**" + (f" - `{command}`\n" if command else "\n")
 
                 # p = result['p'].split("\n") + [" "] # [@phyner command help, snippet]
                 # results_description += f"`{p[0].strip().replace('**', '')}`\n\n"
