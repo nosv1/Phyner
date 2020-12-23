@@ -4,6 +4,8 @@ import asyncio
 from os import supports_bytes_environ
 from types import SimpleNamespace
 
+import discord
+
 
 import Embeds
 import Guilds
@@ -175,7 +177,10 @@ async def send_help_embed(client, msg, embed_link, demo=False):
             except asyncio.TimeoutError:
                 await Support.clear_reactions(msg)
                 embed = Support.delete_last_field(embed)
-                await msg.edit(embed=embed)
+                try:
+                    await msg.edit(embed=embed)
+                except discord.errors.NotFound:
+                    pass
                 break
 
 # end send_help_embed
