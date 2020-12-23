@@ -655,11 +655,11 @@ async def save_embed(client, message, args):
         channel = message.channel
 
 
-    mesge_id = Support.get_id_from_str(message.content)
+    mesge_id = Support.get_id_from_str(args[0])
     del args[0]
     if mesge_id:
         try:
-            mesge = await channel.fetch_message(int(args[0]))
+            mesge = await channel.fetch_message(int(mesge_id[0]))
 
         except discord.errors.NotFound:
             await Support.previous_action_error(client, message)
