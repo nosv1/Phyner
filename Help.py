@@ -41,7 +41,7 @@ help_links = SimpleNamespace(**{
 
 ''' FUNCTIONS '''
 
-async def search(message, args): # TODO copy paste embed contents to the wiki, instead of rewriting everything
+async def search(message, args):
     """
         Sending a git hub search result
         https://github.com/nosv1/Phyner/search?q=&type=wikis
@@ -194,5 +194,7 @@ async def send_help_embed(client, msg, embed_link, default_footer=True, demo=Fal
                     pass
                 break
 
-        return msg
+    # end while
+
+    return msg
 # end send_help_embed
