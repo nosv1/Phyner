@@ -33,6 +33,9 @@ help_links = SimpleNamespace(**{
 
         "demo" : "https://cdn.discordapp.com/attachments/789218327473160243/790481979794653215/ids.gif"
         },
+
+    "embed_menu" : {"link" : "https://discord.com/channels/789181254120505386/791231253822439455/791231381685927936"},
+    "creating_and_editing_embeds" : {"link" : "https://discord.com/channels/789181254120505386/791231253822439455/791233860896948227"},
 })
 
 
@@ -98,7 +101,7 @@ async def search(message, args): # TODO copy paste embed contents to the wiki, i
 
 ''' HELP EMBEDS '''
 
-async def send_help_embed(client, msg, embed_link, demo=False):
+async def send_help_embed(client, msg, embed_link, default_footer=True, demo=False):
     """
         Help embeds are saved in /Embeds as well as in Phyner Support's HELP EMBEDS category
         The links are saved in the global variables at the top of this channel and sent using the saved versions in /Embeds
@@ -130,23 +133,24 @@ async def send_help_embed(client, msg, embed_link, demo=False):
         # add a footer if needed
         footer = []
         reactions = []
-        if embed_link not in [help_links.general]: # not general help embed
-            footer.append(f"{Support.emojis.question_emoji} `{guild_prefix} help`")
-            reactions.append(Support.emojis.question_emoji)
+        if default_footer:
+            if embed_link not in [help_links.general]: # not general help embed
+                footer.append(f"{Support.emojis.question_emoji} `{guild_prefix} help`")
+                reactions.append(Support.emojis.question_emoji)
 
-        if embed_link not in [help_links.command_list_1]: # not command list embed
-            footer.append(f"{Support.emojis.clipboard_emoji} `{guild_prefix} commands`")
-            reactions.append(Support.emojis.clipboard_emoji)
+            if embed_link not in [help_links.command_list_1]: # not command list embed
+                footer.append(f"{Support.emojis.clipboard_emoji} `{guild_prefix} commands`")
+                reactions.append(Support.emojis.clipboard_emoji)
 
-        if "demo" in embed_link: # has demo
-            footer.append(f"{Support.emojis.film_frames_emoji} `Demo`")
-            reactions.append(Support.emojis.film_frames_emoji)
+            if "demo" in embed_link: # has demo
+                footer.append(f"{Support.emojis.film_frames_emoji} `Demo`")
+                reactions.append(Support.emojis.film_frames_emoji)
 
-        if footer:
-            embed.add_field(name=Support.emojis.space_char, value=" **|** ".join(footer))
+            if footer:
+                embed.add_field(name=Support.emojis.space_char, value=" **|** ".join(footer))
 
-            if msg:
-                await Support.clear_reactions(msg)
+                if msg:
+                    await Support.clear_reactions(msg)
 
 
         # send embed
@@ -190,4 +194,5 @@ async def send_help_embed(client, msg, embed_link, demo=False):
                     pass
                 break
 
+        return msg
 # end send_help_embed

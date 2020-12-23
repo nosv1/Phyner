@@ -6,8 +6,7 @@ import json
 import pathlib
 import re
 import traceback
-from discord.enums import _is_descriptor
-from gspread.utils import filter_dict_values
+
 import validators
 
 import os
@@ -20,7 +19,7 @@ import Guilds
 import Help
 import Logger
 import Support
-from Support import emojis, get_phyner_from_channel, simple_bot_response
+from Support import emojis, get_phyner_from_channel
 
 
 
@@ -118,7 +117,7 @@ class SavedEmbed:
 async def main(client, message, args, author_perms):
 
     if args[2] in Help.help_aliases: # @Phyner <command> or @Phyner command help
-        await send_embed_help(message)
+        await send_embed_help(client, message)
 
 
     elif args[2] in General.say_aliases:
@@ -739,16 +738,46 @@ async def convert(client, message, args):
 
 ## RESPONSES ##
 
-async def send_embed_help(message): # TODO proper help message
-
-    description = f"For help with embeds, click [__here__](https://github.com/nosv1/Phyner/wiki/Custom-Embed-Messages) to visit the Phyner wiki page for **User Embeds**."
-
-    await Support.simple_bot_response(message.channel,
-        title = "Custom Embed Messages",
-        description=description,
-        reply_message=message
-    )
+async def send_embed_help(client, message):
+    msg = await Help.send_help_embed(client, message, Help.help_links.embed_menu, default_footer=False)
     Logger.log("EMBED", "Help")
+    embed = msg.embeds[0]
+    
+    emojis = [Support.emojis.pencil_emoji, Support.emojis.floppy_disk_emoji, Support.emojis.clipboard_emoji] 
+    for r in emojis[:1]: # FIXME EMBED HELP REACTIONS
+        await msg.add_reaction(r)
+
+    def reaction_check(reaction, r_user):
+        return (
+            reaction.message == msg and
+            r_user.id == message.author.id and
+            str(reaction.emoji) in emojis
+        )
+    # end reaction_check
+
+    try:
+        while True:
+            reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
+
+
+            if str(reaction.emoji) == emojis[0]: # pencil
+                embed = get_saved_embeds(link=Help.help_links.creating_and_editing_embeds["link"])[0].embed
+
+            elif str(reaction.emoji) == emojis[1]: # floppy disk
+                embed = get_saved_embeds(link=Help.help_links.creating_and_editing_embeds["link"])[0].embed
+
+            elif str(reaction.emoji) == emojis[2]: # clipboard
+                embed = get_saved_embeds(link=Help.help_links.creating_and_editing_embeds["link"])[0].embed
+
+
+            if str(reaction.emoji) in emojis:
+                await msg.edit(embed=embed)
+                await Support.clear_reactions(msg)
+                break
+
+    except asyncio.TimeoutError:
+        await Support.clear_reactions(msg)
+
 # end send_embed_help
 
 

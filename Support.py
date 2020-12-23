@@ -60,7 +60,10 @@ emojis = SimpleNamespace(**{
     'question_emoji' : "❓",
     'clipboard_emoji' : "📋",
     'film_frames_emoji' : "🎞️",
+    'pencil_emoji' : "✏️",
+    'floppy_disk_emoji' :"💾",
 })
+
 
 ## COMMON ALIASES ##
 add_aliases = ["add", "+"]
