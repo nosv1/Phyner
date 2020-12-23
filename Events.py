@@ -999,7 +999,7 @@ async def create_private_text_channel(client, message, user, event):
         send_messages=True
     )
 
-    name = f"{source.name.lower()}-{user.display_name.lower()}-{user.discriminator.lower()}"
+    name = f"{user.display_name.lower()}-{user.discriminator.lower()}"
     exists = [c for c in message.guild.channels if c.name == name]
 
     if not exists:
