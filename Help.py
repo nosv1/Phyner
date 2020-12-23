@@ -59,9 +59,14 @@ async def search(message, args): # TODO copy paste embed contents to the wiki, i
             if len(results_description) < 1000:
                 outputted += 1
 
-                results_description += f"**[{result['title']}]({result['link']})**\n"
+                # **[title](link)** - `command`
+                results_description += f"**[{result['title']}]({result['link']})** - "
+
                 p = result['p'].split("\n") + [" "] # [@phyner command help, snippet]
-                results_description += f"`{p[0].strip().replace('**', '')}`\n{p[1].strip()}\n\n"
+                results_description += f"`{p[0].strip().replace('**', '')}`\n\n"
+
+                # \/ old, used to be Title \n Command \n Body
+                # results_description += f"`{p[0].strip().replace('**', '')}`\n{p[1].strip()}\n\n"
 
 
         if not results_description: # no results
