@@ -20,7 +20,7 @@ import Guilds
 import Help
 import Logger
 import Support
-from Support import emojis
+from Support import emojis, get_phyner_from_channel, simple_bot_response
 
 
 
@@ -159,7 +159,8 @@ async def main(client, message, args, author_perms):
     
 
     elif args[2] == "saved":
-        await message.channel.send(embed=generate_saved_embeds_display(get_saved_embeds(), message.guild))
+        embed = generate_saved_embeds_display(get_saved_embeds(), message.guild if message.guild else message.author, get_phyner_from_channel(message.channel))
+        await message.channel.send(embed=embed)
 
     return
 # end main
@@ -196,12 +197,12 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
 # end get_saved_embeds
 
 
-def generate_saved_embeds_display(saved_embeds, guild):
+def generate_saved_embeds_display(saved_embeds, guild, phyner):
     """
         saved_embeds should be [SavedEmbed, ...] not [discord.Embed(), ...]
     """
 
-    embed = discord.Embed(color=Support.colors.phyner_grey)
+    embed = discord.Embed(color=Support.colors.phyner_grey if type(guild) != discord.guild.Guild else phyner.roles[-1].color)
     embed.title = f"{guild.name}'s Saved Embeds"
 
     if saved_embeds:
