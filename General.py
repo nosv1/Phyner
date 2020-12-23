@@ -95,8 +95,8 @@ async def send_ping(client, channel):
         host_region = client.get_guild(Support.ids.mobot_support_id).region
         client_region = channel.guild.region
 
-        description += f"**Host:** {host_region}\n"
-        description += f"**Client:** {client_region}"
+        description += f"**Phyner's Region:** {host_region}\n"
+        description += f"**Server's Region:** {client_region}"
     except AttributeError: # dm channel
         pass
 
