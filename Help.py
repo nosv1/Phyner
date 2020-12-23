@@ -193,6 +193,9 @@ async def send_help_embed(client, msg, embed_link, default_footer=True, demo=Fal
                 except discord.errors.NotFound:
                     pass
                 break
+            
+        else:
+            break
 
     # end while
 
