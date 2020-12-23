@@ -705,7 +705,7 @@ async def convert(client, message, args):
             embed_dict = saved_embed.embed.to_dict()
 
     if not embed_dict:
-        channel = message.channel_metions[0] if message.channel_mentions else message.channel
+        channel = message.channel_mentions[0] if message.channel_mentions else message.channel
         msg_id = Support.get_id_from_str(args[0])
         msg_id = int(msg_id[0]) if msg_id else None
 

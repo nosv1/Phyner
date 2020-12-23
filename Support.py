@@ -42,7 +42,7 @@ ids = SimpleNamespace(**{
 
 ## COLORS ##
 colors = SimpleNamespace(**{
-    'phyner_grey' : 0x9a9c9f,
+    'phyner_grey' : 0xc0c0c0,
 })
 
 
@@ -217,13 +217,12 @@ def convert_embed_dict_to_create_messages(embed_dict):
 
                 
 
-        create_messages[0] += f"{line}\n"
+        create_messages[0] += line.replace('```', '\`\`\`') + "\n"
 
 
 
     create_messages[-1] += "```"
     return [c_m.replace(f"{emojis.space_char}", "\\s").replace(f"{emojis.bullet}", "\\b").replace(f"{emojis.zero_width}", "\\z") for c_m in create_messages]
-
 # end convert_embed_dict_to_create_messages
 
 def edit_field_value_with_name(embed, name, value):
