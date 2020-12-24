@@ -2,17 +2,11 @@
 
 import asyncio
 import copy
-from datetime import datetime
-from typing import Tuple
 import discord
-import mysql.connector
 import re
-import sys
-import traceback
 
 
 import Database
-import Logger
 from Logger import log
 import Help
 import Role
@@ -353,7 +347,7 @@ async def watch_emoji(client, message, args):
     # end reaction_check
 
     def message_check(before, after):
-        return before.id == after.id
+        return message.id == after.id
     # end message_check
 
 
@@ -406,6 +400,7 @@ async def watch_emoji(client, message, args):
         try:
             reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
 
+                
             field_footer, embed = Support.confirm_input_last_field(embed)
             await msg.edit(embed=embed)
 
