@@ -178,9 +178,12 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
 
     embed_ids = link.split("/")[-3:] if link else [str(guild_id), str(channel_id), str(message_id)] # will be at least [''] # FIXME this assumes no / in name
 
+    print(embed_ids)
+
     save_embeds = []
     for embed_file in embed_files:
-        file_ids = re.findall(r"(\d{17,})", str(embed_file))
+        file_ids = re.findall(r"(\d{17,})", str(embed_file))[:3]
+        print(file_ids)
 
         if (
             not embed_ids[0] or # nothing provided
