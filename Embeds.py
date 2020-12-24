@@ -94,7 +94,6 @@ class SavedEmbed:
             existing_gcm = saved_embed.path.split("-")[:3] # :3 because there may be a - in embed name
             existing_gcm[0] = Support.get_id_from_str(existing_gcm[0])[0]
             existing_gcm[-1] = Support.get_id_from_str(existing_gcm[-1])[0]
-            print(existing_gcm)
 
             if gcm == existing_gcm: # if gcms match, delete old if new name given
                 if not self.name: # new name not given
