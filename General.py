@@ -94,7 +94,8 @@ async def send_ping(client, message):
     pong = await message.channel.send('pong')
 
     ping = int((pong.created_at - (message.edited_at if message.edited_at else message.created_at)).total_seconds() * 1000)
-    description = f"**Ping:** {ping}ms\n\n"
+    description = f"**Ping to Discord:** {int(client.latency * 1000)}ms\n"
+    description += f"**Ping to {message.author.display_name}:** {ping}ms\n\n"
 
     host_region = None
     try:
