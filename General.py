@@ -1,5 +1,6 @@
 ''' IMPORTS '''
 
+from datetime import datetime
 import discord
 import traceback
 
@@ -83,27 +84,30 @@ async def say(client, message, args, is_edit=False):
 # end say
 
 
-async def send_ping(client, channel):
+async def send_ping(client, message):
     """
         Send ping, host region, and client region
     """
 
-    phyner = Support.get_phyner_from_channel(channel)
+    phyner = Support.get_phyner_from_channel(message.channel)
 
-    ping = int(client.latency*1000)
-    description = f"**Ping:** {ping}ms\n"
+    pong = await message.channel.send('pong')
+
+    ping = int((pong.created_at - (message.edited_at if message.edited_at else message.created_at)).total_seconds() * 1000)
+    description = f"**Ping:** {ping}ms\n\n"
 
     host_region = None
     try:
         host_region = client.get_guild(Support.ids.mobot_support_id).region
-        client_region = channel.guild.region
+        client_region = message.guild.region
 
-        description += f"**{phyner.display_name}'s Region:** {host_region}\n"
-        description += f"**Server's Region:** {client_region}"
+        description += f"**{phyner.display_name}:** {host_region}\n"
+        description += f"**{message.guild}:** {client_region}"
     except AttributeError: # dm channel
         pass
 
-    await simple_bot_response(channel, description=description)
+    await simple_bot_response(message.channel, description=description)
+    await pong.delete()
     log("Connection", f"Ping: {ping}ms, Region: {host_region}")
 # end send_ping
 

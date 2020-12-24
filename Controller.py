@@ -246,7 +246,7 @@ async def on_message(message):
                     await Help.send_help_embed(client, message, Help.help_links.ids)
 
                 elif args[1] == "ping":
-                    await General.send_ping(client, message.channel)
+                    await General.send_ping(client, message)
 
                 elif args[1] in Delete.delete_aliases:
                     await Delete.main(client, message, args, author_perms)
