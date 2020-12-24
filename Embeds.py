@@ -700,7 +700,7 @@ async def convert(client, message, args):
 
     embed_dict = None
 
-    saved_embeds = get_saved_embeds(guild_id=str(message.guild.id))
+    saved_embeds = get_saved_embeds(guild_id=str(message.guild.id) if not args[1] else args[1])
     for saved_embed in saved_embeds:
         if args[0] == saved_embed.name:
             embed_dict = saved_embed.embed.to_dict()
