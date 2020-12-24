@@ -188,7 +188,7 @@ async def on_message(message):
                 if is_mo:
                     if args[1] == "test":
                         import Test
-                        await Test.test(message, args)
+                        await Test.test(client, message, args)
                         return
                         
                     elif args[1] == "setavatar":

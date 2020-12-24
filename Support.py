@@ -72,7 +72,7 @@ remove_aliases = ["remove", "-"]
 
 ''' SUPPORT FUNCTIONS '''
 
-async def save_image_to_random_storage(client, attachment): # FIXME THIS COULD CHANGE IF NEW SERVER!
+async def save_image_to_random_storage(client, attachment):
     guild = client.get_guild(ids.phyner_support_id)
     channel = guild.get_channel(ids.random_storage)
 

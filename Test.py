@@ -1,5 +1,6 @@
 ''' IMPORTS '''
 
+import asyncio
 import discord
 
 import os
@@ -17,7 +18,7 @@ from Support import simple_bot_response
 
 ## TETS ##
 
-async def test(message, args):
+async def test(client, message, args):
 
     '''
     import Tables
@@ -32,7 +33,54 @@ async def test(message, args):
 
     # await new_slash_cmd()
     # await gspread_testing()
-    await templar_test(message)
+    # await templar_test(message)
+
+
+    ''' test setup '''
+    msg = await message.channel.send("testing")
+    for r in [Support.emojis.tick_emoji, Support.emojis.x_emoji] + Support.emojis.number_emojis[1:4]:
+        await msg.add_reaction(r)
+
+
+    ''' check 1 '''
+    def reaction_check_1(reaction, r_user):
+        return (
+            reaction.message == msg and 
+            r_user.id == message.author.id and
+            str(reaction.emoji) in [Support.emojis.tick_emoji, Support.emojis.x_emoji]
+        )
+    # end reaction_check_1
+
+
+    ''' check 2 '''
+    def reaction_check_2(reaction, r_user):
+        return (
+            reaction.message == msg and 
+            r_user.id == message.author.id and
+            str(reaction.emoji) in Support.emojis.number_emojis[1:4]
+        )
+    # end reaction_check_2
+
+
+    ''' wait for multiple conditions '''
+    done, pending = await asyncio.wait([
+        client.wait_for('reaction_add', check=reaction_check_1),
+        client.wait_for('reaction_add', check=reaction_check_2),
+        ],
+        timeout=30,
+        return_when=asyncio.ALL_COMPLETED # default, can also have asyncio.FIRST_COMPLETED
+    )
+
+    print('done')
+    for task in done:
+        reaction, user = task.result()
+        print(type(task), str(reaction.emoji), user)
+        print()
+
+    print('cancelling pending')
+    for future in pending:
+        print(type(future), future)
+        future.cancel()
 
     await message.channel.send('test done', delete_after=3)
 # end test

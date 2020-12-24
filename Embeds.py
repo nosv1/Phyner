@@ -523,7 +523,7 @@ async def create_user_embed(client, message):
 
     description += f"**Replace Message:**\n`@{phyner} replace <some_phyner_msg_id> {msg.id}`\n\n" 
 
-    description += f"{emojis.x_emoji} to delete this message"
+    description += f"{emojis.x_emoji} to dismiss"
 
     msg = await Support.simple_bot_response( 
         message.channel,
