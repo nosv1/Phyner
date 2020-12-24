@@ -192,7 +192,7 @@ async def on_message(message):
                         return
                         
                     elif args[1] == "setavatar":
-                        with open('Images/9a9c9f.png', 'rb') as f:
+                        with open('Images/9b9c9f.png', 'rb') as f:
                             await client.user.edit(avatar=f.read())
                         return
 

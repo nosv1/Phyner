@@ -42,7 +42,7 @@ ids = SimpleNamespace(**{
 
 ## COLORS ##
 colors = SimpleNamespace(**{
-    'phyner_grey' : 0xc0c0c0,
+    'phyner_grey' : 0x9B9C9F,
 })
 
 
@@ -62,14 +62,12 @@ emojis = SimpleNamespace(**{
     'film_frames_emoji' : "🎞️",
     'pencil_emoji' : "✏️",
     'floppy_disk_emoji' :"💾",
-    'c0c0c0_emoji' : "<:c0c0c0:789203993980698685>"
+    "_9b9c9f_emoji" : "<:9b9c9f:791658919948189736>",
 })
-
 
 ## COMMON ALIASES ##
 add_aliases = ["add", "+"]
 remove_aliases = ["remove", "-"]
-
 
 
 ''' SUPPORT FUNCTIONS '''
