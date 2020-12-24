@@ -192,8 +192,11 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
         ):
             name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after message_id and .json at the end
             name = file_ids[-1] if not name else name # name is either name or str(message_id) now
+            print(f"-{name}-")
 
             save_embeds.append(SavedEmbed(int(file_ids[0]), int(file_ids[1]), int(file_ids[2]), load_embed_from_Embeds(str(embed_file)), name, str(embed_file)))
+
+    print(save_embeds)
 
     return save_embeds
 # end get_saved_embeds
