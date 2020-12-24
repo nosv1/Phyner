@@ -202,7 +202,7 @@ def convert_embed_dict_to_create_messages(embed_dict):
                 if f_key in ["text", "name"]:
                     line += f".{key} {embed_dict[key][f_key]}\n"
 
-                elif f_key in ["icon_url"]:
+                elif f_key in ["icon_url", "url"]:
                     line += f".{key}_{f_key} {embed_dict[key][f_key]}\n"
 
 

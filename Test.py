@@ -41,8 +41,7 @@ async def test(message, args):
 async def templar_test(message):
     from Servers import TemplarLeagues
 
-    channel = message.guild.get_channel(791018720372981760)
-    await TemplarLeagues.prepare_series_report_channel(channel, message.author)
+    await TemplarLeagues.prepare_series_report_channel(message.channel, message.author)
 # end templar_test
 
 

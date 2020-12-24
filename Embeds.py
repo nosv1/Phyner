@@ -694,6 +694,7 @@ async def convert(client, message, args):
     """
         ..p embed convert <message_id> [#channel]
         ..p embed convert <embed_name>
+        ..p embed convert <embed_name> [guild_id] # is mo
     """
 
     # TODO embed convert help
