@@ -255,72 +255,89 @@ async def wait_for_tick_x_options(client, message, msg, embed, poss_selection=No
         selection should line up number emojis
     """
 
-    def reaction_check(reaction, r_user):
+    number_emojis_used = Support.emojis.number_emojis[1:len(selection)+1]
+
+    def reaction_check_1(reaction, r_user):
         return (
             reaction.message == msg and 
             r_user.id == message.author.id and
             str(reaction.emoji) in [Support.emojis.tick_emoji, Support.emojis.x_emoji]
         )
-    # end reaction_check
+    # end reaction_check_1
+
+    def reaction_check_2(reaction, r_user):
+        return (
+            reaction.message == msg and 
+            r_user.id == message.author.id and
+            str(reaction.emoji) in number_emojis_used
+        )
+    # end reaction_check_2
 
 
     # get user input
-
-    number_emojis_used = Support.emojis.number_emojis[1:len(selection)+1]
     selected = None
-    try:
+    poss_selcted = None
 
-        while not selected:
+    while not selected:
 
-            reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
+        done, pending = await asyncio.wait([
+            client.wait_for('reaction_add', check=reaction_check_1), # tick or x
+            client.wait_for('reaction_add', check=reaction_check_2), # number emoji
+            ],
+            timeout=120,
+            return_when=asyncio.FIRST_COMPLETED # still going to check if number emoji was clicked
+        )
 
-            field_footer, embed = Support.confirm_input_last_field(embed)
-            await msg.edit(embed=embed)
 
-            if str(reaction.emoji) == Support.emojis.tick_emoji:
-                if poss_selection: # confirmed 
-                    selected = poss_selection
-                    embed = Support.revert_confirm_input_last_field(field_footer, embed)
-                    await Support.remove_reactions(msg, message.author, [Support.emojis.tick_emoji])
+        if done: # something finished
 
-                else:
-                    msg = await msg.channel.fetch_message(msg.id)
+            for task in done:
+                reaction, user = task.result()
 
-                    for reaction in msg.reactions:
-                        if str(reaction.emoji) in number_emojis_used:
-                            user_found = False
+                if str(reaction.emoji) == Support.emojis.x_emoji: # cancel 
+                    embed.title += "\nCancelled"
+                    embed = Support.delete_last_field(embed)
 
-                            async for user in reaction.users():
-                                if user.id == message.author.id:
-                                    selected = selection[number_emojis_used.index(str(reaction.emoji))]
-                                    user_found = True
-                                    break
+                    await Support.clear_reactions(msg)
+                    await msg.edit(embed=embed)
 
-                            if user_found:
-                                break
+                    for future in pending:
+                        future.cancel()
 
-                    if not selected: # user did not click a number emoji before the tick
+                    return "cancelled"
+
+
+                if str(reaction.emoji) in number_emojis_used: # number emoji clicked first, poss selected
+                    poss_selcted = selection[number_emojis_used.index(str(reaction.emoji))]
+
+                
+                if str(reaction.emoji) == Support.emojis.tick_emoji: # tryna confirm
+
+                    if poss_selcted: # can confirm
+                        selected = poss_selcted
+                        break
+
+                    else: # has not clicked a number emoji yet
                         embed = Support.revert_confirm_input_last_field_exclamation(field_footer, embed)
 
                         await Support.remove_reactions(msg, message.author, msg.reactions)
                         await msg.edit(embed=embed)
 
-            else:
-                embed.title += "\nCancelled"
-                embed = Support.delete_last_field(embed)
 
-                await Support.clear_reactions(msg)
-                await msg.edit(embed=embed)
+        else: # nothing finished, so timed out
 
-                return "cancelled"
+            embed.title += "\nTimed Out"
+            embed = Support.delete_last_field(embed)
+            
+            await Support.clear_reactions(msg)
+            await msg.edit(embed=embed)
 
-    except asyncio.TimeoutError:
-        embed.title += "\nTimed Out"
-        embed = Support.delete_last_field(embed)
-        
-        await Support.clear_reactions(msg)
-        await msg.edit(embed=embed)
-        return "timed out"
+            for future in pending:
+                future.cancel()
+
+            return "timed out"
+
+    # end while
 
     return selected
 # end wait_for_tick_x
@@ -364,7 +381,7 @@ async def watch_emoji(client, message, args):
 
         embed = await simple_bot_response(message.channel,
             title="Emoji Identification Confirmation",
-            footer="There may be delays during setup - apologies. - Mo#9991",
+            # footer="There may be delays during setup - apologies. - Mo#9991",
             send=False
         ) if not embed else embed
 
@@ -399,7 +416,6 @@ async def watch_emoji(client, message, args):
 
         try:
             reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
-
                 
             field_footer, embed = Support.confirm_input_last_field(embed)
             await msg.edit(embed=embed)
@@ -483,8 +499,10 @@ async def watch_emoji(client, message, args):
             
             reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
 
+            await Support.remove_reactions(msg, client.user, [Support.emojis.tick_emoji, Support.emojis.x_emoji])
+
             field_footer, embed = Support.confirm_input_last_field(embed)
-            await msg.edit(embed=embed)
+            # await msg.edit(embed=embed)
 
             if str(reaction.emoji) == Support.emojis.x_emoji:
                 embed.title += "\nCancelled"
