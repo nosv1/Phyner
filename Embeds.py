@@ -158,7 +158,11 @@ async def main(client, message, args, author_perms):
     
 
     elif args[2] == "saved":
-        embed = generate_saved_embeds_display(get_saved_embeds(guild_id=args[3] if args[3] else message.guild.id if message.guild else message.author.id), get_phyner_from_channel(message.channel))
+        embed = generate_saved_embeds_display(
+            get_saved_embeds(guild_id=args[3] if args[3] else message.guild.id if message.guild else message.author.id), 
+            message.guild if message.guild else message.author, 
+            get_phyner_from_channel(message.channel)
+        )
         await message.channel.send(embed=embed)
 
     return
@@ -196,7 +200,7 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
 # end get_saved_embeds
 
 
-def generate_saved_embeds_display(saved_embeds, phyner):
+def generate_saved_embeds_display(saved_embeds, guild, phyner):
     """
         saved_embeds should be [SavedEmbed, ...] not [discord.Embed(), ...]
     """
@@ -259,7 +263,7 @@ async def send_saved_embed_from_message(message, args):
         await channel.send(embed=saved_embed[0].embed)
 
     else:
-        await channel.send(embed=generate_saved_embeds_display(saved_embeds, get_phyner_from_channel(message.channel)))
+        await channel.send(embed=generate_saved_embeds_display(saved_embeds, message.guild))
 # end send_saved_embed
 
 
