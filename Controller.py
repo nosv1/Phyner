@@ -201,7 +201,9 @@ async def on_message(message):
                         guild = client.get_guild(int(args[2]))
 
                         description = f"**Members:** {len(guild.members)}\n"
-                        description += f"**Joined:** {datetime.strftime(phyner.joined_at, Support.short_date_1)}\n"
+                        description += f"**Joined:** {datetime.strftime(phyner.joined_at, Support.short_date_1)}\n\n"
+
+                        description += f"[**Go to**](https://discord.com/channels/{guild.id})\n"
 
                         await Support.simple_bot_response(message.channel,
                             title=guild.name,
@@ -387,8 +389,8 @@ async def on_raw_reaction_add(payload):
                         t_event = copy.deepcopy(event)
 
                         # need to do inverse
-                        t_event.action.action = "role_remove" if event.action.action == "role_add" else t_event.action.action
-                        t_event.action.action = "role_add" if event.action.action == "role_remove" else t_event.action.action
+                        t_event.action.action = "remove_role" if event.action.action == "add_role" else t_event.action.action
+                        t_event.action.action = "add_role" if event.action.action == "remove_role" else t_event.action.action
 
                         if t_event.action.action != event.action.action:
                             await Events.perform_action(client, message, user, t_event)
@@ -491,8 +493,8 @@ async def on_raw_reaction_remove(payload):
                         t_event = copy.deepcopy(event)
 
                         # need to do inverse
-                        t_event.action.action = "role_remove" if event.action.action == "role_add" else t_event.action.action
-                        t_event.action.action = "role_add" if event.action.action == "role_remove" else t_event.action.action
+                        t_event.action.action = "remove_role" if event.action.action == "add_role" else t_event.action.action
+                        t_event.action.action = "add_role" if event.action.action == "remove_role" else t_event.action.action
 
                         if t_event.action.action != event.action.action:
                             await Events.perform_action(client, message, user, t_event)

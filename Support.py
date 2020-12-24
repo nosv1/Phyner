@@ -23,7 +23,8 @@ import Logger
 
 host = os.getenv("HOST")
 
-short_date_1 = "%b. %d, %Y %H:%M"
+short_date_1 = "%b. %d, %Y"
+short_date_2 = "%b. %d, %Y %H:%M"
 
 ## IDs ##
 ids = SimpleNamespace(**{
@@ -175,7 +176,7 @@ def get_id_from_str(str):
     """
         returns list
     """
-    return re.findall(r"(\d{17,})", str)
+    return [int(i) for i in re.findall(r"(\d{17,})", str)]
 # end get_id_from_str
 
 
@@ -351,7 +352,7 @@ def get_member_perms(channel, member):
 # end get_member_perms
 
 
-async def simple_bot_response(channel, author=discord.Embed().Empty, author_icon_url=discord.Embed().Empty, title=discord.Embed().Empty, thumbnail_url=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
+async def simple_bot_response(channel, author=discord.Embed().Empty, author_url=discord.Embed().Empty, author_icon_url=discord.Embed().Empty, title=discord.Embed().Empty, thumbnail_url=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
     """
         Bot sends message as basic embed
         reply_message is defaulted to False, but expects a discord.Message if declared in call
@@ -363,9 +364,10 @@ async def simple_bot_response(channel, author=discord.Embed().Empty, author_icon
     embed = discord.Embed()
     embed.colour = colors.phyner_grey if is_dm else phyner.roles[-1].color
 
-    if author or author_icon_url:
+    if author or author_icon_url or author_url:
         embed.set_author(
             name=author if author else emojis.space_char,
+            url=author_url,
             icon_url=author_icon_url
         )
 

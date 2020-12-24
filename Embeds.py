@@ -153,7 +153,7 @@ async def main(client, message, args, author_perms):
             await send_permissions_needed(message, message.author)
 
     elif args[2] == "convert":
-        await convert(client, message, args[3:-1])
+        await convert(client, message, args[3:])
     
 
     elif args[2] == "saved":
@@ -700,7 +700,6 @@ async def convert(client, message, args):
     # TODO embed convert help
 
     embed_dict = None
-
     saved_embeds = get_saved_embeds(guild_id=str(message.guild.id) if not args[1] else args[1])
     for saved_embed in saved_embeds:
         if args[0] == saved_embed.name:

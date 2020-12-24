@@ -7,6 +7,7 @@ import re
 
 
 import Database
+import Guilds
 from Logger import log
 import Help
 import Role
@@ -29,15 +30,22 @@ watch_webhook_help = "'@Phyner#2797 watch webhook ?' for help"
 ## the below classes represent Event objects... Event.condition, Event.action, Event.object ##
 
 class Condition:
+    """
+        "message"
+    """
     def __init__(self, condition=None, condition_id=None):
         self.condition = condition
         self.id = condition_id
 # end Condition
 
 class Action:
-    def __init__(self, action=None, action_id=None):
+    """
+        action extra is like a channel name or something, like for create_private_text_channel
+    """
+    def __init__(self, action=None, action_id=None, extra=None):
         self.action = action
         self.id = action_id
+        self.extra = extra
 # end Action
 
 
@@ -103,11 +111,12 @@ class Event:
                 sql += "`condition` = %s, " % (quote(self.condition.condition) if self.condition else 'NULL ')
                 sql += "`condition_id` = %s, " % (quote(self.condition.id) if self.condition else 'NULL ')
                 sql += "`action` = %s, " % (quote(self.action.action) if self.action else 'NULL ')
-                sql += "`action_id` = %s " % (quote(self.action.id) if self.action else 'NULL ')
+                sql += "`action_id` = %s, " % (quote(self.action.id) if self.action else 'NULL ')
+                sql += "`action_extra` = %s " % (quote(self.action.extra) if self.action else 'NULL ')
                 sql += " WHERE "
                 sql += f"guild_id = '{self.guild_id}' AND "
-                sql += f"object_id = '{self.object.id}' AND"
-                sql += f"condition_id = '{self.condition.id}' AND"
+                sql += f"object_id = '{self.object.id}' AND "
+                sql += f"condition_id = '{self.condition.id}' AND "
                 sql += f"action_id = '{self.action.id}'"
                 sql += ";"
                 existing_event = True
@@ -115,14 +124,15 @@ class Event:
 
         if not existing_event:
             sql = "INSERT INTO Events ("
-            sql += "`guild_id`, `object`, `object_id`, `condition`, `condition_id`, `event`, `action`, `action_id`"
+            sql += "`guild_id`, `object`, `object_id`, `condition`, `condition_id`, `event`, `action`, `action_id`, `action_extra`"
             sql += " ) VALUES ( "
             sql += f"'{self.guild_id}', '{self.object.type}', '{self.object.id}', "
             sql += f"{quote(self.condition.condition) if self.condition.id else 'NULL'}, "
             sql += f"{quote(self.condition.id) if self.condition.id else 'NULL'}, "
             sql += f"'{self.event}', "
             sql += f"{quote(self.action.action) if self.action.id else 'NULL'}, "
-            sql += f"{quote(self.action.id) if self.action.id else 'NULL'}"
+            sql += f"{quote(self.action.id) if self.action.id else 'NULL'}, "
+            sql += f"{quote(self.action.extra) if self.action.extra else 'NULL'}"
             sql += f");"
 
         db.cursor.execute(sql)
@@ -138,7 +148,7 @@ class Event:
         s += f"Object: {self.object.type} {self.object.id}, "
         s += f"Condition {self.condition.condition} {self.condition.id}, " if self.condition else ""
         s += f"Event: {self.event}, "
-        s += f"Action: {self.action.action} {self.action.id}" if self.action else ""
+        s += f"Action: {self.action.action} {self.action.id} {self.action.extra}" if self.action else ""
         return s
     # end to_string
 # end Event
@@ -150,6 +160,8 @@ class Event:
 async def main(client, message, args, author_perms):
     """
         @Phyner watch webhook [webhook_id]
+        @Phyner watch emoji <emoji> <message_id> [#channel] add/remove_role <role_id/@Role ...>
+        @Phyner watch emoji <emoji> <message_id> [#channel] create_private_text_channel <channel/category_id/#channel>
     """
 
     if author_perms.administrator:
@@ -166,7 +178,7 @@ async def main(client, message, args, author_perms):
                     return await watch_webhook(client, message, args[2:])
 
                 elif args[1] == "emoji":
-                    return await watch_emoji(client, message, args[2:])
+                    return await watch_emoji(client, message)
 
             except:
                 await Support.previous_action_error(client, message)
@@ -206,7 +218,8 @@ def get_event_from_entry(entry):
 
     action = Action(
         action=entry[6],
-        action_id=int(entry[7])  if entry[7] else None
+        action_id=(int(entry[7]) if entry[7] else None),
+        extra=(entry[8] if entry[8] else None)
     )
         
 
@@ -346,503 +359,285 @@ async def wait_for_tick_x_options(client, message, msg, embed, poss_selection=No
 
 ## EMOJIS ##
 
-async def watch_emoji(client, message, args):
-    """
-        Figure out what the user wants to watch for upon emoji add or remove
-        @Phyner watch emoji <emoji> <mesge_id> [#channel] <action_id>
-    """
+async def watch_emoji(client, message):
+
+    def message_edit_check(before, after):
+        return after.id == message.id
+    # end message_edit_check
+
+
+    args, content = Support.get_args_from_content(message.content)
 
     phyner = Support.get_phyner_from_channel(message.channel)
+    guild_prefix = Guilds.get_guild_prefix(message.guild.id)
 
+    actions = [
+        "add_role", 
+        "remove_role",
+        "create_private_text_channel" # stuff regarding channels go at the bottom, using this logic to check channel mentions
+    ]
 
-    def reaction_check(reaction, r_user):
-        return (
-            reaction.message == msg and 
-            r_user.id == message.author.id and
-            str(reaction.emoji) in [Support.emojis.tick_emoji, Support.emojis.x_emoji]
-        )
-    # end reaction_check
 
-    def message_check(before, after):
-        return message.id == after.id
-    # end message_check
+    # syntax examples
+    basic_syntax = f"`{guild_prefix} watch emoji <emoji> <message_id> [#channel] <action> <action_id/mention ...> [action_extra]`"
 
+    examples = {
+        "add_role" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #role-selection add_role @role1 @role2`",
 
-    # identify emoji
+        "remove_role" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #role-selection add_role @role1 @role2`",
+        
+        "create_private_text_channel" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #open-channels create_private_text_channel 789182513633427507 .user`",
+    }
 
-    embed = None
-    emoji = None
-    msg = None
-    while not emoji:
 
-        emoji = re.findall(r"(<a?:\S+:\d{17,}>)", message.content) # match ' <a:emoji_name:emoji_id> ' or ' <:emoji_name:emoji_id> '
-        emoji = emoji[0].strip() if emoji and args[0] in emoji[0] else args[0] if len(args[0]) == 1 else None
-        # if match use emoji else use args[1] if it's length is 1 else None
-
-        embed = await simple_bot_response(message.channel,
-            title="Emoji Identification Confirmation",
-            # footer="There may be delays during setup - apologies. - Mo#9991",
-            send=False
-        ) if not embed else embed
-
-        if emoji: # emoji matched, wait for confirmation
-            embed.description = f"Is the emoji below the emoji you would like {phyner.mention} to watch?\n\n"
-            
-            embed.description += f"{emoji}"
-
-        else: # emoji not found, user edit message, then tick to continue
-            embed.description = f"There was not an emoji found in your message. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
-            
-            embed.description += f"`@{phyner} watch emoji <:some_emoji:> [message_id] [action_id]`\n"
-            embed.description += f"`@{phyner} watch emoji :partying_face:`\n\n"
-
-            embed.description += f"If this is an error, and you believe your syntax is correct, use `@{phyner} bug help` to see options about reporting issues and getting help." # TODO @Phynber bug help
-
-        if not msg:
-            embed.add_field(
-                name=Support.emojis.space_char, 
-                value=f"{Support.emojis.tick_emoji} to confirm **|** {Support.emojis.x_emoji} to cancel", 
-                inline=False
-            )
-            msg = await message.channel.send(embed=embed)
-            await msg.add_reaction(Support.emojis.tick_emoji)
-            await msg.add_reaction(Support.emojis.x_emoji)
-
-        else:
-            await msg.edit(embed=embed)
-
-
-        # get user input
-
-        try:
-            reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
-                
-            field_footer, embed = Support.confirm_input_last_field(embed)
-            await msg.edit(embed=embed)
-
-            if str(reaction.emoji) == Support.emojis.x_emoji:
-                embed.title += "\nCancelled"
-                embed = Support.delete_last_field(embed)
-
-                await Support.clear_reactions(msg)
-                await msg.edit(embed=embed)
-
-                log("watch emoji", "cancelled emoji identification confirmation")
-                return
-
-            else:
-                embed = Support.revert_confirm_input_last_field(field_footer, embed)
-                await Support.remove_reactions(msg, message.author, [Support.emojis.tick_emoji])
-
-                if not emoji:
-                    args, _ = Support.get_args_from_content(message.content)
-                    args = args[3:]
-
-        except asyncio.TimeoutError:
-            embed.title += "\nTimed Out"
-            embed = Support.delete_last_field(embed)
-
-            await Support.clear_reactions(msg)
-            await msg.edit(embed=embed)
-
-            log("watch emoji", "timed out waiting for emoji identificaiton confirmation")
-            return
-
-    # end while
-
-    emoji_event = Event(guild_id=message.guild.id, obj=Emoji(emoji_id=emoji))
-
-    del args[0] # <emoji> arg no longer needed
-    embed.add_field(name=Support.emojis.space_char, value=f"**When** {emoji} **on** ...")
-    embed = Support.switch_last_two_fields(embed)
-    embed.title = "Message Identification Confirmation"
-
-
-    # identify message id
-
-    channel = message.channel_mentions[0] if message.channel_mentions else message.channel 
-    mesge_id = None
-    mesge = None
-    while not mesge:
-
-        mesge_id = re.findall(r"(\d{17,})", args[0])
-        mesge_id = int(mesge_id[0]) if mesge_id else None
-
-        try:
-            if mesge_id:
-                mesge = await channel.fetch_message(mesge_id)
-
-        except discord.errors.NotFound:
-            pass
-
-        if mesge: # user message found
-            embed.description = f"Is the message below the message you would like {phyner.mention} to watch for when {emoji} is added or removed?\n\n"
-
-            embed.description += f"[click to go to message]({mesge.jump_url})"
-
-        elif mesge_id and not mesge: # no user message found, but possible message id found
-            embed.description = f"A message with the given ID, `{mesge_id}`, was not found in {'this channel' if not message.channel_mentions else 'the given channel, '}{channel.mention if message.channel_mentions else ''}. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
-
-        elif not mesge_id: # no message id found
-            embed.description = f"There was not a message ID found in your message. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
-
-        if not mesge:
-            embed.description += f"`... `{emoji}` <message_id> [#channel] [action_id]`\n"
-            embed.description += f"`... `{emoji}` {message.id} `{channel.mention}"
-
-        await msg.edit(embed=embed)
-
-
-        # get user input
-
-        try:
-            
-            reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
-
-            await Support.remove_reactions(msg, client.user, [Support.emojis.tick_emoji, Support.emojis.x_emoji])
-
-            field_footer, embed = Support.confirm_input_last_field(embed)
-            # await msg.edit(embed=embed)
-
-            if str(reaction.emoji) == Support.emojis.x_emoji:
-                embed.title += "\nCancelled"
-                embed = Support.delete_last_field(embed)
-
-                await Support.clear_reactions(msg)
-                await msg.edit(embed=embed)
-
-                log("watch emoji", "cancelled message identification confirmation")
-                return
-
-            else:
-                embed = Support.revert_confirm_input_last_field(field_footer, embed)
-                await Support.remove_reactions(msg, message.author, [Support.emojis.tick_emoji])
-
-                if not mesge:
-                    args, _ = Support.get_args_from_content(message.content)
-                    args = args[4:]
-                    channel = message.channel_mentions[0] if message.channel_mentions else message.channel
-
-        except asyncio.TimeoutError:
-            embed.title += "\nTimed Out"
-            embed = Support.delete_last_field(embed)
-
-            await Support.clear_reactions(msg)
-            await msg.edit(embed=embed)
-
-            log("watch emoji", "timed out waiting for message identificaiton confirmation")
-            return
-
-    # end while
-
-
-    emoji_event.condition = Condition(condition="message", condition_id=mesge.id)
-
-    del args[0] # <message_id> arg no longer needed
-    if str(mesge.channel.id) in args[0] and message.channel.id != mesge.channel.id: # remove channel mention as well
-        del args[0]
-
-    embed = Support.delete_last_field(embed)
-    embed.add_field(name=Support.emojis.space_char, value=f"**When** {emoji} **on** [message]({mesge.jump_url}) **is** ...", inline=False)
-    embed = Support.switch_last_two_fields(embed)
-    embed.title = "Event Identification Confirmation"
-
-
-    # identify event 
-
-    number_emojis_used = []
-    event = None
-
-    possible_events = ["reaction_add", "reaction_remove"]
-
-    # build description
-    embed.description = f"Choose from the list below what {phyner.mention} needs to watch for with {emoji}\n\n"
-
-    for i, possible_event in enumerate(possible_events):
-        embed.description += f"{Support.emojis.number_emojis[i+1]} **{possible_event}\n**"
-    
-    # build footer
-    value = f"Number emoji then {Support.emojis.tick_emoji} to confirm\n"
-    value += f"{Support.emojis.x_emoji} to cancel"
-
-    embed = embed.to_dict()
-    embed["fields"][-1]["value"] = value
-    embed = discord.Embed().from_dict(embed)
-
-    # send it
-    await Support.clear_reactions(msg)
-    await msg.edit(embed=embed)
-
-    number_emojis_used = Support.emojis.number_emojis[1:len(possible_events)+1]
-    [await msg.add_reaction(ne) for ne in number_emojis_used]
-
-    await msg.add_reaction(Support.emojis.tick_emoji)
-    await msg.add_reaction(Support.emojis.x_emoji)
-
-
-    # get user input
-
-    event = await wait_for_tick_x_options(client, message, msg, embed, poss_selection=event, selection=possible_events)
-    if event == "timed out":
-        log("watch webhook", "timed out waiting for event identificaiton confirmation")
-        return
-
-    elif event == "cancelled":
-        log("watch webhook", "cancelled during event identification confirmation") 
-        return
-
-
-    emoji_event.event = event
-
-    embed = Support.delete_last_field(embed)
-    embed.add_field(name=Support.emojis.space_char, value=f"**When** {emoji} **on** [message]({mesge.jump_url}) **is** {event}ed, **do** ... ", inline=False)
-    embed = Support.switch_last_two_fields(embed)
-    embed.title = "Action Identification Confirmation"
-
-
-    # identify event 
-
-    number_emojis_used = []
-    action = None
-
-    possible_actions = ["create_private_text_channel", "role_add", "role_remove"]
-
-    # build description
-    embed.description = f"Choose from the list below what {phyner.mention} needs to do when {emoji} is {'added to' if event == 'reaction_add' else 'removed from'} this [message]({message.jump_url}).\n\n"
-
-    for i, possible_action in enumerate(possible_actions):
-        embed.description += f"{Support.emojis.number_emojis[i+1]} **{possible_action}\n**"
-    
-    # build footer
-    value = f"Number emoji then {Support.emojis.tick_emoji} to confirm\n"
-    value += f"{Support.emojis.x_emoji} to cancel"
-
-    embed = embed.to_dict()
-    embed["fields"][-1]["value"] = value
-    embed = discord.Embed().from_dict(embed)
-
-    # send it
-    await Support.clear_reactions(msg)
-    await msg.edit(embed=embed)
-
-    number_emojis_used = Support.emojis.number_emojis[1:len(possible_actions)+1]
-    [await msg.add_reaction(ne) for ne in number_emojis_used]
-
-    await msg.add_reaction(Support.emojis.tick_emoji)
-    await msg.add_reaction(Support.emojis.x_emoji)
-
-
-    # get user input
-
-    action = await wait_for_tick_x_options(client, message, msg, embed, poss_selection=action, selection=possible_actions)
-    if action == "timed out":
-        log("watch webhook", "timed out waiting for action identificaiton confirmation")
-        return
-
-    elif action == "cancelled":
-        log("watch webhook", "cancelled during action identification confirmation") 
-        return
-
-
-    emoji_event.action = Action(action=action)
-
-    embed = Support.delete_last_field(embed)
-    embed.add_field(name=Support.emojis.space_char, value=f"**When** {emoji} **on** [message]({mesge.jump_url}) **is** {event}ed, **do** {action} **using** ...", inline=False)
-    embed = Support.delete_last_field(Support.switch_last_two_fields(embed))
-    embed.title = "Action ID Identification Confirmation"
-
-    await Support.clear_reactions(msg)
-
-    await msg.add_reaction(Support.emojis.tick_emoji)
-    await msg.add_reaction(Support.emojis.x_emoji)
-
-    # build footer
-    value = f"{Support.emojis.tick_emoji} to confirm **|** {Support.emojis.x_emoji} to cancel"
-    embed.add_field(
-        name=Support.emojis.space_char, 
-        value=value, 
-        inline=False
+    missing_arg_embed = await simple_bot_response(message.channel,
+        title="**Missing Argument**",
+        description="",
+        footer=f"{guild_prefix} watch help",
+        send=False
     )
 
-    # identify action id
 
-    action_ids = []
+    # get emoji
+    emoji_event = Event(
+        guild_id=message.guild.id, 
+        obj=Emoji(emoji_id=args[3]),
+        event="reaction_add",
+        condition=Condition(condition="message"),
+        action=Action()
+    )
+
+
+    # get action
+    msg = None
+    while not emoji_event.action.action: # while no given action
+
+        args, content = Support.get_args_from_content(message.content)
+        action = [a for a in actions if a in args]
+    
+        if action: # action exists in message
+            emoji_event.action.action = action[0]
+
+        else: # wait for edit
+
+            missing_arg_embed.description = f"Your command message is missing an action. Add an action to your message from the list below.\n\n"
+
+            missing_arg_embed.description += "**Available Actions:**\n"
+            missing_arg_embed.description += "`add_role`\n"
+            missing_arg_embed.description += "`remove_role`\n"
+            missing_arg_embed.description += "`create_private_text_channel`\n\n"
+
+            missing_arg_embed.description += "**Syntax:**\n"
+            missing_arg_embed.description += f"{basic_syntax.replace('<action>', '<ACTION>')}\n\n"
+
+            missing_arg_embed.description += f"{examples['add_role'].replace('emoji_event_object_id', emoji_event.object.id)}\n\n"
+
+            missing_arg_embed.description += f"**Edit your [message above]({message.jump_url}) to continue.**"
+
+
+            # prompt user
+            if msg:
+                await msg.edit(embed=missing_arg_embed)
+
+            else:
+                msg = await message.reply(embed=missing_arg_embed)
+            await message.add_reaction(Support.emojis.x_emoji)
+
+
+            # wait
+            try:
+                before, after = await client.wait_for("message_edit", check=message_edit_check, timeout=300)
+                await Support.remove_reactions(message, client.user, [Support.emojis.x_emoji])
+                message = after
+
+            except asyncio.TimeoutError:
+                missing_arg_embed.title += "\nTimed Out"
+                await msg.edit(embed=missing_arg_embed)
+                return
+
+    # end while
+
+
+    # get action souces
     action_sources = []
     while not action_sources:
 
-        action_ids = re.findall(r"\d{17,}", ' '.join(args))
-        action_ids = [int(a_id) for a_id in action_ids]
-
-        print(action_ids)
-
-        try:
-            if len(action_sources) < len(action_ids): # no way for action_sources to be > action_ids
-                if action in ["create_private_text_channel"]:
-                    categories = message.guild.categories # check categories
-                    action_sources = [category_channel for category_channel in categories if category_channel.id in action_ids]
-                    
-                    if not action_sources: # check channels
-                        channels = message.guild.channels
-                        action_sources = [chnnl for chnnl in channels if chnnl.id in action_ids]
-
-                if action in ["role_add", "role_remove"]:
-                    roles = message.guild.roles # check roles
-                    action_sources = [r for r in roles if r.id in action_ids]
-
-        except: # this may not be needed, but same template as while not mesge: seen above
-            pass
+        args, content = Support.get_args_from_content(message.content)
+        action_ids = [Support.get_id_from_str(a) for a in args[args.index(emoji_event.action.action)+1:]]
+        action_ids = [a_id[0] for a_id in action_ids if a_id] # the above returns [[id, ...], ...] need to convert that to [id, ...]
 
 
-        action_source_types = []
-        if action in ["create_private_text_channel"]:
-            action_source_types = ["text channels", "categories"]
-
-        elif action in ["role_add", "role_remove"]:
-            action_source_types = ["roles"]
+        missing_arg_embed.description = ""
+        action_source_str = "If you want to add/remove roles, the action_ids/mentions should be role IDs or @role mentions; if you want to create a private channel, the action ID/mention should be a category/channel ID or a channel mention, etc."
 
 
-        need_syntax = False
-        if len(action_sources) == len(action_ids): # every id given lead to a source
+        if action_ids: # action_ids given
 
-            action_source_type = ""
-            
-            # categories and text channels
-            action_source_type = 'category' if type(action_sources[0]) == discord.channel.CategoryChannel else None
-            action_source_type = 'text channel' if type(action_sources[0]) == discord.channel.TextChannel else None
+            if emoji_event.action.action in actions[:2]: # is add_role or remove_role
+                guild_roles = message.guild.roles
+                action_sources = [r for r in guild_roles if r.id in action_ids]
 
-            # roles
-            action_source_type = "role" if type(action_sources[0]) == discord.role.Role else None
-            # it's very unlikely, if not impossible for action_source_type to end up None
+            elif emoji_event.action.action == actions[2]: # is create_private_text_channel
+                guild_categories = message.guild.categories
+                guild_channels = message.guild.channels
 
-            embed.description = f"Is the below {action_source_type}(s) the {action_source_type}(s) you would like {phyner.mention} to use for {action}?\n\n"
+                action_sources = [cat for cat in guild_categories if cat.id == action_ids[0]] # get category if exists
 
-            for a_s in action_sources:
-                embed.description += f"{a_s.mention}\n"
-
-        elif not action_ids: # no action id provided
-            embed.description = f"There was not an action ID found in your message. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
-            need_syntax = True
-
-        else: # not every id given lead to a source
-            embed.description = f"There were no {' or '.join(action_source_types)} found with {'any or all of the ' if len(action_ids) > 1 else ''}the given action ID(s), {' or '.join([str(a_id) for a_id in action_ids])}, in this server. Edit your [message above]({message.jump_url}) to match the syntax below, then click the {Support.emojis.tick_emoji}\n\n"
-            need_syntax = True
+                if not action_sources:
+                    action_sources = [ch for ch in guild_channels if ch.id == action_ids[0]] # get channel if exists
 
 
-        if need_syntax:
-            embed.description += f"`... <message_id> [#channel] <action_id/action_mention>`\n"
-            embed.description += f"`... {mesge.id} {mesge.channel.mention} 593896370700550154`\n\n"
-            
-            embed.description += f"`... <message_id> [#channel] <action_id/action_mention ...>`\n"
-            embed.description += f"`... {mesge.id} {mesge.channel.mention} 593896370700550154 790915709936599040`\n"
-            embed.description += "You can use multiple ids or mentions - like if you wanted to add multiple roles upon reaction_add."
+            if not action_sources: # no action sources from the given ids
 
-        await msg.edit(embed=embed)
+                missing_arg_embed.description += f"None of the given action IDs/mentions match the action type. {action_source_str}\n\n"
+
+                missing_arg_embed.description += "**Syntax:**\n"
+                missing_arg_embed.description += f"{basic_syntax}\n\n"
 
 
-        # get user input
+        else: # no action ids given
 
-        try:
-            
-            reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
+            missing_arg_embed.description += f"There were no action IDs/mentions found in your message. {action_source_str}\n\n"
 
-            field_footer, embed = Support.confirm_input_last_field(embed)
-            await msg.edit(embed=embed)
+            missing_arg_embed.description += "**Syntax:**\n"
+            missing_arg_embed.description += f"{basic_syntax.replace('<action_id/mention ...>', '<ACTION_ID/MENTION ...>')}\n\n"
 
-            if str(reaction.emoji) == Support.emojis.x_emoji:
-                embed.title += "\nCancelled"
-                embed = Support.delete_last_field(embed)
 
-                await Support.clear_reactions(msg)
-                await msg.edit(embed=embed)
+        if not action_sources: # no action sources
 
-                log("watch emoji", "cancelled action id identification confirmation")
-                return
+            missing_arg_embed.description += f"{examples[emoji_event.action.action].replace('emoji_event_object_id', emoji_event.object.id)}\n\n"
+
+            missing_arg_embed.description += f"**Edit your [message above]({message.jump_url}) to continue.**"
+
+
+            # prompt user
+            if msg:
+                await msg.edit(embed=missing_arg_embed)
 
             else:
-                embed = Support.revert_confirm_input_last_field(field_footer, embed)
-                await Support.remove_reactions(msg, message.author, [Support.emojis.tick_emoji])
+                msg = await message.reply(embed=missing_arg_embed)
+            await message.add_reaction(Support.emojis.x_emoji)
 
-                if len(action_sources) != len(action_ids):
-                    args, _ = Support.get_args_from_content(message.content)
-                    args = args[-2:]
+            # wait
+            try:
+                before, after = await client.wait_for("message_edit", check=message_edit_check, timeout=300)
+                await Support.remove_reactions(message, client.user, [Support.emojis.x_emoji])
+                message = after
 
-        except asyncio.TimeoutError:
-            embed.title += "\nTimed Out"
-            embed = Support.delete_last_field(embed)
-
-            await Support.clear_reactions(msg)
-            await msg.edit(embed=embed)
-
-            log("watch emoji", "timed out waiting for action id identificaiton confirmation")
-            return
+            except asyncio.TimeoutError:
+                missing_arg_embed.title += "\nTimed Out"
+                await msg.edit(embed=missing_arg_embed)
+                return
 
     # end while
 
+
+    # get message
+    mesge = None
+    while not mesge:
+
+        args, content = Support.get_args_from_content(message.content)
+
+        mesge_id = Support.get_id_from_str(args[4])
+        mesge_id = int(mesge_id[0]) if mesge_id else None
+
+
+        if emoji_event.action.action in actions[:2]: # not a channel related action
+            channel = message.channel_mentions[0] if message.channel_mentions else message.channel
+        
+        else:
+            if "#" in args[5]:
+                channel = message.channel_mentions[0] if message.channel_mentions else message.channel # i agree if there is # in arg surely it's a channel mention, just gotta make sure
+
+            else: # message should be in current channel
+                channel = message.channel
+
+
+        missing_arg_embed.description = ""
+        if mesge_id: # msg id given
+            try:
+                mesge = await channel.fetch_message(mesge_id) # mesge got got
+                emoji_event.condition.id = mesge.id
+
+            except discord.errors.NotFound:
+
+                missing_arg_embed.description += f"The given message ID is not in this channel. Double check your message ID, and if the message is not in this channel, add the channel mention right after the message ID.\n\n"
+
+                missing_arg_embed.description += "**Syntax:**\n"
+                missing_arg_embed.description += f"{basic_syntax.replace('[#channel]', '[#CHANNEL]')}\n\n"
+
+        else: # msg id not given
+
+            missing_arg_embed.description += f"Your command message is missing a message ID. This is the message {phyner.mention} watches to know when a {emoji_event.object.id} is added or removed.\n\n"
+
+            missing_arg_embed.description += "**Syntax:**\n"
+            missing_arg_embed.description += f"{basic_syntax.replace('<message_id>', '<MESSAGE_ID>')}\n\n"
+
+
+        if not mesge: # still no message
+
+            missing_arg_embed.description += f"{examples[emoji_event.action.action].replace('emoji_event_object_id', emoji_event.object.id)}\n\n"
+
+            missing_arg_embed.description += f"**Edit your [message above]({message.jump_url}) to continue.**"
+
+
+            # prompt user
+            if msg:
+                await msg.edit(embed=missing_arg_embed)
+
+            else:
+                msg = await message.reply(embed=missing_arg_embed)
+            await message.add_reaction(Support.emojis.x_emoji)
+
+
+            # wait
+            try:
+                before, after = await client.wait_for("message_edit", check=message_edit_check, timeout=300)
+                await Support.remove_reactions(message, client.user, [Support.emojis.x_emoji])
+                message = after
+
+            except asyncio.TimeoutError:
+                missing_arg_embed.title += "\nTimed Out"
+                await msg.edit(embed=missing_arg_embed)
+                return
+
+    # end while
+
+
+    # get aciton_extra
+    last_non_action_extra_arg = [i for i, a in enumerate(args) if str(action_sources[-1].id) in a][-1]
+    action_extra = " ".join(args[last_non_action_extra_arg+1:]).strip()
+
+    if action_extra: # action_extra given
+        emoji_event.action.extra = action_extra
+
+
+    # all done
+    await mesge.add_reaction(emoji_event.object.id)
+
     emoji_events = []
     for action_source in action_sources:
-        e_e = copy.deepcopy(emoji_event)
-        e_e.action.id = action_source.id
-        print(e_e.to_string())
-        emoji_events.append(e_e)
+        e_e = copy.deepcopy(emoji_event) # copy
 
-    embed = Support.delete_last_field(embed)
-    embed.add_field(name=Support.emojis.space_char, value=f"**When** {emoji} **on** [message]({mesge.jump_url}) **is** {event}ed, **do** {action} **using** {' and '.join([a_s.mention for a_s in action_sources])}.", inline=False) # may need to make action_source a list
-    embed = Support.delete_last_field(Support.switch_last_two_fields(embed))
-    embed.title = "Event Confirmation"
-    embed.description = discord.Embed().Empty
+        e_e.action.id = action_source.id # udpate id
+        emoji_events.append(e_e) # append
 
-    # build footer
-    value = f"{Support.emojis.tick_emoji} to confirm **|** {Support.emojis.x_emoji} to cancel"
-    embed.add_field(
-        name=Support.emojis.space_char, 
-        value=value, 
-        inline=False
-    )
-
-    await msg.edit(embed=embed)
-
-    try:
-            
-        reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
-
-        field_footer, embed = Support.confirm_input_last_field(embed)
-        await msg.edit(embed=embed)
-
-        if str(reaction.emoji) == Support.emojis.x_emoji:
-            embed.title += "\nCancelled"
-            embed = Support.delete_last_field(embed)
-
-            await Support.clear_reactions(msg)
-            await msg.edit(embed=embed)
-
-            log("watch emoji", "cancelled event confirmation")
-            return
-
-    except asyncio.TimeoutError:
-        embed.title += "\nTimed Out"
-        embed = Support.delete_last_field(embed)
-
-        await Support.clear_reactions(msg)
-        await msg.edit(embed=embed)
-
-        log("watch emoji", "timed out waiting for event confirmation")
-        return
-
-
-    ## all done
-
-    await mesge.add_reaction(emoji)
-
-    embed.title = "Event Confirmed"
-    embed = Support.delete_last_field(embed)
-
-    await Support.clear_reactions(msg)
-    await msg.edit(embed=embed)
-
-    for e_e in emoji_events:
-        e_e.edit_event(get_events())
+        e_e.edit_event(get_events()) # update db
 
         log("watch emoji", e_e.to_string())
+
+
+    embed = await simple_bot_response(message.channel, # TODO better all done message
+        title="Event Created",
+        description="\n\n".join([e_e.to_string() for e_e in emoji_events]),
+        send=False
+    )
+
+    if msg:
+        await msg.edit(embed=embed)
+    else:
+        await message.channel.send(embed=embed)
+
 
     return emoji_events
 # end watch_emoji
@@ -985,8 +780,8 @@ async def perform_action(client, message, user, event):
                     remove_reaction = True
 
 
-    elif event.action.action in ["role_add", "role_remove"]:
-        success = await Role.add_remove_role(user, event.action.id, add=event.action.action == "role_add", remove=event.action.action == "role_remove")
+    elif event.action.action in ["add_role", "remove_role"]:
+        success = await Role.add_remove_role(user, event.action.id, add=event.action.action == "add_role", remove=event.action.action == "remove_role")
         if not success and event.event == "reaction_add": # hopefully it simply just works and no issues
             remove_reaction = True
 
@@ -1012,7 +807,11 @@ async def create_private_text_channel(client, message, user, event):
         send_messages=True
     )
 
-    name = f"{user.display_name.lower()}-{user.discriminator.lower()}"
+    name = event.action.extra if event.action.extra else f"{user.display_name}-{user.discriminator}"
+    name = name.replace(" ", "-").lower() # this .lower() can be anywhere... but figured here is fine
+    name = re.sub(r"(.category|.channel)", source.name, name)
+    name = name.replace(".user", f"{user.display_name}-{user.discriminator}")
+
     exists = [c for c in message.guild.channels if c.name == name]
 
     if not exists:
