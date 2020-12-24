@@ -158,7 +158,7 @@ async def main(client, message, args, author_perms):
     
 
     elif args[2] == "saved":
-        embed = generate_saved_embeds_display(get_saved_embeds(), message.guild if message.guild else message.author, get_phyner_from_channel(message.channel))
+        embed = generate_saved_embeds_display(get_saved_embeds(guild_id=args[3]), message.guild if message.guild else message.author, get_phyner_from_channel(message.channel))
         await message.channel.send(embed=embed)
 
     return
@@ -220,7 +220,7 @@ def generate_saved_embeds_display(saved_embeds, guild, phyner):
         embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed convert <embed_name>`"
 
     else:
-        embed.description += f"No embeds have been saved in {guild.name}.\n\n"
+        embed.description = f"No embeds have been saved in {guild.name}.\n\n"
 
         embed.description += f"Save an Embed:"
         embed.description += f"`{Guilds.get_guild_prefix(guild.id)} embed save <message_id> [embed_name]`"
