@@ -180,6 +180,9 @@ def get_id_from_str(str):
 
 
 def get_args_from_content(content):
+    """
+        returns args, content
+    """
     content = re.sub(r"[“”]", '"', content)
     content = re.sub(r"[\n\t\r]", ' ', content)
     content += " "
