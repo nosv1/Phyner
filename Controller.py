@@ -183,6 +183,7 @@ async def on_message(message):
                     await Support.simple_bot_response(message.channel, description=description, reply_message=message)
                     return
 
+
                 ## MO ##
 
                 if is_mo:
@@ -255,6 +256,9 @@ async def on_message(message):
 
                 elif args[1] in General.edit_aliases:
                     await General.say(client, message, args[2:], is_edit=True)
+
+                elif args[1] in General.feedback_aliases:
+                    await General.feedback(client, message, args[1:])
 
 
                 

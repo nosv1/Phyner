@@ -37,6 +37,15 @@ ids = SimpleNamespace(**{
 
     # channel ids
     'random_storage' : 789218327473160243,
+    'reported_issues' : 791687481308479528,
+    'requested_features' : 791687504440983572,
+
+})
+
+invite_links = SimpleNamespace(**{
+    'reported_issues' : "https://discord.gg/Da7eFUZrwT",
+    'requested_features' : "https://discord.gg/AvrpUyKzUx",
+    'help' : "https://discord.gg/suAQ2mUBYs",
 })
 
 
@@ -63,6 +72,9 @@ emojis = SimpleNamespace(**{
     'pencil_emoji' : "✏️",
     'floppy_disk_emoji' :"💾",
     "_9b9c9f_emoji" : "<:9b9c9f:791658919948189736>",
+    "pushpin_emoji" : "📌",
+    "wrench_emoji" : "🔧",
+    "wastebasket_emoji" : "🗑️",
 })
 
 ## COMMON ALIASES ##

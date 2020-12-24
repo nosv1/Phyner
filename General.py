@@ -15,6 +15,7 @@ import Help
 
 say_aliases = ["say", "speak", "create"]
 edit_aliases = ["edit"]
+feedback_aliases = ["request", "issue", "bug", "report"] # make sure u change feedback_type in feedback() if you edit this, bugs on the right, requests on the left
 
 
 
@@ -79,7 +80,6 @@ async def say(client, message, args, is_edit=False):
     else: # we aint tryna edit a blank message
         await Support.process_complete_reaction(message, rejected=True)
         log("edit", "edit command rejected") if msg else log("say", 'say command rejected')
-
 # end say
 
 
@@ -106,3 +106,49 @@ async def send_ping(client, channel):
     await simple_bot_response(channel, description=description)
     log("Connection", f"Ping: {ping}ms, Region: {host_region}")
 # end send_ping
+
+
+async def feedback(client, message, args):
+    feedback_type = "issue" if args[0] in feedback_aliases[-3:] else "request"
+
+    if not args[1] or args[1] in Help.help_aliases: # no feedback provided
+        await Help.send_help_embed(
+            client, 
+            message, 
+            Help.help_links if feedback_type == "issue" else Help.help_links, # FIXME set these links
+            default_footer=False
+        )
+        return
+
+
+    channel = client.get_guild(Support.ids.phyner_support_id).get_channel(
+        Support.ids.reported_issues if feedback_type == "issue" else Support.ids.requested_features
+    )
+
+
+    feedback = message.content[message.content.index(args[0]):]
+
+
+    description = "**Status:** TBD\n\n"
+
+    description += f"**User:** <@{message.author.id}>\n"
+    description += f"**Guild:** {message.guild.id}"
+
+    embed = await simple_bot_response(channel,
+        title=feedback_type.title(),
+        description=description,
+        send=False
+    )
+    embed.add_field(name=Support.emojis.space_char, value=feedback)
+
+
+    msg = await channel.send(embed=embed)
+    for r in [Support.emojis.pushpin_emoji, Support.emojis.wrench_emoji, Support.emojis.tick_emoji, Support.emojis.wastebasket_emoji]:
+        await msg.add_reaction(r)
+
+
+    await simple_bot_response(message.channel,
+        title=f"{feedback_type.title()} {'Submitted' if feedback_type == 'request' else 'Reported'}",
+        description=f"Thank you! Join the [Phyner Support Server]({Support.invite_links.reported_issues if feedback_type == 'issue' else Support.invite_links.requested_features}) to stay up-to-date on [this {feedback_type}]({msg.jump_url})."
+    )
+# end feedback
