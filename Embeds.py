@@ -158,7 +158,7 @@ async def main(client, message, args, author_perms):
     
 
     elif args[2] == "saved":
-        embed = generate_saved_embeds_display(get_saved_embeds(guild_id=args[3]), message.guild if message.guild else message.author, get_phyner_from_channel(message.channel))
+        embed = generate_saved_embeds_display(get_saved_embeds(guild_id=args[3] if args[3] else message.guild.id if message.guild else message.author.id), get_phyner_from_channel(message.channel))
         await message.channel.send(embed=embed)
 
     return
@@ -178,12 +178,9 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
 
     embed_ids = link.split("/")[-3:] if link else [str(guild_id), str(channel_id), str(message_id)] # will be at least [''] # FIXME this assumes no / in name
 
-    print(embed_ids)
-
     save_embeds = []
     for embed_file in embed_files:
         file_ids = re.findall(r"(\d{17,})", str(embed_file))[:3]
-        print(file_ids)
 
         if (
             not embed_ids[0] or # nothing provided
@@ -192,17 +189,14 @@ def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""
         ):
             name = str(embed_file).split(file_ids[-1])[1][1:-5] # if name in file, remove '-' after message_id and .json at the end
             name = file_ids[-1] if not name else name # name is either name or str(message_id) now
-            print(f"-{name}-")
 
             save_embeds.append(SavedEmbed(int(file_ids[0]), int(file_ids[1]), int(file_ids[2]), load_embed_from_Embeds(str(embed_file)), name, str(embed_file)))
-
-    print(save_embeds)
 
     return save_embeds
 # end get_saved_embeds
 
 
-def generate_saved_embeds_display(saved_embeds, guild, phyner):
+def generate_saved_embeds_display(saved_embeds, phyner):
     """
         saved_embeds should be [SavedEmbed, ...] not [discord.Embed(), ...]
     """
@@ -215,8 +209,7 @@ def generate_saved_embeds_display(saved_embeds, guild, phyner):
         embed.description = "Click the link to go to the saved embed (assuming it still exists).\n\n"
 
         for saved_embed in saved_embeds:
-            if saved_embed.guild_id == guild.id:
-                embed.description += f"[{saved_embed.name if saved_embed.name else saved_embed.message_id}](https://discord.com/channels/{saved_embed.guild_id}/{saved_embed.channel_id}/{saved_embed.message_id})\n"
+            embed.description += f"[{saved_embed.name if saved_embed.name else saved_embed.message_id}](https://discord.com/channels/{saved_embed.guild_id}/{saved_embed.channel_id}/{saved_embed.message_id})\n"
 
 
         embed.description += f"\nSend a Saved Embed:\n"
@@ -266,7 +259,7 @@ async def send_saved_embed_from_message(message, args):
         await channel.send(embed=saved_embed[0].embed)
 
     else:
-        await channel.send(embed=generate_saved_embeds_display(saved_embeds, message.guild))
+        await channel.send(embed=generate_saved_embeds_display(saved_embeds, get_phyner_from_channel(message.channel)))
 # end send_saved_embed
 
 
