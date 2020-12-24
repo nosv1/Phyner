@@ -161,7 +161,7 @@ async def main(client, message, args, author_perms):
     """
         @Phyner watch webhook [webhook_id]
         @Phyner watch emoji <emoji> <message_id> [#channel] add/remove_role <role_id/@Role ...>
-        @Phyner watch emoji <emoji> <message_id> [#channel] create_private_text_channel <channel/category_id/#channel>
+        @Phyner watch emoji <emoji> <message_id> [#channel] create_private_text_channel <channel/category_id/#channel> [name template]
     """
 
     if author_perms.administrator:
