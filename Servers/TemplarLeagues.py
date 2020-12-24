@@ -101,6 +101,7 @@ async def prepare_series_report_channel(channel, user):
     await channel.edit(name=f"series-report-{user.display_name}")
 
     series_report_embed = Embeds.get_saved_embeds(link=series_report_embed_link)[0].embed
+    # series_report_embed = Embeds.get_saved_embeds(link="https://discord.com/channels/789181254120505386/789182513633427507/791648883343884328")[0].embed
     msg = await channel.send(content=user.mention, embed=series_report_embed)
     await msg.add_reaction(Support.emojis.ok_emoji)
 
@@ -234,9 +235,11 @@ async def series_report(client, message, user):
             # wait
             mesge = await client.wait_for("message", check=message_check, timeout=60)
 
+            await mesge.delete()
+
             # tease user
             embed.set_footer(text="Verifying input...")
-            await msg.edit(embed=embed)
+            # await msg.edit(embed=embed)
 
             # verify format
             wins = re.findall(r"(\d{1})", mesge.content)
@@ -248,7 +251,7 @@ async def series_report(client, message, user):
             away_team_wins = wins if home_team_wins >= 0 else away_team_wins # set away if home set 
             home_team_wins = wins if home_team_wins < 0 else home_team_wins # set home if not set
 
-            await mesge.delete()
+            # await mesge.delete()
 
             lines = embed.description.split("\n")
             lines[3] = f"**{away_team}:** " + (f"`{away_team_wins}`" if away_team_wins >= 0 else "")
@@ -295,7 +298,7 @@ async def series_report(client, message, user):
 
             # tease user
             embed.set_footer(text="Verifying input...")
-            await msg.edit(embed=embed)
+            # await msg.edit(embed=embed)
 
             # verify input
             history = await message.channel.history(after=msg, oldest_first=False).flatten()
@@ -311,7 +314,6 @@ async def series_report(client, message, user):
 
                 if ballchasing_links or len(other_links) >= away_team_wins + home_team_wins: # stop condtion
                     stop = True
-                    break
 
             if not stop: # not satisfied
                 embed.set_footer(text="No ballchasing link provided. Must have at least one link per game otherwise. ")
@@ -320,7 +322,7 @@ async def series_report(client, message, user):
 
         # add proof to embed
         lines = embed.description.split("\n")
-        lines[5] = "**Proof:** " + " ".join([f"[link]({link})" for link in other_links])
+        lines[5] = "**Proof:** " + " ".join([f"[{'link' if 'ballchasing' not in link else 'ballchasing'}]({link})" for link in other_links])
 
         embed = embed.to_dict()
         embed["description"] = "\n".join(lines)
@@ -342,7 +344,7 @@ async def series_report(client, message, user):
 
         # tease user
         embed.set_footer(text="Submitting...")
-        await msg.edit(embed=embed)
+        # await msg.edit(embed=embed)
 
         # send to staff leagues log
         value = f"Please check that the proof matches the result, and verify the score by clicking the {Support.emojis.tick_emoji}!"
@@ -353,9 +355,9 @@ async def series_report(client, message, user):
         del embed["footer"]
         embed = discord.Embed().from_dict(embed)
 
-        staff_guild = client.get_guild(staff_templar_leagues_id)
-        league_results_log = staff_guild.get_channel(staff_league_results_log_id)
-        msg = await league_results_log.send(content=f"<@&{staff_moderator_id}> <@&{staff_support_id}>", embed=embed)
+        staff_guild = client.get_guild(staff_templar_leagues_id) # get staff guild
+        league_results_log = staff_guild.get_channel(staff_league_results_log_id) # get league results channel
+        msg = await league_results_log.send(content=f"<@&{staff_moderator_id}> <@&{staff_support_id}>", embed=embed) # send to league results
         await msg.add_reaction(Support.emojis.tick_emoji)
 
         # delete submission channel

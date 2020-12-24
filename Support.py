@@ -62,6 +62,7 @@ emojis = SimpleNamespace(**{
     'film_frames_emoji' : "🎞️",
     'pencil_emoji' : "✏️",
     'floppy_disk_emoji' :"💾",
+    'c0c0c0_emoji' : "<:c0c0c0:789203993980698685>"
 })
 
 

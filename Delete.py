@@ -13,7 +13,7 @@ from Logger import log
 
 ''' CONSTANTS '''
 
-delete_aliases = ["delete", "purge", "clear"]
+delete_aliases = ["delete", "purge", "clear", "del"]
 
 
 
