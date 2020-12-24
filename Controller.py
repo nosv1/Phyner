@@ -238,7 +238,8 @@ async def on_message(message):
                     await Help.send_help_embed(client, message, Help.help_links.command_list_1)
 
                 elif args[1] in ["invite"]:
-                    await Help.send_help_embed(client, message, Help.help_links.invite_phyner)
+                    await Support.simple_bot_response(message.channel,description=f"**{phyner.mention} is still a work in progress and is not publically available, yet. Join the [Phyner Support Server](https://discord.gg/suAQ2mUBYs) to stay up-to-date.**")
+                    await Help.send_help_embed(client, message, Help.help_links.invite_phyner) # FIXME
 
                 elif args[1] in ["ids", "id"]:
                     await Help.send_help_embed(client, message, Help.help_links.ids)
