@@ -872,7 +872,7 @@ async def send_event_help(client, message):
             
             # 2nd level
             if event_type == "watching_emoji" and str(reaction.emoji) in reactions: # action emoji clicked,
-                embed = get_saved_embeds(link=watching_emoji_actions[Support.emojis.number_emojis.index(str(reaction.emoji))-1])
+                embed = get_saved_embeds(link=watching_emoji_actions[Support.emojis.number_emojis.index(str(reaction.emoji))-1])[0].embed
 
 
             # 1st level
