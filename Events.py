@@ -835,6 +835,13 @@ async def create_private_text_channel(client, message, user, event):
 ''' RESPONSES '''
 
 async def send_event_help(client, message):
+
+    watching_emoji_actions = [
+        Help.help_links.add_remove_role["link"], # add/remove_role
+        # Help.help_links.create_private_text_channel["link"], # create_private_text_channel
+    ]
+
+
     msg = await Help.send_help_embed(client, message, Help.help_links.event_menu, default_footer=False)
     log("EMBED", "Help")
 
@@ -844,29 +851,49 @@ async def send_event_help(client, message):
     for r in emojis:
         await msg.add_reaction(r)
 
+    reactions = []
+
     def reaction_check(reaction, r_user):
         return (
             reaction.message == msg and
             r_user.id == message.author.id and
-            str(reaction.emoji) in emojis
+            str(reaction.emoji) in emojis + reactions
         )
     # end reaction_check
 
     try:
+
+        event_type = ""
         while True:
+            reactions = [] # some events have sub pages, those reactions are stored here, if not reactions, break
+
             reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
 
-
+            # 1st level
             if str(reaction.emoji) == emojis[0]: # zany
                 embed = get_saved_embeds(link=Help.help_links.watching_emoji["link"])[0].embed
+                event_type = "watching_emoji"
+                reactions += Support.emojis.number_emojis[1:3]
 
             elif str(reaction.emoji) == emojis[1]: # robot
                 embed = get_saved_embeds(link=Help.help_links.watching_webhooks["link"])[0].embed
+                event_type = "watching_webhook"
+
+            
+            # 2nd level
+            if event_type == "watching_emoji" and str(reaction.emoji) in reactions: # action emoji clicked,
+                embed = get_saved_embeds(link=watching_emoji_actions[Support.emojis.number_emojis.index(str(reaction.emoji))-1])
 
 
+            # send it
             if str(reaction.emoji) in emojis:
                 await msg.edit(embed=embed)
                 await Support.clear_reactions(msg)
+                [await msg.add_reaction(r) for r in reactions]
+
+
+            # break it
+            if not reactions: # no need to wait anymore
                 break
 
     except asyncio.TimeoutError:
