@@ -888,11 +888,11 @@ async def send_event_help(client, message):
             # send it
             if embed:
                 await msg.edit(embed=embed)
-                await Support.clear_reactions(msg)
                 [await msg.add_reaction(r) for r in reactions]
                 embed = None
 
             else:
+                await Support.clear_reactions(msg)
                 break
 
     except asyncio.TimeoutError:
