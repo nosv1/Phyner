@@ -169,7 +169,7 @@ async def main(client, message, args, author_perms):
     if author_perms.administrator:
 
         if args[1] in Help.help_aliases:
-            log("Events", "help") # TODO help
+            await send_event_help(client, message)
 
 
         elif args[0] in events_aliases and not message.edited_at:
@@ -843,7 +843,7 @@ async def send_event_help(client, message):
 
 
     msg = await Help.send_help_embed(client, message, Help.help_links.event_menu, default_footer=False)
-    log("EMBED", "Help")
+    log("Event", "Help")
 
     embed = msg.embeds[0]
     
