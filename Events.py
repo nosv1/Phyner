@@ -885,6 +885,8 @@ async def send_event_help(client, message):
                 event_type = "watching_webhook"
 
 
+            await Support.clear_reactions(msg)
+            
             # send it
             if embed:
                 await msg.edit(embed=embed)
@@ -892,7 +894,6 @@ async def send_event_help(client, message):
                 embed = None
 
             else:
-                await Support.clear_reactions(msg)
                 break
 
     except asyncio.TimeoutError:
