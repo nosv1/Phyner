@@ -865,7 +865,6 @@ async def send_event_help(client, message):
 
         event_type = ""
         while True:
-            print(event_type, reactions)
 
             reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
 
