@@ -887,15 +887,13 @@ async def send_event_help(client, message):
 
 
             # send it
-            if str(reaction.emoji) in emojis + reactions:
+            if embed:
                 await msg.edit(embed=embed)
                 await Support.clear_reactions(msg)
                 [await msg.add_reaction(r) for r in reactions]
-                reactions = []
+                embed = None
 
-
-            # break it
-            if not reactions: # no need to wait anymore
+            else:
                 break
 
     except asyncio.TimeoutError:
