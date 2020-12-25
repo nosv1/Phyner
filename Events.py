@@ -873,7 +873,6 @@ async def send_event_help(client, message):
             # 2nd level
             if event_type == "watching_emoji" and str(reaction.emoji) in reactions: # action emoji clicked,
                 embed = get_saved_embeds(link=watching_emoji_actions[Support.emojis.number_emojis.index(str(reaction.emoji))-1])
-                reactions = []
 
 
             # 1st level
@@ -885,7 +884,6 @@ async def send_event_help(client, message):
             elif str(reaction.emoji) == emojis[1]: # robot
                 embed = get_saved_embeds(link=Help.help_links.watching_webhooks["link"])[0].embed
                 event_type = "watching_webhook"
-                reactions = []
 
 
             # send it
@@ -893,6 +891,7 @@ async def send_event_help(client, message):
                 await msg.edit(embed=embed)
                 await Support.clear_reactions(msg)
                 [await msg.add_reaction(r) for r in reactions]
+                reactions = []
 
 
             # break it
