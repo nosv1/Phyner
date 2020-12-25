@@ -3,7 +3,6 @@ __pycache__
 .env
 in.txt
 **/Logs
-session.sh
 **/Videos
 **/Secrets
 **/Embeds
