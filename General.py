@@ -114,6 +114,8 @@ async def send_ping(client, message):
 
 
 async def feedback(client, message, args):
+    phyner = Support.get_phyner_from_channel(message.channel)
+
     feedback_type = "issue" if args[0] in feedback_aliases[-3:] else "request"
 
     if not args[1] or args[1] in Help.help_aliases: # no feedback provided
@@ -131,9 +133,6 @@ async def feedback(client, message, args):
     )
 
 
-    feedback = message.content[message.content.index(args[0]):]
-
-
     description = "**Status:** TBD\n\n"
 
     description += f"**User:** <@{message.author.id}>\n"
@@ -142,8 +141,11 @@ async def feedback(client, message, args):
     embed = await simple_bot_response(channel,
         title=feedback_type.title(),
         description=description,
+        footer=f"..p {feedback_type} <your_{feedback_type}>",
         send=False
     )
+
+    feedback = message.content[message.content.index(args[0]) + len(args[0]):]
     embed.add_field(name=Support.emojis.space_char, value=feedback)
 
 
@@ -152,8 +154,13 @@ async def feedback(client, message, args):
         await msg.add_reaction(r)
 
 
+    description = f"Thank you! Join the [Phyner Support Server]({Support.invite_links.reported_issues if feedback_type == 'issue' else Support.invite_links.requested_features}) to stay up-to-date on [this {feedback_type}]({msg.jump_url}).\n\n"
+
+    if feedback_type == "request":
+        description += f"If {phyner.mention} has made your life in Discord a bit easier, please consider showing your support in the form of a [donation](https://paypal.me/moshots). The gesture alone goes a long way to keeping features in development. -Mo#9991 :)"
+
     await simple_bot_response(message.channel,
         title=f"{feedback_type.title()} {'Submitted' if feedback_type == 'request' else 'Reported'}",
-        description=f"Thank you! Join the [Phyner Support Server]({Support.invite_links.reported_issues if feedback_type == 'issue' else Support.invite_links.requested_features}) to stay up-to-date on [this {feedback_type}]({msg.jump_url})."
+        description=description
     )
 # end feedback

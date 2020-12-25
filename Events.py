@@ -7,6 +7,8 @@ import re
 
 
 import Database
+import Embeds
+from Embeds import get_saved_embeds
 import Guilds
 from Logger import log
 import Help
@@ -828,3 +830,46 @@ async def create_private_text_channel(client, message, user, event):
     else:
         log('reaction add event', "failed to create channel, name already exists ;)")
 # end create_private_text_channel
+
+
+''' RESPONSES '''
+
+async def send_event_help(client, message):
+    msg = await Help.send_help_embed(client, message, Help.help_links.event_menu, default_footer=False)
+    log("EMBED", "Help")
+
+    embed = msg.embeds[0]
+    
+    emojis = [Support.emojis.zany_emoji, Support.emojis.robot_emoji] 
+    for r in emojis:
+        await msg.add_reaction(r)
+
+    def reaction_check(reaction, r_user):
+        return (
+            reaction.message == msg and
+            r_user.id == message.author.id and
+            str(reaction.emoji) in emojis
+        )
+    # end reaction_check
+
+    try:
+        while True:
+            reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
+
+
+            if str(reaction.emoji) == emojis[0]: # zany
+                embed = get_saved_embeds(link=Help.help_links.watching_emoji["link"])[0].embed
+
+            elif str(reaction.emoji) == emojis[1]: # robot
+                embed = get_saved_embeds(link=Help.help_links.watching_webhooks["link"])[0].embed
+
+
+            if str(reaction.emoji) in emojis:
+                await msg.edit(embed=embed)
+                await Support.clear_reactions(msg)
+                break
+
+    except asyncio.TimeoutError:
+        await Support.clear_reactions(msg)
+
+# end send_embed_help

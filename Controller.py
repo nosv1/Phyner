@@ -314,7 +314,9 @@ async def on_message(message):
 
                 else:
                     await Help.send_help_embed(client, message, Help.help_links.simple)
-                    await Logger.log_error(client, f"command not recognized {message.content}")
+
+                    if args[1]: # >= 1 arg given, gimme that insight
+                        await Logger.log_error(client, f"command not recognized {message.content}")
 
                 ''' END COMMAND CHECKS '''
 

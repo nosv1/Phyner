@@ -37,6 +37,9 @@ help_links = SimpleNamespace(**{
 
     "embed_menu" : {"link" : "https://discord.com/channels/789181254120505386/791231253822439455/791231381685927936"},
     "creating_and_editing_embeds" : {"link" : "https://discord.com/channels/789181254120505386/791231253822439455/791233860896948227"},
+
+    "event_menu" : {"link" : "https://discord.com/channels/789181254120505386/791985443808739338/791993599990562847"},
+    "watching_emojis" : {"link" : "https://discord.com/channels/789181254120505386/791985443808739338/792009489138188338"},
 })
 
 
@@ -145,7 +148,7 @@ async def send_help_embed(client, msg, embed_link, default_footer=True, demo=Fal
                 reactions.append(Support.emojis.clipboard_emoji)
 
             else: # is command list
-                reactions += Support.emojis.number_emojis[1:3]
+                reactions += Support.emojis.number_emojis[1:3] ## NOTICE THE 1:3 ##
 
             if "demo" in embed_link: # has demo
                 footer.append(f"{Support.emojis.film_frames_emoji} `Demo`")
@@ -193,7 +196,7 @@ async def send_help_embed(client, msg, embed_link, default_footer=True, demo=Fal
 
                 if (
                     embed_link in [help_links.command_list_1, help_links.command_list_2] and # is command list
-                    str(reaction.emoji) in Support.emojis.number_emojis[1:3] # and number emoji clicked
+                    str(reaction.emoji) in Support.emojis.number_emojis[1:3] # and number emoji clicked,       ## NOTICE THE 1:3 ##
                 ):
                     embed_link = eval(f"help_links.command_list_{Support.emojis.number_emojis.index(str(reaction.emoji))}")
 

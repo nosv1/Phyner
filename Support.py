@@ -76,6 +76,8 @@ emojis = SimpleNamespace(**{
     "pushpin_emoji" : "📌",
     "wrench_emoji" : "🔧",
     "wastebasket_emoji" : "🗑️",
+    "zany_emoji" : "🤪",
+    "robot_emoji" : "🤖",
 })
 
 ## COMMON ALIASES ##
