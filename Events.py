@@ -871,7 +871,7 @@ async def send_event_help(client, message):
 
             # 1st level
             if str(reaction.emoji) == emojis[0]: # zany
-                embed = get_saved_embeds(link=Help.help_links.watching_emoji["link"])[0].embed
+                embed = get_saved_embeds(link=Help.help_links.watching_emojis["link"])[0].embed
                 event_type = "watching_emoji"
                 reactions += Support.emojis.number_emojis[1:3]
 
