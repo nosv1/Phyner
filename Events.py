@@ -838,7 +838,7 @@ async def send_event_help(client, message):
 
     watching_emoji_actions = [
         Help.help_links.add_remove_role["link"], # add/remove_role
-        # Help.help_links.create_private_text_channel["link"], # create_private_text_channel
+        Help.help_links.create_private_text_channel["link"], # create_private_text_channel
     ]
 
 

@@ -41,6 +41,7 @@ help_links = SimpleNamespace(**{
     "event_menu" : {"link" : "https://discord.com/channels/789181254120505386/791985443808739338/791993599990562847"},
     "watching_emojis" : {"link" : "https://discord.com/channels/789181254120505386/791985443808739338/792009489138188338"},
     "add_remove_role" : {"link" : "https://discord.com/channels/789181254120505386/791985443808739338/792017098363764774"},
+    "create_private_text_channel" : {"link" : "https://discord.com/channels/789181254120505386/791985443808739338/792029111307468810"},
 })
 
 
