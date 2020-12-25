@@ -25,6 +25,7 @@ help_links = SimpleNamespace(**{
     "general" : {"link" : "https://discord.com/channels/789181254120505386/789181637748588544/789187242006020126"},
 
     "command_list_1" : {"link" : "https://discord.com/channels/789181254120505386/789586399975178252/789586453978021898"},
+    "command_list_2" : {"link" : "https://discord.com/channels/789181254120505386/789586399975178252/791420646713458718"},
 
     "invite_phyner" : {"link" : "https://discord.com/channels/789181254120505386/791034004174405642/791034163230408724"},
 
@@ -139,9 +140,12 @@ async def send_help_embed(client, msg, embed_link, default_footer=True, demo=Fal
                 footer.append(f"{Support.emojis.question_emoji} `{guild_prefix} help`")
                 reactions.append(Support.emojis.question_emoji)
 
-            if embed_link not in [help_links.command_list_1]: # not command list embed
+            if embed_link not in [help_links.command_list_1, help_links.command_list_2]: # not command list embed, this check is also in the wait portion below
                 footer.append(f"{Support.emojis.clipboard_emoji} `{guild_prefix} commands`")
                 reactions.append(Support.emojis.clipboard_emoji)
+
+            else: # is command list
+                reactions += Support.emojis.number_emojis[1:3]
 
             if "demo" in embed_link: # has demo
                 footer.append(f"{Support.emojis.film_frames_emoji} `Demo`")
@@ -177,14 +181,22 @@ async def send_help_embed(client, msg, embed_link, default_footer=True, demo=Fal
             try:
                 reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
 
-                if str(reaction.emoji) == Support.emojis.question_emoji:
+                if str(reaction.emoji) == Support.emojis.question_emoji: # toggle general help
                     embed_link = help_links.general
 
-                elif str(reaction.emoji) == Support.emojis.clipboard_emoji:
+                elif str(reaction.emoji) == Support.emojis.clipboard_emoji: # toggle page one of command list
                     embed_link = help_links.command_list_1
 
-                elif str(reaction.emoji) == Support.emojis.film_frames_emoji:
+                elif str(reaction.emoji) == Support.emojis.film_frames_emoji: # toggle demo
                     demo = not demo
+
+
+                if (
+                    embed_link in [help_links.command_list_1, help_links.command_list_2] and # is command list
+                    str(reaction.emoji) in Support.emojis.number_emojis[1:3] # and number emoji clicked
+                ):
+                    embed_link = eval(f"help_links.command_list_{Support.emojis.number_emojis.index(str(reaction.emoji))}")
+
 
             except asyncio.TimeoutError:
                 await Support.clear_reactions(msg)
