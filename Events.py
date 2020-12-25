@@ -848,7 +848,7 @@ async def send_event_help(client, message):
     embed = msg.embeds[0]
     
     emojis = [Support.emojis.zany_emoji, Support.emojis.robot_emoji] 
-    for r in emojis:
+    for r in emojis[:1]: # FIXME not all reactions are beeing added... ^^
         await msg.add_reaction(r)
 
     reactions = []
@@ -869,6 +869,12 @@ async def send_event_help(client, message):
 
             reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120)
 
+            
+            # 2nd level
+            if event_type == "watching_emoji" and str(reaction.emoji) in reactions: # action emoji clicked,
+                embed = get_saved_embeds(link=watching_emoji_actions[Support.emojis.number_emojis.index(str(reaction.emoji))-1])
+
+
             # 1st level
             if str(reaction.emoji) == emojis[0]: # zany
                 embed = get_saved_embeds(link=Help.help_links.watching_emojis["link"])[0].embed
@@ -879,14 +885,9 @@ async def send_event_help(client, message):
                 embed = get_saved_embeds(link=Help.help_links.watching_webhooks["link"])[0].embed
                 event_type = "watching_webhook"
 
-            
-            # 2nd level
-            if event_type == "watching_emoji" and str(reaction.emoji) in reactions: # action emoji clicked,
-                embed = get_saved_embeds(link=watching_emoji_actions[Support.emojis.number_emojis.index(str(reaction.emoji))-1])
-
 
             # send it
-            if str(reaction.emoji) in emojis:
+            if str(reaction.emoji) in emojis + reactions:
                 await msg.edit(embed=embed)
                 await Support.clear_reactions(msg)
                 [await msg.add_reaction(r) for r in reactions]
