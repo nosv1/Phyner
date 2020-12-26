@@ -1,8 +1,6 @@
 ''' IMPORTS '''
 
-from datetime import datetime
 import discord
-import traceback
 
 import Logger
 from Logger import log

@@ -1,7 +1,6 @@
 ''' IMPORTS '''
 
 import asyncio
-from os import supports_bytes_environ
 from types import SimpleNamespace
 
 import discord

@@ -3,12 +3,9 @@
 import asyncio
 from bs4 import BeautifulSoup as bsoup
 import discord
-from datetime import datetime
 import gspread
-import json
 import re
 import requests
-import sys
 import traceback
 from types import SimpleNamespace
 

@@ -1,7 +1,6 @@
 ''' IMPORTS '''
 
 import copy
-from logging import LogRecord
 import discord
 import re
 
