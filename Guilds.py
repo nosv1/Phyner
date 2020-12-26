@@ -30,7 +30,7 @@ class Guild:
     """
 
 
-    def __init__(self, guild_id, name=None, prefix=None, guild=None):
+    def __init__(self, guild_id, name=None, prefix="@Phyner#2797", guild=None):
         self.id = int(guild_id)
         self.name = name
         self.prefix = prefix
@@ -109,6 +109,7 @@ def get_guild_prefix(guild_id):
     return phyner_guild.prefix if phyner_guild else "@Phyner#2797"
 # end get_guild_prefix
 
+
 def get_guild_prefixes():
     """
         Returns {int(id) : str(prefix), ...}
@@ -126,6 +127,7 @@ def get_guild_prefixes():
 
     return guild_prefixes
 # end get_guild_prefixes
+
 
 async def set_prefix(message, args, author_perms):
     """
