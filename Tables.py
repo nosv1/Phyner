@@ -495,7 +495,7 @@ async def get_table_from_user_input(client, message, author_perms):
 
 
     # syntax examples
-    syntax_example_template = f"`{guild_prefix} table {args[2]} <spreadsheet_url> [tab_name] [range] <#channel>`"
+    syntax_example_template = f"`{guild_prefix} table {args[2]} <spreadsheet_url> <tab_name> <range> <#channel>`"
     syntax_example_real = f"`{guild_prefix} table {args[2]} <https://docs.google.com/spreadsheets/d/1Hg2eyyfbSSACMMIBx1FBvNRschQFsxmgPS-oqCFeRJ8/edit#gid=0> Standings A1:B10` #standings"
 
 
