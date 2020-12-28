@@ -992,7 +992,6 @@ async def edit_table(client, message, table):
                 reply_message=message,
                 delete_after=120
             )
-
 # end edit_table
 
 
