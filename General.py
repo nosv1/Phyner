@@ -5,6 +5,7 @@ import discord
 import Logger
 from Logger import log
 import Support
+from Support import edit_aliases
 from Support import simple_bot_response
 import Help
 
@@ -13,7 +14,6 @@ import Help
 ''' CONSTANTS '''
 
 say_aliases = ["say", "speak", "create"]
-edit_aliases = ["edit"]
 feedback_aliases = ["request", "issue", "bug", "report"] # make sure u change feedback_type in feedback() if you edit this, bugs on the right, requests on the left
 
 

@@ -168,7 +168,7 @@ async def series_report(client, message, user):
 
             # prepare to wait
             value = f"Input the **Match ID** of the match you are submitting."
-            Support.edit_field_value_with_name(embed, instruction_field_name, value)
+            Support.update_field_value(embed, instruction_field_name, value)
             if msg:
                 await msg.edit(embed=embed) 
 
@@ -227,7 +227,7 @@ async def series_report(client, message, user):
 
             # prepare to wait
             value = f"Input the number of wins for **{home_team if home_team_wins < 0 else away_team}**."
-            embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
+            embed = Support.update_field_value(embed, instruction_field_name, value)
             await msg.edit(embed=embed)
 
             # wait
@@ -283,7 +283,7 @@ async def series_report(client, message, user):
 
             # prepare to wait
             value = f"Attach all forms of proof you have (links or screenshots). All that is needed, though, is one https://ballchasing.com/group/... link. When you have sent all of your proof, click the {Support.emojis.tick_emoji} to continue - you have 5 minutes before the submission times out."
-            embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
+            embed = Support.update_field_value(embed, instruction_field_name, value)
 
             await msg.edit(embed=embed)
 
@@ -334,7 +334,7 @@ async def series_report(client, message, user):
 
         # prepare to wait 
         value = f"If the information below looks right, click the {Support.emojis.tick_emoji} to submit this match. If there is an error, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji} to restart."
-        embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
+        embed = Support.update_field_value(embed, instruction_field_name, value)
         await msg.edit(embed=embed)
 
         # wait
@@ -346,7 +346,7 @@ async def series_report(client, message, user):
 
         # send to staff leagues log
         value = f"Please check that the proof matches the result, and verify the score by clicking the {Support.emojis.tick_emoji}!"
-        embed = Support.edit_field_value_with_name(embed, instruction_field_name, value)
+        embed = Support.update_field_value(embed, instruction_field_name, value)
 
         embed = embed.to_dict()
         embed["author"]["url"] = "https://google.com/id=templar_leagues_series_report_verification/"

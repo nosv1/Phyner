@@ -28,6 +28,7 @@ ids = SimpleNamespace(**{
     # user ids
     'mo_id' : 405944496665133058,
     'phyner_id' : 770416211300188190,
+    'phyner_service_account' : 'phyner@phyner.iam.gserviceaccount.com',
 
     # guild ids
     'mobot_support_id' : 467239192007671818,
@@ -75,11 +76,15 @@ emojis = SimpleNamespace(**{
     "wastebasket_emoji" : "🗑️",
     "zany_emoji" : "🤪",
     "robot_emoji" : "🤖",
+    "counter_clockwise_arrows_emoji" : "🔄",
+    "letter_emojis" : {"a" : "🇦", "b" : "🇧", "c" : "🇨", "d" : "🇩", "e" : "🇪", "f" : "🇫", "g" : "🇬", "h" : "🇭", "i" : "🇮", "j" : "🇯", "k" : "🇰", "l" : "🇱", "m" : "🇲", "n" : "🇳", "o" : "🇴", "p" : "🇵", "q" : "🇶", "r" : "🇷", "s" : "🇸", "t" : "🇹", "u" : "🇺", "v" : "🇻", "w" : "🇼", "x" : "🇽", "y" : "🇾", "z" : "🇿"}
 })
 
 ## COMMON ALIASES ##
 add_aliases = ["add", "+"]
 remove_aliases = ["remove", "-"]
+create_aliases = ["create", "new"] + add_aliases
+edit_aliases = ["edit"]
 
 
 ''' SUPPORT FUNCTIONS '''
@@ -255,7 +260,7 @@ def convert_embed_dict_to_create_messages(embed_dict):
     return [c_m.replace(f"{emojis.space_char}", "\\s").replace(f"{emojis.bullet}", "\\b").replace(f"{emojis.zero_width}", "\\z") for c_m in create_messages]
 # end convert_embed_dict_to_create_messages
 
-def edit_field_value_with_name(embed, name, value):
+def update_field_value(embed, name, value):
     embed = embed.to_dict()
     for i in range(len(embed["fields"])):
         if name in embed["fields"][i]["name"]:
@@ -263,7 +268,7 @@ def edit_field_value_with_name(embed, name, value):
             break
     embed = discord.Embed().from_dict(embed)
     return embed
-# end edit_field_value_with_name
+# end update_field_value
 
 def confirm_input_last_field(embed):
     embed = embed.to_dict()

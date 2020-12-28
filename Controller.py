@@ -3,15 +3,10 @@
 import asyncio
 import copy
 import discord
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import gspread
-import mysql.connector
 from pytz import timezone
-import random
-import re
 import traceback
-from types import SimpleNamespace
 
 import os
 from dotenv import load_dotenv
@@ -33,6 +28,7 @@ import Role
 from Stats import command_used
 from Servers import TemplarLeagues
 import Support
+import Tables
 
 
 Logger.create_log_file()
@@ -256,7 +252,7 @@ async def on_message(message):
                 elif args[1] in General.say_aliases:
                     await General.say(client, message, args[2:])
 
-                elif args[1] in General.edit_aliases:
+                elif args[1] in Support.edit_aliases:
                     await General.say(client, message, args[2:], is_edit=True)
 
                 elif args[1] in General.feedback_aliases:
@@ -272,8 +268,8 @@ async def on_message(message):
                 
                 ## CUSTOM COMMANDS ##
 
-                # elif args[1] in CustomCommands.custom_command_aliases:
-                    # await CustomCommands.main(args, author_perms)
+                elif args[1] in CustomCommands.custom_command_aliases:
+                    await CustomCommands.main(client, message, args[2:], author_perms)
 
 
                 ## EMBED ##
@@ -293,6 +289,12 @@ async def on_message(message):
 
                 elif args[1] in Role.role_aliases:
                     await Role.main(client, message, args[2:], author_perms)
+
+                
+                ## TABLES ##
+                
+                elif args[1] in Tables.table_aliases:
+                    await Tables.main(client, message, args[1:], author_perms)
 
 
                 ## WATCH ##
@@ -359,8 +361,10 @@ async def on_raw_reaction_add(payload):
         user = [user for user in (message.channel.members if not is_dm else [message.channel.recipient]) if user.id == user_id]
         user = user[0] if user else user
 
+        phyner = Support.get_phyner_from_channel(message.channel)
+
         remove_reaction = False
-        if message and user:
+        if user: # message and user are found
 
             if not user.bot: # not bot reaction
 
@@ -423,6 +427,23 @@ async def on_raw_reaction_add(payload):
                         okay_phyner_support
                     ]:
                         await TemplarLeagues.on_reaction_add(client, message, user, payload)
+
+
+                ## PHYNER AUTHOR ##
+
+                if message.author.id == phyner.id: # phyner message
+
+                    if payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji: # refresh button clicked
+
+                        poss_table = Tables.get_table(message.id, message.guild.id if message.guild else message.author.id)
+                        
+                        if poss_table:
+                            await message.add_reaction(Support.emojis._9b9c9f_emoji)
+                            await poss_table[0].send_table(client)
+                            await Support.remove_reactions(message, phyner, Support.emojis._9b9c9f_emoji)
+                            remove_reaction = True
+
+
     
 
         if remove_reaction and not is_dm:
