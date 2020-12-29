@@ -899,6 +899,7 @@ async def edit_table(client, message, table):
                 await msg.add_reaction(Support.emojis._9b9c9f_emoji)
 
                 if str(reaction.emoji) == Support.emojis.floppy_disk_emoji:
+                    timeout = True
                     embed = await refresh_table()
 
 
@@ -991,7 +992,7 @@ async def edit_table(client, message, table):
         else:
             timeout = True
             await simple_bot_response(message.channel,
-                description="**Table Editing time out in 2 minutes. Remember to save your changes**",
+                description="**Table Editing times out in 2 minutes. Remember to save your changes.**",
                 reply_message=message,
                 delete_after=120
             )
