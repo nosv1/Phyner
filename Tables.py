@@ -337,7 +337,7 @@ class Table:
         if send_new: # SEND IT
             new_ids = []
             self.messages = []
-            for table in self.tables:
+            for table in self.tables[:9]: # limit 9 messages...
                 if self.for_embed:
                     msg = await simple_bot_response(destination, description=table)
 
