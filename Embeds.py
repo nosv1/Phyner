@@ -20,6 +20,7 @@ import Help
 import Logger
 import Support
 from Support import emojis, get_phyner_from_channel
+import Tables
 
 
 
@@ -269,7 +270,7 @@ async def send_saved_embed_from_message(message, args):
 
 ## FUNCTIONALITY ##
 
-def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
+async def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
     """ 
     Creating a discord.Embed() from the content of a message, or simply from a string.
     returns embed and list of readable error messages
@@ -322,12 +323,14 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
 
     # get and assign attr values, fields after this loop
 
-    errors = []
+    errors = [] # [attribute, value]
 
     for i, attr in enumerate(attrs): # get attr values
         next_attr = attrs[i+1] if i < len(attrs) - 1 else None
         if attr == next_attr:
             continue
+            
+        ## SETUP VALUE ##
 
         value = content[
             content.index(attr) + len(attr) : content.index(next_attr) - 1 if next_attr else len(content)
@@ -336,6 +339,45 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
         attr = attr.strip()
         value = value if ".empty" not in value else discord.Embed().Empty
         value = str(message.guild.icon_url) if ".guild_icon" in str(value) else value
+
+        # get table
+        if ".table_" in value:
+            table_message_id = Support.get_id_from_str(value.split(".table_")[1])
+            table_message_id = table_message_id[0] if table_message_id else None
+            if table_message_id:
+
+                table = Tables.get_table(table_message_id, message.guild.id if message.guild else message.author.id)
+                if table:
+                    table = table[0]
+                    print(table_message_id)
+                    print(table.to_string())
+
+                    table.channel = client.get_channel(table.channel_id)
+                    for i, m_id in enumerate(table.msg_ids):
+                        if m_id != table_message_id: # given message id must match
+                            continue
+
+                        table.messages.append(await table.channel.fetch_message(m_id))
+                        
+                        if table.messages[i].embeds:
+                            table_embed = table.messages[i].embeds[0]
+                            if table_embed.description and Support.emojis.zero_width*2 in table_embed.description:
+                                table.tables.append(table_embed.description.split(Support.emojis.zero_width*2)[1])
+
+                        if table.messages[i].content:
+                            if Support.emojis.zero_width*2 in table.messages[i].content:
+                                table.tables.append(table.messages[i].content.split(Support.emojis.zero_width*2)[1])
+
+                        print(table.tables)
+                        if table.tables:
+                            value = value.replace(f".table_{table_message_id}", f"{Support.emojis.zero_width*2}{table.tables[0].strip()}{Support.emojis.zero_width*2}")
+
+                else:
+                    errors.append([f"**Attribute:** `{attr}`", f"**Value:** `{value}` No matching table message ids"])
+
+            else:
+                errors.append([f"**Attribute:** `{attr}`", f"**Value:** `{value}` No table message id given. Ex. `.table_793447251506364436`"])
+
 
         if attr in ['.content']:
             msg_content = value if value else emojis.space_char
@@ -505,7 +547,7 @@ def get_embed_from_content(client, message, roles=[], embed=discord.Embed()):
 
 
 async def create_user_embed(client, message):
-    embed, content, errors = get_embed_from_content(
+    embed, content, errors = await get_embed_from_content(
         client, message, 
         roles=message.guild.roles if message.guild else [] # may be dm channel
     )
@@ -580,7 +622,7 @@ async def edit_user_embed(client, message, args):
 
     if msg and msg.author.id == Support.ids.phyner_id: # msg found and phyner is author
         embed = msg.embeds[0] if msg.embeds else None
-        embed, content, errors = get_embed_from_content(
+        embed, content, errors = await get_embed_from_content(
             client,
             message, 
             roles=message.guild.roles, 

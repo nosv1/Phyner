@@ -160,6 +160,8 @@ class Table:
 
                 col_max_widths[j] = len(value) if len(value) > col_max_widths[j] else col_max_widths[j]
 
+        print(col_max_widths)
+
 
         ## CREATE TABLES ##
 
@@ -223,7 +225,9 @@ class Table:
         tables[-1] += "```\n" if is_multi_markdown else ""
 
         # wrapping in zero width to be able to identify tables in messages later
-        self.tables = [f"{Support.emojis.zero_width}{table[:-1]}{Support.emojis.zero_width}" for table in tables]
+        print('yes')
+        self.tables = [f"{Support.emojis.zero_width*2}{table[:-1]}{Support.emojis.zero_width*2}" for table in tables]
+        print(Support.emojis.zero_width*2 in self.tables[-1])
     # end get_table_displays
 
 
@@ -263,7 +267,7 @@ class Table:
 
                     if embed:
                         if embed.description:
-                            split = embed.description.split(Support.emojis.zero_width) 
+                            split = embed.description.split(Support.emojis.zero_width*2) 
                             if len(split) == 3: # has table inside
                                 mesges.append(mesge)
 
@@ -271,7 +275,7 @@ class Table:
                             mesges.append(mesge)
 
                     elif content:
-                        split = content.split(Support.emojis.zero_width)
+                        split = content.split(Support.emojis.zero_width*2)
                         if len(split) == 3:
                             mesges.append(mesge)
 
@@ -287,13 +291,13 @@ class Table:
                         split = []
                         if embed:
                             if embed.description:
-                                split = embed.description.split(Support.emojis.zero_width)
+                                split = embed.description.split(Support.emojis.zero_width*2)
 
                             else: # there may not be a description in embed, doesn't stop me tho!
                                 split = ["", "", ""]
 
                         else:
-                            split = content.split(Support.emojis.zero_width)
+                            split = content.split(Support.emojis.zero_width*2)
 
                         split[1] = table # already has zero_width chars in it
 
@@ -315,13 +319,13 @@ class Table:
 
                         if embed:
                             if embed.description:
-                                split = embed.description.split(Support.emojis.zero_width)
+                                split = embed.description.split(Support.emojis.zero_width*2)
                                 if len(split) == 3: # had table in it
                                     split[1] = ""
                                     embed.description = "".join(split)
 
                         else:
-                            split = content.split(Support.emojis.zero_width)
+                            split = content.split(Support.emojis.zero_width*2)
                             if len(split) == 3:
                                 split[1] = ""
                                 content = "".join(split)
@@ -361,7 +365,9 @@ class Table:
         existing = False
         for table in tables:
 
+            print(self.old_msg_ids, table.msg_ids)
             if self.old_msg_ids == table.msg_ids:
+                print('yes')
                 existing = True
 
                 sql = f"""
@@ -458,8 +464,6 @@ async def main(client, message, args, author_perms):
 
     elif args[1] in edit_aliases:
         await edit_table(client, message, get_table(args[2], message.guild.id))
-
-
 # end main
 
 
@@ -838,7 +842,6 @@ async def edit_table(client, message, table):
         table.get_cells()
         table.get_table_displays()
         await table.send_table(client)
-        table.update_table(get_tables(guild_id=table.guild_id))
 
         embed = await build_embed()
 
