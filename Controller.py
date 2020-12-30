@@ -24,6 +24,7 @@ import Guilds
 import Help
 import Logger
 from Logger import log
+import Morse
 import Role
 from Stats import command_used
 from Servers import TemplarLeagues
@@ -283,6 +284,10 @@ async def on_message(message):
 
                 elif args[1] == "prefix":
                     phyner_guild, guild_prefixes = await Guilds.set_prefix(message, args, author_perms)
+
+
+                elif args[1] == "morse":
+                    await Morse.main(client, message, args)
 
 
                 ## ROLE ##
