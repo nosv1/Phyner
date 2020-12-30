@@ -102,25 +102,33 @@ async def learn_morse(client, message):
 
 
     msg = None
+    translation = ""
     while True:
 
         # prepare morse
-        with open("word_list.txt") as wl:
-            word = random.choice(wl.readlines())
-            print(word)
-
-        r_morse = "   ".join([morse_code[ord(c.upper()) - ord('A')] for c in word])
-
-        translation = ""
-        for word in r_morse.split(" " * 7): # word in phrase
-            for letter in word.split(" " * 3): # letter in word
-                translation += f"{chr(morse_code.index(letter) + ord('A'))} "
-            translation += " " # punctuation goes here...
-        translation = translation.strip()
-
-
         if not embed.description:
-            embed.description = f"`{r_morse}`"
+            with open("word_list.txt") as wl:
+                word = random.choice(wl.readlines()).strip()
+
+            morse = "   ".join([morse_code[ord(c.upper()) - ord('A')] for c in word])
+            morse += " " * 3 # complete word
+            morse += " " * 7 # complete phrase
+
+            translation = "" # yes i know we hav the word, but for the sake of being able to decode morse
+            morse = morse[::-1] # reversing to make sure it splits the last 7 spaces not the first 7 spaces
+
+            for word in morse.split(" " * 7)[1:]: # word in phrase, # [1:] because '' in [0], same as below
+
+                for letter in word.split(" " * 3)[1:]: # letter in word
+
+                    translation += f"{chr(morse_code.index(letter[::-1]) + ord('A'))}" # reverse morse letter back to normal
+
+                translation += " " # end of word
+
+            translation = translation.strip()[::-1] # reverse back
+            morse = morse[::-1]
+
+            embed.description = f"`{morse}`"
 
 
         # send it
@@ -132,12 +140,12 @@ async def learn_morse(client, message):
 
         # wait
         try:
-            mesge = await client.wait_for("message", check=message_check, timeout=60)
+            mesge = await client.wait_for("message", check=message_check, timeout=120)
             await mesge.delete()
 
             user_translation = mesge.content
 
-            if user_translation == translation:
+            if user_translation.upper() == translation:
                 embed.description = ""
 
             else:
@@ -145,6 +153,7 @@ async def learn_morse(client, message):
 
         except asyncio.TimeoutError:
             embed.title += "\nTimed Out"
+            embed.description += f"\n{translation}"
             await msg.edit(embed=embed)
             break
     # end while
