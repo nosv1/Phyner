@@ -108,7 +108,7 @@ async def learn_morse(client, message):
         # prepare morse
         if not embed.description:
             with open("word_list.txt") as wl:
-                word = random.choice(wl.readlines()).strip()
+                word = random.choice(wl.readlines()).strip() # get a word, # only one word at a time for now, could easily add more and append them line by line
 
             morse = "   ".join([morse_code[ord(c.upper()) - ord('A')] for c in word])
             morse += " " * 3 # complete word
