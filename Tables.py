@@ -435,7 +435,7 @@ class Table:
         db.cursor.execute(sql)
         db.connection.commit()
         db.connection.close()
-    # end edit_table
+    # end update_table
 
 
     def to_string(self):

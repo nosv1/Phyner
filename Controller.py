@@ -60,6 +60,9 @@ log("startup", f"Phyner Reaction Add Events: {len(phyner_reaction_adds)}")
 phyner_reaction_removes = Events.get_event_events(events, "reaction_remove")
 log("startup", f"Phyner Reaction Remove Events: {len(phyner_reaction_removes)}")
 
+phyner_custom_command_guild_ids = CustomCommands.get_guild_ids()
+log("startup", f"Phyner Custom Command Guilds: {len(phyner_custom_command_guild_ids)}")
+
 # restart stuff
 restart = 0 # the host runs this Controller.py in a loop, when Controller disconnects, it returns 1 or 0 depending if @Phyner restart is called, 1 being restart, 0 being exit loop
 restart_time = datetime.utcnow() # used to not allow commands {restart_interval} seconds before restart happens
@@ -114,6 +117,7 @@ async def on_message(message):
     global phyner_webhook_ids
     global phyner_reaction_adds
     global phyner_reaction_removes
+    global phyner_custom_command_guild_ids
 
     if not connected: # we aint ready yet
         return
@@ -270,7 +274,10 @@ async def on_message(message):
                 ## CUSTOM COMMANDS ##
 
                 elif args[1] in CustomCommands.custom_command_aliases:
-                    await CustomCommands.main(client, message, args[2:], author_perms)
+                    command, is_new = await CustomCommands.main(client, message, args[2:], author_perms)
+                    if is_new:
+                        phyner_custom_command_guild_ids = CustomCommands.get_guild_ids()
+                    await CustomCommands.edit_command(client, message, command)
 
 
                 ## EMBED ##
@@ -285,6 +292,8 @@ async def on_message(message):
                 elif args[1] == "prefix":
                     phyner_guild, guild_prefixes = await Guilds.set_prefix(message, args, author_perms)
 
+
+                ## MORSE ##
 
                 elif args[1] == "morse":
                     await Morse.main(client, message, args)
@@ -326,6 +335,20 @@ async def on_message(message):
                         await Logger.log_error(client, f"command not recognized {message.content}")
 
                 ''' END COMMAND CHECKS '''
+
+            
+            ''' CUSTOM COMMAND CHECKS '''
+
+            if message.guild.id in phyner_custom_command_guild_ids: # custom command exists in this guild, check for existing prefix
+                guild_commands = CustomCommands.get_guild_comamnds(guild_id=message.guild.id, prefix=args[0])
+
+                if guild_commands: # command exists
+                    await message.channel.trigger_typing()
+                    await guild_commands[0].send_command(client, message)
+
+            ''' END CUSTOM COMMAND CHECKS '''
+            
+            
 
     except RuntimeError:
         log("Connection", f"{host} Disconnected")
