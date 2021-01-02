@@ -786,9 +786,24 @@ async def perform_action(client, message, user, event):
 
 
     elif event.action.action in ["add_role", "remove_role"]:
-        success = await Role.add_remove_role(user, event.action.id, add=event.action.action == "add_role", remove=event.action.action == "remove_role")
-        if not success and event.event == "reaction_add": # hopefully it simply just works and no issues
-            remove_reaction = True
+        add = event.action.action == "add_role"
+        remove = event.action.action == "remove_role"
+        success = await Role.add_remove_role(user, event.action.id, add=add, remove=remove)
+
+        if event.event == "reaction_add": 
+            if success:
+                try:
+                    embed = await simple_bot_response(message.channel,
+                        description=f"The role `{success}` was {'added to' if add else 'removed from'} you in `{message.guild.name}`.",
+                        send=False
+                    )
+                    await user.send(embed=embed)
+                except discord.errors.Forbidden:
+                    pass
+
+            else: # hopefully it simply just works and no issues
+                remove_reaction = True
+
 
 
     return remove_reaction

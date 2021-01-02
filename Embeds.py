@@ -349,8 +349,6 @@ async def get_embed_from_content(client, message, roles=[], embed=discord.Embed(
                 table = Tables.get_table(table_message_id, message.guild.id if message.guild else message.author.id)
                 if table:
                     table = table[0]
-                    print(table_message_id)
-                    print(table.to_string())
 
                     table.channel = client.get_channel(table.channel_id)
                     for i, m_id in enumerate(table.msg_ids):
@@ -368,7 +366,6 @@ async def get_embed_from_content(client, message, roles=[], embed=discord.Embed(
                             if Support.emojis.zero_width*2 in table.messages[i].content:
                                 table.tables.append(table.messages[i].content.split(Support.emojis.zero_width*2)[1])
 
-                        print(table.tables)
                         if table.tables:
                             value = value.replace(f".table_{table_message_id}", f"{Support.emojis.zero_width*2}{table.tables[0].strip()}{Support.emojis.zero_width*2}")
 

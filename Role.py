@@ -157,12 +157,12 @@ async def add_remove_role(member, role, add=False, remove=False):
         if add:
             await member.add_roles(role)
             log("add_remove_role", f"role added")
-            return True
+            return role
 
         elif remove:
             await member.remove_roles(role)
             log("add_remove_role", f"role removed")
-            return True
+            return role
 
     except discord.errors.Forbidden:
         log("add_remove_role", f"forbidden, guild: {member.guild.id}, add: {add} remove: {remove}, role_id: {role.id}")
