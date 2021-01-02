@@ -196,7 +196,7 @@ def get_guild_comamnds(guild_id="", prefix=""):
         SELECT * FROM CustomCommands
         WHERE 
             guild_id LIKE '%{guild_id}%' AND
-            prefix LIKE '%{prefix}%'
+            prefix LIKE '%{Database.replace_chars(prefix)}%'
     ;""")
     db.connection.close()
     return [command_from_entry(entry) for entry in db.cursor.fetchall()]
