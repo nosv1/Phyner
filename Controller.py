@@ -608,7 +608,7 @@ async def startup():
 
     await client.change_presence(
         activity=discord.Activity(
-            type=discord.ActivityType.playing, name="[WIP] @Phyner is finer."
+            type=discord.ActivityType.playing, name="Alpha testing..."
         ),
         status=discord.Status.online
     )
