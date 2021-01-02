@@ -96,7 +96,7 @@ async def on_raw_message_edit(payload):
                 pd["content"]
                 await on_message(message)
             except KeyError: # when content was not updated
-                pass
+                await Logger.log_error(client, error)
 
     except discord.errors.NotFound:
         await log("message edit erorr", traceback.format_exc())
