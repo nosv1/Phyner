@@ -164,7 +164,7 @@ async def send_help_embed(client, msg, embed_link, default_footer=True, demo=Fal
 
         # send embed
         phyner = Support.get_phyner_from_channel(channel)
-        embed.color = phyner.roles[-1].color if phyner.roles else Support.colors.phyner_grey
+        embed.color = phyner.roles[-1].color if type(phyner) == discord.member.Member else Support.colors.phyner_grey
         
         if msg:
             await msg.edit(embed=embed)
