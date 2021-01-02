@@ -91,7 +91,7 @@ async def on_raw_message_edit(payload):
 
         message = await channel.fetch_message(message_id)
 
-        if not message.author.bot and connected:
+        if not message.author.bot:
             try:
                 pd["content"]
                 await on_message(message)
@@ -341,7 +341,7 @@ async def on_message(message):
             
             ''' CUSTOM COMMAND CHECKS '''
 
-            if message.guild.id in phyner_custom_command_guild_ids: # custom command exists in this guild, check for existing prefix
+            if (message.guild.id if message.guild else message.author.id) in phyner_custom_command_guild_ids: # custom command exists in this guild, check for existing prefix
                 guild_commands = CustomCommands.get_guild_comamnds(guild_id=message.guild.id, prefix=args[0])
 
                 if guild_commands: # command exists
@@ -608,7 +608,7 @@ async def startup():
 
     await client.change_presence(
         activity=discord.Activity(
-            type=discord.ActivityType.playing, name="@Phyner is finer."
+            type=discord.ActivityType.playing, name="[WIP] @Phyner is finer."
         ),
         status=discord.Status.online
     )

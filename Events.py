@@ -636,7 +636,10 @@ async def watch_emoji(client, message):
     )
 
     if msg:
-        await msg.edit(embed=embed)
+        try:
+            await msg.edit(embed=embed)
+        except discord.errors.NotFound:
+            pass
     else:
         await message.channel.send(embed=embed)
 
