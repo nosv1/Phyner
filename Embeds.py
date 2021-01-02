@@ -341,7 +341,7 @@ async def get_embed_from_content(client, message, roles=[], embed=discord.Embed(
         value = str(message.guild.icon_url) if ".guild_icon" in str(value) else value
 
         # get table
-        if ".table_" in value:
+        if value and ".table_" in value:
             table_message_id = Support.get_id_from_str(value.split(".table_")[1])
             table_message_id = table_message_id[0] if table_message_id else None
             if table_message_id:
