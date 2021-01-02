@@ -143,8 +143,6 @@ async def on_message(message):
             except KeyError:
                 guild_prefix = None
 
-            print(message.mentions)
-            print(args)
             if (
                 (
                     host == "PI4" and # is PI4
