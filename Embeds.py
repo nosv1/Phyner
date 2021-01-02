@@ -56,17 +56,17 @@ embed_aliases = ["embed", "embeds"]
 embed_colors = {
     ".phyner_grey" : Support.colors.phyner_grey,
     ".phyner_gray" : Support.colors.phyner_grey,
-    ".white" : 0xffffff,
-    ".black" : 0x1, # 1 and not 0 cause fucks up if statments
-    ".grey" : 0x808080,
-    ".pink" : 0xffc0cb,
-    ".red" : 0xff0000,
-    ".orange" : 0xFFA500,
-    ".yellow" : 0xFFFF00,
-    ".green" : 0x008000,
-    ".blue" : 0x0000ff,
-    ".purple" : 0x800080,
-    ".brown" : 0x964B00,
+    "white" : 0xffffff,
+    "black" : 0x1, # 1 and not 0 cause fucks up if statments
+    "grey" : 0x808080,
+    "pink" : 0xffc0cb,
+    "red" : 0xff0000,
+    "orange" : 0xFFA500,
+    "yellow" : 0xFFFF00,
+    "green" : 0x008000,
+    "blue" : 0x0000ff,
+    "purple" : 0x800080,
+    "brown" : 0x964B00,
 }
 
 
