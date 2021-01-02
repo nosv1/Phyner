@@ -6,6 +6,7 @@ import discord
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from pytz import timezone
+import re
 import traceback
 
 import os
@@ -147,7 +148,7 @@ async def on_message(message):
                 (
                     host == "PI4" and # is PI4
                     (
-                        f'{Support.ids.phyner_id}>' in args[0] or # @Phyner command
+                        re.findall(rf"(<@!*{Support.ids.phyner_id}>)", args[0]) or # @Phyner command
                         guild_prefix and mc[:len(str(guild_prefix))+1] == guild_prefix + " " # start of content = guild prefix
                     )
                 ) or (
