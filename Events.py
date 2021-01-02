@@ -631,7 +631,7 @@ async def watch_emoji(client, message):
 
     embed = await simple_bot_response(message.channel, # TODO better all done message
         title="Event Created",
-        description="\n\n".join([e_e.to_string() for e_e in emoji_events]),
+        description=f'wip\n{"\n\n".join([e_e.to_string() for e_e in emoji_events])}',
         send=False
     )
 

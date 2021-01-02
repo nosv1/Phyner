@@ -589,8 +589,11 @@ async def create_user_embed(client, message):
         description = "\n".join(description.split("\n")[:-1])
         embed = msg.embeds[0]
         embed.description = description
-        await msg.edit(embed=embed)
-        await msg.remove_reaction(emojis.x_emoji, client.user)
+        try:
+            await msg.edit(embed=embed)
+            await msg.remove_reaction(emojis.x_emoji, client.user)
+        except discord.errors.NotFound:
+            pass
 
     if errors:
         await send_embed_attr_errors(message, msg.id, errors)
