@@ -23,8 +23,7 @@ import Delete
 # staff_ indicates the id is in the Staff server
 
 # IDs
-templar_leagues_id = 437936224402014208
-staff_templar_leagues_id = 752990198077587569
+cotm_id = 527156310366486529
 
 # channels
 approved_results_id = 686981857379614746
@@ -42,8 +41,8 @@ series_report_message_id = 791041462719873074
 
 # Spreadsheets
 spreadsheets = SimpleNamespace(**{
-    "season_6_league_database" : SimpleNamespace(**{
-        "key" : "1aqyMc6uw8cG-1qlyRwohvPKuxnxwQPe2rbUcdo45J88",
+    "season_7" : SimpleNamespace(**{
+        "key" : "1BIFN9DlU50pWOZqQrz4C44Dk-neDCteZMimTSblrR5U",
         "fixtures_template" : 1525077674,
     })
 })
