@@ -721,8 +721,11 @@ async def save_embed(client, message, args):
             Logger.log("embed save", f"embed saved - {embed.path}")
 
         else:
-            await Support.previous_action_error(client, message)
-            Logger.log("embed save error", "embed does not exist at this location") # TODO embed save error
+            await Support.simple_bot_response(message.channel,
+                description=f"**An embed does not exist at [this]({mesge.jump_url}) location.**",
+                footer=f"If this is an error, '@{get_phyner_from_channel(message.channel)} bug <issue>'.",
+                reply_message=message
+            )
             return
 
     else:
