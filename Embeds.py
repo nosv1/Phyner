@@ -456,7 +456,7 @@ async def get_embed_from_content(client, message, roles=[], embed=discord.Embed(
         ### TITLE ###
 
         elif attr in [".title"]:
-            embed.title = value
+            embed.title = value[:256]
 
 
         ### DESCRIPTION ###
@@ -532,8 +532,8 @@ async def get_embed_from_content(client, message, roles=[], embed=discord.Embed(
         field = fields[field_index]
         if field['name'] or field['value']: # both not Embed.Empty
 
-            fields[field_index]['name'] = field['name'] if field['name'] and field['name'].strip() else emojis.space_char
-            fields[field_index]['value'] = field['value'] if field['value'] and field['value'].strip() else emojis.space_char
+            fields[field_index]['name'] = (field['name'] if field['name'] and field['name'].strip() else emojis.space_char)[:256]
+            fields[field_index]['value'] = (field['value'] if field['value'] and field['value'].strip() else emojis.space_char)[:1024]
             embed['fields'].append(field)
 
     embed = discord.Embed().from_dict(embed)
