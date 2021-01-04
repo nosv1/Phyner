@@ -440,6 +440,7 @@ async def restart(client, message, restart_interval, restart=True):
         close or restart pi4 host
     """
 
+    msg = None
     if host == "PI4":
         if restart: # only PI4 has ability to restart
             Logger.log(f"Connection", f"{host} Restarting see you on the other side...")
