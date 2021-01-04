@@ -608,7 +608,11 @@ async def edit_user_embed(client, message, args):
     # get msg source channel
     channel_id = Support.get_id_from_str(args[4])
     channel_id = int(channel_id[0]) if channel_id else message.channel.id
-    channel = [c for c in message.guild.channels if c.id == channel_id]
+    
+    if message.guild: # might be in dm
+        channel = [c for c in message.guild.channels if c.id == channel_id]
+    else:
+        channel = [message.channel]
     channel = channel[0] if channel else None
     
     # get msg
