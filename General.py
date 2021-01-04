@@ -59,7 +59,7 @@ async def say(client, message, args, is_edit=False):
 
 
     # markdown?
-    markdown = "markdown" in args[0]
+    markdown = args[0] in ["markdown", "md"]
     if markdown:
         del args[0]
 
