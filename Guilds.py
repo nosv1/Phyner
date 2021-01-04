@@ -134,21 +134,32 @@ async def set_prefix(message, args, author_perms):
         @Phyner prefix - view current prefix
         @Phyner prefix [new_prefix] - set prefix
     """
+
     phyner = Support.get_phyner_from_channel(message.channel)
     # TODO prefix help
 
+
     prefix = message.content[message.content.index(args[1])+len(args[1]):].strip()
+
 
     guild = message.guild if message.guild else message.author
     phyner_guild = get_phyner_guild(guild.id)       
 
+
     if not phyner_guild: # if not in db, create new one
         phyner_guild = Guild(guild.id, prefix=f"@{Support.get_phyner_from_channel(message.channel)}")
+
 
     phyner_guild.name = guild.name # set some attrs
     phyner_guild.guild = guild if message.guild else None
 
+
     if prefix: # prefix included
+
+        if author_perms.administrator: # missing permissions
+            await Support.missing_permission("Administrator", message)
+            return
+
 
         if len(prefix) <= max_prefix_length: # good to go
 

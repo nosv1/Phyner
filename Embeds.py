@@ -153,8 +153,8 @@ async def main(client, message, args, author_perms):
         else:
             await send_permissions_needed(message, message.author)
 
-    elif args[2] == "convert":
-        await convert(client, message, args[3:])
+    elif args[2] in ["convert", "json"]:
+        await convert(client, message, args[3:], to_json=args[2] == "json")
     
 
     elif args[2] == "saved":
@@ -210,7 +210,7 @@ def generate_saved_embeds_display(saved_embeds, guild, phyner):
 
     if saved_embeds:
 
-        embed.description = "Click the link to go to the saved embed (assuming it still exists).\n\n"
+        embed.description = "Click the link to go to the saved embed (assuming it still exists in discord).\n\n"
 
         for saved_embed in saved_embeds:
             embed.description += f"[{saved_embed.name if saved_embed.name else saved_embed.message_id}](https://discord.com/channels/{saved_embed.guild_id}/{saved_embed.channel_id}/{saved_embed.message_id})\n"
@@ -735,7 +735,7 @@ async def save_embed(client, message, args):
 # end save_embed
 
 
-async def convert(client, message, args):
+async def convert(client, message, args, to_json=False):
     """
         ..p embed convert <message_id> [#channel]
         ..p embed convert <embed_name>
@@ -775,10 +775,26 @@ async def convert(client, message, args):
             return
 
     # should have embed_dict by now
-    create_messages = Support.convert_embed_dict_to_create_messages(embed_dict)
 
-    for c in create_messages:
-        await message.channel.send(c)
+    if to_json:
+        json_lines = json.dumps(embed_dict, sort_keys=True, indent=4).split("\n")
+        
+        t = ""
+        for line in json_lines:
+            if len(f"{t}{line}") > 1994:
+                await message.channel.send(f"```{t}```")
+                t = f"{line}\n"
+            else:
+                t += f"{line}\n"
+
+        await message.channel.send(f"```{t}```")
+
+
+    else:
+        create_messages = Support.convert_embed_dict_to_create_messages(embed_dict)
+
+        for c in create_messages:
+            await message.channel.send(c)
 # end convert
 
 

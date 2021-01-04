@@ -135,6 +135,15 @@ async def previous_action_error(client, message):
 # end previous_action_error
 
 
+async def missing_permission(missing_permission, message):
+    await simple_bot_response(message.channel,
+        title="Missing Permission",
+        description=f"You must have the `{missing_permission}` to use this command.",
+        reply_message=message
+    )
+# end missing_permission
+
+
 ## gspread stuff
 
 def get_g_client():
