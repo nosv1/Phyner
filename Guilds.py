@@ -156,7 +156,7 @@ async def set_prefix(message, args, author_perms):
 
     if prefix: # prefix included
 
-        if author_perms.administrator: # missing permissions
+        if message.guild and not author_perms.administrator: # missing permissions
             await Support.missing_permission("Administrator", message)
             return
 
