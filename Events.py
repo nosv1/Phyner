@@ -833,14 +833,11 @@ async def create_private_text_channel(client, message, user, event):
     name = event.action.extra if event.action.extra else f"{user.display_name}-{user.discriminator}"
     name = re.sub(r"(.category|.channel)", source.name, name)
     name = name.replace(".user", f"{user.display_name}-{user.discriminator}")
-    
+
     a, c = Support.get_args_from_content(name)
     name = "-".join(a).lower() # .lower last of replacements
 
-    print(re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name))
-    [print(c.name) for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name) in c.name]
     exists = [c for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name) in c.name]
-    print(len(exists))
 
     max_count = 1
     if re.findall(r"(.max\(\S+\))", name): # get max number of channels allowed to create
