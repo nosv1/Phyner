@@ -315,8 +315,7 @@ def revert_confirm_input_last_field_exclamation(field_footer, embed):
 
 def delete_last_field(embed):
     embed = embed.to_dict() if type(embed) != dict else embed
-    if "fields" in embed:
-        del embed["fields"][-1]
+    del embed["fields"][-1]
     return discord.Embed().from_dict(embed)
 # end delete_last_field
 

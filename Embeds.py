@@ -288,7 +288,7 @@ async def get_embed_from_content(client, message, roles=[], embed=discord.Embed(
     """
 
     content = message.content.replace("\\s", emojis.space_char).replace("\\b", emojis.bullet).replace("\\z", emojis.zero_width)
-    msg_content = emojis.space_char
+    msg_content = None
     attrs = []
 
 
@@ -632,7 +632,7 @@ async def edit_user_embed(client, message, args):
             roles=message.guild.roles, 
             embed=embed if embed else discord.Embed()
         )
-        await msg.edit(content=content, embed=embed)
+        await msg.edit(content=content if content else msg.content, embed=embed)
         await Support.process_complete_reaction(message)
         
         if errors:

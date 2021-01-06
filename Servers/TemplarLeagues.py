@@ -387,7 +387,6 @@ async def verify_series_report(client, message):
     embed = embed.to_dict()
     del embed["footer"]
     embed["description"] = embed["description"][:-1] # get rid of space char
-    embed = Support.delete_last_field(embed)
 
     # send embed staff_stats and main_approved
     staff_guild = client.get_guild(staff_templar_leagues_id)
