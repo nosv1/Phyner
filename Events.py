@@ -837,6 +837,7 @@ async def create_private_text_channel(client, message, user, event):
     name = name.replace(".user", f"{user.display_name}-{user.discriminator}").lower() # .lower last of replacements
 
     print(re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name))
+    [print(c.name) for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name) in c.name]
     exists = [c for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name) in c.name]
     print(len(exists))
 
