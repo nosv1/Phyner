@@ -387,7 +387,7 @@ async def verify_series_report(client, message, user):
     embed = embed.to_dict()
     del embed["footer"]
     embed["description"] = embed["description"][:-1] # get rid of space char
-    emebd = discord.Embed.from_dict(embed)
+    embed = discord.Embed.from_dict(embed)
 
     # send embed staff_stats and main_approved
     staff_guild = client.get_guild(staff_templar_leagues_id)
