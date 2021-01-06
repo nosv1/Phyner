@@ -836,7 +836,7 @@ async def create_private_text_channel(client, message, user, event):
     exists = [c for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name) in c.name]
 
     max_count = 1
-    if re.findall(r"().max\(\S+\))", name): # get max number of channels allowed to create
+    if re.findall(r"(.max\(\S+\))", name): # get max number of channels allowed to create
         max_count = name.split(".max")[1].split("(")[1].split(")")[0]
         max_count = int(max_count) if max_count.isnumeric() else 1
 
