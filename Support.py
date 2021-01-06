@@ -380,10 +380,11 @@ async def simple_bot_response(channel, author=discord.Embed().Empty, author_url=
         reply_message is defaulted to False, but expects a discord.Message if declared in call
     """
     # TODO pass in embed_dict as starting point, no overwriting
+    is_dm = is_DMChannel(channel)
     phyner = get_phyner_from_channel(channel)
 
     embed = discord.Embed()
-    embed.colour = phyner.roles[-1].color if type(phyner) == discord.member.Member else colors.phyner_grey
+    embed.color = colors.phyner_grey if is_dm else phyner.roles[-1].color if phyner.roles[-1].color.value != 0 else colors.phyner_grey
 
     if author or author_icon_url or author_url:
         embed.set_author(
