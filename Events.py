@@ -832,11 +832,13 @@ async def create_private_text_channel(client, message, user, event):
 
     name = event.action.extra if event.action.extra else f"{user.display_name}-{user.discriminator}"
     a, c = Support.get_args_from_content(name)
-    name = "-".join(a).lower() # this .lower() can be anywhere... but figured here is fine
+    name = "-".join(a)
     name = re.sub(r"(.category|.channel)", source.name, name)
-    name = name.replace(".user", f"{user.display_name}-{user.discriminator}")
+    name = name.replace(".user", f"{user.display_name}-{user.discriminator}").lower() # .lower last of replacements
 
-    exists = [c for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name).lower() in c.name]
+    print(re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name))
+    exists = [c for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name) in c.name]
+    print(len(exists))
 
     max_count = 1
     if re.findall(r"(.max\(\S+\))", name): # get max number of channels allowed to create
@@ -845,8 +847,10 @@ async def create_private_text_channel(client, message, user, event):
 
 
     if not exists or len(exists) < max_count: # doesn't exist or can create more
+        name = re.sub(r'(.max\(\S+\)[-\s]*)|(-$)', '', name) # regex same as above in exists = [...
+        
         channel = await message.guild.create_text_channel(
-            name=re.sub(r'(.max\(\S+\)[-\s]*)|(-$)', '', name) + f"-{len(exists) + 1 if max_count > 1 else ''}", # regex same as above in exists = []
+            name=f"{name}-{len(exists) + 1 if max_count > 1 else ''}", 
             overwrites=overwrites,
             category=source.category if type(source) == discord.channel.TextChannel else source,
             position=source.category.channels[-1].position + 1 if type(source) == discord.channel.TextChannel else source.channels[-1].position  + 1,
