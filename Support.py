@@ -151,16 +151,25 @@ def get_g_client():
     return gc
 # return gc
 
-def find_value_in_range(r, value, lower=False):
+def find_value_in_range(r, value, lower=False, get=False):
     """
+        lower to compare .lower()
+        get if .get was used and not .range, .get returns [[], ...], .range returns [...]
+
         returns index of value
     """
 
-    for i, c in enumerate(r):
-        if c.value == value or (lower and c.value.lower() == value.lower()):
+    for i, c in enumerate(r): # loop rows/cells
+
+        if get:
+            for j, v in enumerate(c): # loop columns
+                if v in [str(value), str(value).lower() if lower else None]:
+                    return i, c, j # row_index, row, col_index
+
+        elif c.value == str(value) or (lower and c.value.lower() == str(value).lower()):
             return i
 
-    return -1
+    return -1, -1, -1 if get else -1
 # end find_value_in_range
 
 
@@ -306,7 +315,8 @@ def revert_confirm_input_last_field_exclamation(field_footer, embed):
 
 def delete_last_field(embed):
     embed = embed.to_dict() if type(embed) != dict else embed
-    del embed["fields"][-1]
+    if "fields" in embed:
+        del embed["fields"][-1]
     return discord.Embed().from_dict(embed)
 # end delete_last_field
 
