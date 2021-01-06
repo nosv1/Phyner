@@ -399,7 +399,7 @@ async def verify_series_report(client, message, user):
     await staff_stats.send(content=f"<@&{staff_stats_id}>", embed=embed)
     await main_approved_results.send(embed=embed)
 
-    await embed.set_footer(text=f"Verified by {user.display_name}")
+    embed.set_footer(text=f"Verified by {user.display_name}")
     await message.edit(embed=embed) # edit the verified message now
     await message.clear_reactions()
 
