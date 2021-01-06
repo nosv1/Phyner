@@ -88,7 +88,7 @@ async def on_reaction_add(client, message, user, payload):
                     "/id=templar_leagues_series_report_verification/" in embed.author.url and 
                     payload.emoji.name == Support.emojis.tick_emoji
                 ):
-                    await verify_series_report(client, message)
+                    await verify_series_report(client, message, user)
 
     return remove_reaction
 # end on_reaction_add
@@ -376,7 +376,7 @@ async def series_report(client, message, user):
         await Support.previous_action_error(client, message)
 # end series_report
 
-async def verify_series_report(client, message):
+async def verify_series_report(client, message, user):
     embed = message.embeds[0]
 
     # tease user
@@ -398,7 +398,9 @@ async def verify_series_report(client, message):
     await staff_stats.send(content=f"<@&{staff_stats_id}>", embed=embed)
     await main_approved_results.send(embed=embed)
 
+    await embed.set_footer(text=f"Verified by {user.display_name}")
     await message.edit(embed=embed) # edit the verified message now
+    await message.clear_reactions()
 
     log("templar leagues series report", "verified")
 
