@@ -828,15 +828,22 @@ async def create_private_text_channel(client, message, user, event):
     )
 
     name = event.action.extra if event.action.extra else f"{user.display_name}-{user.discriminator}"
-    name = name.replace(" ", "-").lower() # this .lower() can be anywhere... but figured here is fine
+    a, c = Support.get_args_from_content(name)
+    name = "-".join(name).lower() # this .lower() can be anywhere... but figured here is fine
     name = re.sub(r"(.category|.channel)", source.name, name)
     name = name.replace(".user", f"{user.display_name}-{user.discriminator}")
 
-    exists = [c for c in message.guild.channels if c.name == name]
+    exists = [c for c in message.guild.channels if re.sub(r"(.max\(\S+\)[-\s]*)|(-$)", "", name) in c.name]
 
-    if not exists:
+    max_count = 1
+    if re.findall(r"().max\(\S+\))", name): # get max number of channels allowed to create
+        max_count = name.split(".max")[1].split("(")[1].split(")")[0]
+        max_count = int(max_count) if max_count.isnumeric() else 1
+
+
+    if not exists or len(exists) < max_count: # doesn't exist or can create more
         channel = await message.guild.create_text_channel(
-            name=name,
+            name=f"{name} {len(exists) + 1 if max_count > 1 else ''}",
             overwrites=overwrites,
             category=source.category if type(source) == discord.channel.TextChannel else source,
             position=source.category.channels[-1].position + 1 if type(source) == discord.channel.TextChannel else source.channels[-1].position  + 1,
