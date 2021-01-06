@@ -28,6 +28,7 @@ from Logger import log
 import Morse
 import Role
 from Stats import command_used
+from Servers import COTM
 from Servers import TemplarLeagues
 import Support
 import Tables
@@ -137,6 +138,12 @@ async def on_message(message):
             return
 
         if not message.author.bot or is_webhook: # not a bot and webhook we care about
+
+            phyner = Support.get_phyner_from_channel(message.channel)
+            is_mo = message.author.id == Support.ids.mo_id
+
+            message.author = phyner if is_webhook else message.author
+            author_perms = Support.get_member_perms(message.channel, message.author)
                 
 
             try:
@@ -157,12 +164,6 @@ async def on_message(message):
                 )
             ):
                 log("COMMAND", f"{message.author.id}, '{message.content}'\n")
-
-                phyner = Support.get_phyner_from_channel(message.channel)
-                is_mo = message.author.id == Support.ids.mo_id
-
-                message.author = phyner if is_webhook else message.author
-                author_perms = Support.get_member_perms(message.channel, message.author)
 
 
                 ## COMMAND CHECKS ##
@@ -334,6 +335,20 @@ async def on_message(message):
                         await Logger.log_error(client, f"command not recognized {message.content}")
 
                 ''' END COMMAND CHECKS '''
+
+
+            ''' SERVER CHECKS '''
+
+            if message.guild:
+
+                if message.guild.id in [TemplarLeagues.templar_leagues_id, TemplarLeagues.staff_templar_leagues_id]:
+                    await TemplarLeagues.main(message, args, author_perms)
+
+                '''elif message.guild.id in [COTM.cotm_id]:
+                    await COTM.main(message, args, author_perms)
+                '''
+
+            ''' END SERVER CHECKS '''    
 
             
             ''' CUSTOM COMMAND CHECKS '''
