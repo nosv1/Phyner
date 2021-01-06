@@ -101,15 +101,19 @@ async def get_copy_source(client, message, args):
     source_id = Support.get_id_from_str(args[0])
     source_id = int(source_id[0]) if source_id else None
 
+
     if not source_id:
         await Support.previous_action_error(client, message)
         log("copy error", "no source id") # TODO copy error
         return
 
+
     source = [r for r in message.guild.roles if r.id == source_id] # find a role
     source = [c for c in message.guild.categories if c.id == source_id] if not source else source # if not find a category
     source = [c for c in message.guild.channels if c.id == source_id] if not source else source # if not find a channel
 
+
+    destination_channel = None
     if not source: # if not, find a channel to look for the message_id
 
         if len(message.channel_mentions) > 1: # both source, and desitnation mentioned
