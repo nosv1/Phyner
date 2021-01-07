@@ -188,7 +188,7 @@ async def series_report(client, message, user):
 
             if match_id: # correct format
                 fixtures_template_range = fixtures_template_sheet.range(f'B3:F{fixtures_template_sheet.row_count}')
-                i = Support.find_value_in_range(fixtures_template_range, mesge.content)
+                i, x, y = Support.find_value_in_range(fixtures_template_range, mesge.content)
 
                 if i >= 0: # found
                     row = [c.value for c in fixtures_template_range[i:i+5]] 
