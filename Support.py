@@ -167,7 +167,7 @@ def find_value_in_range(r, value, lower=False, get=False):
                     return i, c, j # row_index, row, col_index
 
         elif c.value == str(value) or (lower and c.value.lower() == str(value).lower()):
-            return i
+            return i, None, None
 
     return (-1, -1, -1) if get else (-1, None, None)
 # end find_value_in_range
