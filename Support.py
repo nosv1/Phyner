@@ -156,7 +156,9 @@ def find_value_in_range(r, value, lower=False, get=False):
         lower to compare .lower()
         get if .get was used and not .range, .get returns [[], ...], .range returns [...]
 
-        returns index of value
+        returns index, None, None if not get
+
+        returns row_index, row, col_index if get
     """
 
     for i, c in enumerate(r): # loop rows/cells
@@ -169,8 +171,28 @@ def find_value_in_range(r, value, lower=False, get=False):
         elif c.value == str(value) or (lower and c.value.lower() == str(value).lower()):
             return i, None, None
 
-    return (-1, -1, -1) if get else (-1, None, None)
+    return (-1, [], -1) if get else (-1, None, None)
 # end find_value_in_range
+
+def get_worksheet(worksheets, worksheet_id):
+    ws = [ws for ws in worksheets if ws.id == worksheet_id]
+    return ws[0] if ws else ws
+# end get_worksheet
+
+def ranges_to_dict(a1_ranges, value_ranges):
+    """
+        for batch update
+    """
+
+    dict_ranges = []
+    for i in range(len(a1_ranges)):
+        dict_ranges.append({
+            'range' : a1_ranges[i],
+            'values' : value_ranges[i]
+        })
+
+    return dict_ranges
+# end to_batch_update
 
 
 def messageOrMsg(msg):  
@@ -326,6 +348,18 @@ def switch_last_two_fields(embed):
     embed["fields"].append(t_field)
     return discord.Embed().from_dict(embed)
 # end switch_last_two_fields
+
+
+def num_suffix(num):
+    return 'th' if 11 <= num <= 13 else {1:'st', 2:'nd', 3:'rd'}.get(num % 10, 'th')
+# end num_suffix
+
+def smart_day_time_format(format, dt):
+    """
+        day in format should be {S}
+    """
+    return dt.strftime(format).replace("{S}", f"{dt.day}{num_suffix(dt.day)}")
+# end time_format_with_smart_date
 
 
 def quote(s):

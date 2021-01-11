@@ -854,6 +854,8 @@ async def create_private_text_channel(client, message, user, event):
             category=source.category if type(source) == discord.channel.TextChannel else source,
             position=source.category.channels[-1].position + 1 if type(source) == discord.channel.TextChannel else source.channels[-1].position  + 1,
         )
+        
+        await channel.send(user.mention)
 
         log("reaction_add event", f"private text channel created {event.to_string()}")
         return channel
