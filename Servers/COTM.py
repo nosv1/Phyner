@@ -100,7 +100,7 @@ async def main(message, args, author_perms):
             await message.delete()
 
 
-    elif message.channel.id in quali_submit:
+    elif message.channel.id == quali_submit:
         pass
 
 
