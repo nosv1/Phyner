@@ -462,6 +462,7 @@ async def on_raw_reaction_add(payload):
                 okay_phyner_support = Support.ids.phyner_support_id if okay_mobot_support else 0
 
                 if message.guild:
+
                     if message.guild.id in [ # Templar Leagues
                         TemplarLeagues.templar_leagues_id,
                         TemplarLeagues.staff_templar_leagues_id, 
@@ -469,6 +470,14 @@ async def on_raw_reaction_add(payload):
                         okay_phyner_support
                     ]:
                         await TemplarLeagues.on_reaction_add(client, message, user, payload)
+
+
+                    if message.guild.id in [ # COTM
+                        COTM.cotm_id, 
+                        okay_mobot_support,
+                        okay_phyner_support
+                    ]:
+                        await COTM.on_reaction_add(client, message, user, payload)
 
 
                 ## PHYNER AUTHOR ##

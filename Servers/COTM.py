@@ -1,5 +1,4 @@
 # TODO #bot-spam !stream <link> !yt <link>
-# TODO invalidate lap time
 # TODO accept/reject signup
 
 ''' IMPORTS '''
@@ -43,7 +42,7 @@ children_id = 529112570448183296
 
 # EMOJIs
 emojis = SimpleNamespace(**{
-    "invalid" : "<:invalid:797893546295296011>",
+    "invalid_emoji" : "<:invalid:797893546295296011>",
 })
 
 drivers_per_div = 14
@@ -91,8 +90,8 @@ async def main(message, args, author_perms):
             await request_signup(message, args)
 
 
-    elif message.channel.id in signup_id: # signup
-        
+    elif message.channel.id == signup_id: # signup
+
         if not author_perms.administrator:
             await simple_bot_response(message.channel,
                 description="**Only `!signup <gamertag>` messages can be sent in this channel.**",
@@ -118,13 +117,13 @@ async def on_reaction_add(client, message, user, payload):
         if embed.author:
 
             if embed.author.url:
+                pass
 
-                if ( # series report + ok_emoji button
-                    "/id=templar_leagues_series_report/" in embed.author.url and 
-                    payload.emoji.name == Support.emojis.ok_emoji
-                ):
-                    await series_report(client, message, user)
-                    remove_reaction = True
+
+        if embed.title:
+
+            if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time-Trial)|(Consistency Test)) Submitted)", embed.title):
+                await invalidate_time(message)
 
     return remove_reaction
 # end on_reaction_add
@@ -317,7 +316,7 @@ async def submit_time(message, args):
 
 
     # get gt
-    gt = re.sub(rf"^\[D[1-{num_divs}]\]\s{1}", "", message.author.display_name)
+    gt = re.sub(rf"^\[D[1-{num_divs}]\]\s{{1}}", "", message.author.display_name)
 
 
     msg = None
@@ -363,7 +362,7 @@ async def submit_time(message, args):
 
 
             # get time details from quali sheet
-            leaderboard = quali_ws.get(f"B4:H{quali_ws.row_count}" if ct else f"J4:O{quali_ws.row_count}")
+            leaderboard = quali_ws.get(f"B3:H{quali_ws.row_count}" if ct else f"J3:O{quali_ws.row_count}")
             
             _i, row, _j = Support.find_value_in_range(leaderboard, gt, get=True)
             row += ["", "", ""] # in case time is leader
@@ -373,10 +372,15 @@ async def submit_time(message, args):
 
 
             # prepare
-            footer = f"Submission " # Submission 0-0-0 • %d %b %I:%M%p %Z 
-            footer += str(len([row[1] for row in ranges[0] if str(row[1]) == str(message.author.id)])) + "-"# count discord ids
-            footer += str(len([row[0] for row in ranges[1] if row[0] in args[0]])) + "-"# total ct submissions
-            footer += str(len(ranges[0]) - 1) # total submissions
+            footer = f"Submission " # Submission 0-0-0-0 • %d %b %I:%M%p %Z 
+            
+            submission_counts = [
+                str(len([i for i in range(len(ranges[0])) if str(ranges[0][i][1]) == str(message.author.id) and ranges[1][i][0] in args[0]])), # user specific
+                str(len([i for i in range(len(ranges[0])) if str(ranges[0][i][1]) == str(message.author.id)])), # user
+                str(len([i for i in range(len(ranges[0])) if ranges[1][i][0] in args[0]])), # total specific
+                str(len(ranges[0])-1) # total
+            ]
+            footer += "-".join(submission_counts)
 
             footer += f" {Support.emojis.bullet} "
 
@@ -432,7 +436,7 @@ async def submit_time(message, args):
             else:
                 await msg.edit(embed=embed)
 
-            await msg.add_reaction(emojis.invalid)
+            await msg.add_reaction(emojis.invalid_emoji)
 
 
             if ct:
@@ -478,24 +482,88 @@ async def submit_time(message, args):
 # end submit_consitency_test
 
 
+async def invalidate_time(message):
+    """
+    """
+
+    embed = message.embeds[0]
+    embed.title = embed.title.replace("Submitted", "Invalidated")
+    embed.color = 1
+    embed.set_thumbnail(url=[e for e in message.guild.emojis if str(e.id) in emojis.invalid_emoji][0].url)
+
+
+    await message.edit(embed=embed)
+    await Support.clear_reactions(message)
+
+
+    gc = Support.get_g_client()
+    wb = gc.open_by_key(spreadsheets.season_7.key)
+    ws = wb.worksheets()
+    quali_submissions_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali_submisisons)
+    quali_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali)
+
+
+    quali_submissions = quali_submissions_ws.get("I1:I", value_render_option="FORMULA")
+
+
+    submission_index = int(embed.footer.text.split("-")[-1].split(" ")[0])
+    quali_submissions[submission_index][0] = "TRUE"
+
+
+    quali_submissions_ws.update("I1:I", quali_submissions, value_input_option="USER_ENTERED")
+
+    
+    # get time details from quali sheet
+    ct = "Consistency Test" in embed.title
+    tt = "Time-Trial" in embed.title
+    gt = embed.title.split("-")[0].strip()
+    leaderboard = quali_ws.get(f"B3:H{quali_ws.row_count}" if ct else f"J3:O{quali_ws.row_count}")
+    
+    _i, row, _j = Support.find_value_in_range(leaderboard, gt, get=True)
+
+    log("cotm", embed.to_dict())
+# end invalidate_time
+
+
 
 ## SUPPORT ##
-async def update_division(roles, div, user, gt):
+async def update_division(guild, div, user, gt):
     """
         add role
         edit name
         send message in div channel
     """
 
-    for role in user.roles: # remove div roles
-        if re.findall(r"^Division \d$", role.name):
-            await user.remove_roles(role)
+    div_channels = [c for c in guild.channels if re.findall(rf"division-[1-{num_divs}]", c.name)]
+    div_roles = [r for r in guild.roles if re.findall(rf"^Division [1-{num_divs}$", r.name)]
 
 
-    div_role = discord.utils.find(lambda r: r.name == f"Division {div}", roles)
-    await user.add_roles(div_role)
-    await user.edit(nick=f"[D{div}] {gt}")
+    role_added = False
+    for i_div, role in div_roles:
 
-    # TODO send message in div channel
+        if i_div != div: # not in div
+
+            if role in user.roles: # has role for div
+
+                await user.remove_roles(role)
+                print(div_channels[i_div])
+                # await div_channels.[i_div].send("removed_from_role") # TODO send message in div channel
+
+                log("cotm", f"{user} removed from div{i_div + 1}")
+
+
+        elif role not in user.roles: # in div, and does not have role
+            role_added = True
+
+            await user.add_roles(role)
+            await user.edit(nick=f"[D{div}] {gt}")
+            print(div_channels[i_div])
+            # await div_channels.[i_div].send("added_to_role") # TODO send message in div channel
+
+            log("cotm", f"{user} added to div{i_div + 1}")
+
+
+    if not role_added: # to avoid editing twice
+        await user.edit(nick=f"{gt}")
 
 # end update_division

@@ -335,8 +335,10 @@ class Table:
 
         print('send, new')
         if send_new: # SEND IT
+
             new_ids = []
             self.messages = []
+
             for table in self.tables[:9]: # limit 9 messages...
                 if self.for_embed:
                     msg = await simple_bot_response(destination, description=table)
@@ -346,6 +348,23 @@ class Table:
 
                 new_ids.append(msg.id)
                 self.messages.append(msg)
+
+
+            '''for i in range(len(self.buffer_messages)): # send buffer messages if possible
+                if len(new_ids) == 9:
+                    break
+
+                empty_table = Support.emojis.zero_width*4
+                if self.for_embed:
+                    msg = await simple_bot_response(destination, description=empty_table)
+
+                else:
+                    msg = await destination.send(empty_table)
+
+                new_ids.append(msg.id)
+                self.messages.append(msg)
+            '''
+
 
             self.old_msg_ids = self.msg_ids
             self.msg_ids = new_ids
@@ -500,7 +519,7 @@ async def get_table_from_user_input(client, message, author_perms):
 
     # syntax examples
     syntax_example_template = f"`{guild_prefix} table {args[2]} <spreadsheet_url> <tab_name> <range> <#channel>`"
-    syntax_example_real = f"`{guild_prefix} table {args[2]} <https://docs.google.com/spreadsheets/d/1Hg2eyyfbSSACMMIBx1FBvNRschQFsxmgPS-oqCFeRJ8/edit#gid=0> Standings A1:B10` #standings"
+    syntax_example_real = f"`{guild_prefix} table {args[2]} <https://docs.google.com/spreadsheets/d/1Hg2eyyfbSSACMMIBx1FBvNRschQFsxmgPS-oqCFeRJ8/edit#gid=0> Standings A1:B10 #standings`"
 
 
     missing_arg_embed = await simple_bot_response(message.channel,
@@ -832,7 +851,7 @@ async def edit_table(client, message, table):
         embed.description += ":regional_indicator_j: **Table Style:** multi_markdown/single_markdown/plain\n".replace(table.table_style, f"`{table.table_style}`")
         embed.description += f":regional_indicator_k: **For Embed?:** {'`Yes`/No' if table.for_embed else 'Yes/`No`'}\n"
         embed.description += f":regional_indicator_l: **Update Interval:** `{f'{table.update_interval} seconds' if table.update_interval else 'Manual'}`\n"
-        # embed.description += f":regional_indicator_m: **Buffer Messages:** `{table.buffer_messages}`\n" # TODO BUFFER MESSAGES
+        # embed.description += f":regional_indicator_m: **Buffer Messages:** `{table.buffer_messages}`\n"
 
         return embed
     # end build_embed

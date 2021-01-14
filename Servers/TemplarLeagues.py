@@ -333,7 +333,7 @@ async def series_report(client, message, user):
         ''' CONFIRM '''
 
         # prepare to wait 
-        value = f"If the information below looks right, click the {Support.emojis.tick_emoji} to submit this match. If there is an error, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji} to restart."
+        value = f"If the information above looks right, click the {Support.emojis.tick_emoji} to submit this match. If there is an error, go to [this message]({message.jump_url}) and click the {Support.emojis.ok_emoji} to restart."
         embed = Support.update_field_value(embed, instruction_field_name, value)
         await msg.edit(embed=embed)
 
