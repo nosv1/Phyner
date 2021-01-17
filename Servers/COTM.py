@@ -38,7 +38,29 @@ quali_submit = 705787893364555785
 children_id = 529112570448183296
 
 # MESSAGES
-# series_report_message_id = 791041462719873074
+consisteny_test_leaderboard = [
+    800211294271569952, # d1
+    800211319214440468, # d2
+    800211328403898399, # d3
+    800211342191362068, # d4
+    800211342921302056, # d5
+    800211363023814696, # d6
+    800211384582537247, # d7
+    800211386701447209, # d8
+    800211406070874143, # wl
+]
+
+time_trial_leaderboard = [
+    800212112596008967,
+    800212113247305788,
+    800212113787191298,
+    800212114605473802,
+    800212115226361886,
+    800212134713229312,
+    800212135258357770,
+    800212135812399104,
+    800212136449015878,
+]
 
 # EMOJIs
 emojis = SimpleNamespace(**{
@@ -75,7 +97,7 @@ aliases = ["", ]
 
 ''' FUNCTIONS '''
 
-async def main(message, args, author_perms):
+async def main(client, message, args, author_perms):
     """
     """
 
@@ -84,7 +106,7 @@ async def main(message, args, author_perms):
     if message.channel.id == bot_stuff_id: # in bot stuff
         
         if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
-            await submit_time(message, args)
+            await submit_time(client, message, args)
 
         if args[0] == "!signup": # !signup <gamertag>
             await request_signup(message, args)
@@ -250,6 +272,61 @@ async def invalid_time(message, time):
 # end invalid_time
 
 
+async def update_discord_leaderboard(client, leaderboard, message_ids):
+    """
+        leaderboard is [[row], ...]
+    """
+
+    col_widths = [0] * len(leaderboard[0] + [""])
+    for row in leaderboard:
+        for j, value in enumerate(row):
+            if len(value) > col_widths[j]:
+                col_widths[j] = len(value)
+
+    channel = await client.fetch_channel(s7_leaderboard_id)
+    msg = None
+
+
+    header = [
+        f"`{leaderboard[0][0]}`".center(col_widths[0], " "),
+        f"`{leaderboard[0][1]}`".center(col_widths[1], " "),
+        f"`{leaderboard[0][2]}`".ljust(col_widths[2], " "),
+        f"`{leaderboard[0][3]}`".center(col_widths[3], " "),
+        f"`{leaderboard[0][4]}`".rjust(col_widths[4], " "),
+    ]
+
+    if "Div" in leaderboard[0][1]:
+        del header[1]
+
+    header = [" ".join(header)]
+
+
+    for m, m_id in enumerate(message_ids):
+        table = [] + header
+
+        for i, row in enumerate(leaderboard[m*14+1:m*14+1+15]):
+
+            table.append([
+                f"{row[0]}".center(col_widths[0], " "),
+                f"{row[1]}".center(col_widths[1], " "),
+                f"{row[2]}".ljust(col_widths[2], " "),
+                f"{row[3]}".center(col_widths[3], " "),
+                f"{row[4]}".rjust(col_widths[4], " "),
+            ])
+
+            if "Div" in leaderboard[0][1]:
+                del table[-1][1]
+
+            table[-1] = " ".join([f"`{c}`" for c in table[-1]])
+            
+        msg = await channel.fetch_message(m_id)
+        msg.embeds[0].description = "\n".join(table)
+        await msg.edit(embed=msg.embeds[0])
+        log("cotm leaderboard", f"updated {m}")
+
+# end update_discord_leaderboard
+
+
 async def no_proof(message, quali_type):
     """
         quali type should be ct or tt
@@ -271,7 +348,7 @@ async def no_proof(message, quali_type):
 # end no_proof
 
 
-async def submit_time(message, args):
+async def submit_time(client, message, args):
     """
         !ct <race_time> <last-lap-video.com> <screenshot.com>
         !tt <lap_time> <screenshot.com> [video.com]
@@ -350,7 +427,7 @@ async def submit_time(message, args):
 
             ranges[1].append([
                 args[0][1:], # quali type
-                str(time), # race time
+                str(time), # time
                 (f'=HYPERLINK("{proof[0]}", "video?")' if proof[0] else ""), # proof video
                 (f'=HYPERLINK("{proof[1]}", "ss?")' if proof[1] else ""), # proof ss
                 (f'=HYPERLINK("{proof[2]}", "mystery?")' if proof[2] else "") # proof attch
@@ -440,11 +517,14 @@ async def submit_time(message, args):
 
 
             if ct:
-                await update_division(message.guild.roles, div, message.author, gt)
+                await update_division(message.guild, div, message.author, gt)
 
                 children_role = message.guild.get_role(children_id)
                 if children_role not in message.author.roles:
                     await message.author.add_roles(children_role)
+
+
+            await update_discord_leaderboard(client, leaderboard, consisteny_test_leaderboard if ct else time_trial_leaderboard)
 
             log("cotm", embed.to_dict())
             break
@@ -535,11 +615,11 @@ async def update_division(guild, div, user, gt):
     """
 
     div_channels = [c for c in guild.channels if re.findall(rf"division-[1-{num_divs}]", c.name)]
-    div_roles = [r for r in guild.roles if re.findall(rf"^Division [1-{num_divs}$", r.name)]
+    div_roles = [r for r in guild.roles if re.findall(rf"^Division [1-{num_divs}]$", r.name)]
 
 
     role_added = False
-    for i_div, role in div_roles:
+    for i_div, role in enumerate(div_roles):
 
         if i_div != div: # not in div
 

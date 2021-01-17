@@ -345,7 +345,7 @@ async def on_message(message):
                     await TemplarLeagues.main(message, args, author_perms)
 
                 elif message.guild.id in [COTM.cotm_id]:
-                    await COTM.main(message, args, author_perms)
+                    await COTM.main(client, message, args, author_perms)
                 
 
             ''' END SERVER CHECKS '''    
