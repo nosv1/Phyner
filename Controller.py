@@ -275,10 +275,9 @@ async def on_message(message):
                     _ = await CustomCommands.main(client, message, args[2:], author_perms)
 
                     if _:
-                        print(_)
-                        command, is_new = _
+                        command, existing = _
 
-                        if is_new:
+                        if not existing:
                             phyner_custom_command_guild_ids = CustomCommands.get_guild_ids()
 
                         if args[2] in CustomCommands.create_aliases: # because main returns after create statment, we gotta check if we need to send the edit_command bit
