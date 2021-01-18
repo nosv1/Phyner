@@ -360,7 +360,7 @@ async def on_message(message):
             if (message.guild.id if message.guild else message.author.id) in phyner_custom_command_guild_ids: # custom command exists in this guild, check for existing prefix
                 guild_commands = CustomCommands.get_guild_comamnds(guild_id=message.guild.id, prefix=args[0])
 
-                if guild_commands: # command exists
+                if guild_commands and guild_commands.prefix.lower() in message.content.lower()[:len(guild_commands.prefix)]: # command exists
                     await message.channel.trigger_typing()
                     await guild_commands[0].send_command(client, message)
 
