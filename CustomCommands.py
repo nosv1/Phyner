@@ -12,8 +12,7 @@ import Guilds
 import Logger
 from Logger import log
 import Support
-from Support import create_aliases
-from Support import edit_aliases
+from Support import create_aliases, edit_aliases, delete_aliases
 from Support import simple_bot_response
 
 
@@ -135,6 +134,21 @@ class Command:
         db.connection.close()
     # end update_table
 
+    def delete(self):
+        """
+        """
+
+        db = Database.connect_database()
+        db.cursor.execute(f"""
+            DELETE FROM CustomCommands 
+            WHERE
+                `guild_id` = '{self.guild_id}' AND
+                `prefix` = '{self.prefix}'
+        """)
+        db.connection.commit()
+        db.connection.close()
+    # end delete
+
 
     def to_string(self):
         return f"prefix: {self.prefix}, response: {str(self.response)[:100]}, ref_msg_id: {self.ref_msg_id}, creator_id: {self.creator_id}, editor_id: {self.editor_id}, guild_id: {self.guild_id}, guild: {self.guild}"
@@ -150,6 +164,7 @@ async def main(client, message, args, author_perms):
         @Phyner commands
         @Phyner command create <prefix> <response/ref_msg_id> [#channel]
         @Phyner command edit <prefix>
+        @Phyner command delete <prefix>
     """
 
     if args[1] in ["commands", "cmds"]: # display command
@@ -165,6 +180,11 @@ async def main(client, message, args, author_perms):
         elif args[0] in edit_aliases:
             # TODO check for existing command first fam
             await edit_command(client, message, get_guild_comamnds(message.guild.id if message.guild else message.author.id, args[1])[0])
+
+        elif args[0] in delete_aliases:
+            # TODO check for existing command first fam
+            await delete_command(message, get_guild_comamnds(message.guild.id if message.guild else message.author.id, args[1])[0])
+            
 
     else:
         await Support.previous_action_error(client, message)
@@ -241,9 +261,9 @@ async def create_command(client, message, args):
             command.response = message.content[message.content.index(args[1]):].strip()
             command.update_command(get_guild_comamnds(guild_id=command.guild_id))
 
-        else: # just prefix
+        '''else: # just prefix
             await Support.previous_action_error(client, message)
-            log("custom commands", "no response") # TODO custom commands error
+            log("custom commands", "no response") # TODO custom commands error'''
 
 
     return command, duplicate
@@ -451,4 +471,16 @@ async def edit_command(client, message, command):
                 reply_message=message,
                 delete_after=120
             )
-# end edit_table
+# end edit_command
+
+
+async def delete_command(message, command):
+    """
+    """
+
+    command.delete()
+    await simple_bot_response(message.channel,
+        description=f"**`{command.prefix}` command deleted.**"
+    )
+
+# end delete_command

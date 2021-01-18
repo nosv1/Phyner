@@ -83,6 +83,7 @@ emojis = SimpleNamespace(**{
 ## COMMON ALIASES ##
 add_aliases = ["add", "+"]
 remove_aliases = ["remove", "-"]
+delete_aliases = ["delete", "purge", "clear", "del"] + remove_aliases
 create_aliases = ["create", "new"] + add_aliases
 edit_aliases = ["edit"]
 
