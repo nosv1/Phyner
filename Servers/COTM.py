@@ -350,7 +350,7 @@ async def no_proof(message, quali_type):
 
 async def submit_time(client, message, args):
     """
-        !ct <race_time> <last-lap-video.com> <screenshot.com>
+        !ct <race_time> <screenshot.com> [video.com]
         !tt <lap_time> <screenshot.com> [video.com]
     """
     await message.channel.trigger_typing()
@@ -428,8 +428,8 @@ async def submit_time(client, message, args):
             ranges[1].append([
                 args[0][1:], # quali type
                 str(time), # time
-                (f'=HYPERLINK("{proof[0]}", "video?")' if proof[0] else ""), # proof video
-                (f'=HYPERLINK("{proof[1]}", "ss?")' if proof[1] else ""), # proof ss
+                (f'=HYPERLINK("{proof[0]}", "ss?")' if proof[0] else ""), # proof video
+                (f'=HYPERLINK("{proof[1]}", "video?")' if proof[1] else ""), # proof ss
                 (f'=HYPERLINK("{proof[2]}", "mystery?")' if proof[2] else "") # proof attch
             ])
 
@@ -492,7 +492,7 @@ async def submit_time(client, message, args):
 
             value += "```"
 
-            value += f"[spreadsheet](https://docs.google.com/spreadsheets/d/1BIFN9DlU50pWOZqQrz4C44Dk-neDCteZMimTSblrR5U/edit#gid=128540696&range={'D' if ct else 'L'}{int(row[0])+2}) {Support.emojis.bullet} {' '.join(f'[proof_{i+1}]({p})' for i, p in enumerate(proof) if p)}"
+            value += f"[spreadsheet](https://docs.google.com/spreadsheets/d/1BIFN9DlU50pWOZqQrz4C44Dk-neDCteZMimTSblrR5U/edit#gid=128540696&range={'D' if ct else 'L'}{int(row[0])+2}) {Support.emojis.bullet} {', '.join(f'[proof{i+1}]({p})' for i, p in enumerate(proof) if p)}"
 
             embed.add_field(name="**Details**", value=value)
 
