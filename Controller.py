@@ -275,6 +275,7 @@ async def on_message(message):
                     _ = await CustomCommands.main(client, message, args[2:], author_perms)
 
                     if _:
+                        print(_)
                         command, is_new = _
 
                         if is_new:

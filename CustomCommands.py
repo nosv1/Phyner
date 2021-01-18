@@ -73,20 +73,19 @@ class Command:
     # end send_command
 
 
-    def update_command(self, commands):
+    def update_command(self):
         """
         """
 
         db = Database.connect_database()
 
         existing = False
-        for command in commands:
+        for command in get_guild_comamnds(guild_id=self.guild_id):
 
             if ( # guild_id + prefix = unique command
                 self.guild_id == command.guild_id and 
                 self.old_prefix == command.prefix 
             ):
-                print('yes')
                 existing = True
 
                 sql = f"""
@@ -174,8 +173,7 @@ async def main(client, message, args, author_perms):
 
     if author_perms.administrator:
         if args[0] in create_aliases:
-            new_command = await create_command(client, message, args[1:-1])
-            return new_command
+            return await create_command(client, message, args[1:-1])
 
         elif args[0] in edit_aliases:
             # TODO check for existing command first fam
@@ -242,6 +240,7 @@ async def create_command(client, message, args):
 
     command = [c for c in guild_commands if c.prefix == args[0]]
     duplicate = None
+    
     if command: # switch to edit as command exists already
         command = command[0]
         duplicate = command
@@ -253,13 +252,14 @@ async def create_command(client, message, args):
             editor_id=message.author.id,
             guild_id=message.guild.id if message.guild else message.channel.id # could be dm
         )
+        command.update_command()
     
         
     if not duplicate:
         if len(args) > 1: # response provided
 
             command.response = message.content[message.content.index(args[1]):].strip()
-            command.update_command(get_guild_comamnds(guild_id=command.guild_id))
+            command.update_command()
 
         '''else: # just prefix
             await Support.previous_action_error(client, message)
@@ -377,8 +377,6 @@ async def edit_command(client, message, command):
                 elif type(result[0]) == discord.reaction.Reaction: # reaction added
                     reaction, r_user = result
 
-            print(reaction, r_user, mesge)
-
             footer = ""
             if reaction: # reaction clicked
                 warn = True # sure
@@ -386,7 +384,7 @@ async def edit_command(client, message, command):
 
                 if str(reaction.emoji) == Support.emojis.floppy_disk_emoji: # save command
                     timeout = True
-                    command.update_command(get_guild_comamnds(guild_id=command.guild_id))
+                    command.update_command()
                     embed = await build_embed()
                     footer = f"{Support.emojis.floppy_disk_emoji} Save | Saved {datetime.utcnow().strftime('%H:%M UTC')}"
 
@@ -401,8 +399,7 @@ async def edit_command(client, message, command):
                     elif mesge and mesge.channel_mentions:
                         args, c = Support.get_args_from_content(mesge.content)
 
-                    print(args)
-                    if len(args) == 3: # ref_msg_id #ref_channel ''
+                    if len(args) == 3: # ref_msg_id, #ref_channel, ''
 
                         try:
                             command.ref_msg_id = Support.get_id_from_str(args[0])[0]
@@ -412,7 +409,6 @@ async def edit_command(client, message, command):
                             command.ref_msg = await command.ref_channel.fetch_message(command.ref_msg_id)
                             command.response = None
 
-                            print(command.to_string())
 
                         except discord.errors.NotFound:
                             await Support.previous_action_error(client, message)
@@ -424,8 +420,6 @@ async def edit_command(client, message, command):
 
 
                 elif str(reaction.emoji) in reactions and mesge: # letter emoji clicked and mesge sent
-                    print('adding reaction')
-
 
                     if reactions.index(str(reaction.emoji)) == 0: # prefix
                         command.prefix = mesge.content
@@ -439,16 +433,13 @@ async def edit_command(client, message, command):
                         command.ref_channel = None
 
 
-                print('building')
                 embed = await build_embed()
                 if footer:
                     embed.set_footer(text=footer)
 
-                print('editing')
                 await msg.edit(embed=embed)
 
 
-                print('removing')
                 await Support.remove_reactions(msg, msg.author, Support.emojis._9b9c9f_emoji)
                 await Support.remove_reactions(msg, r_user, str(reaction.emoji))
                 reaction = None
