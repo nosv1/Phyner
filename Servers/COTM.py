@@ -278,8 +278,11 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
     """
 
     col_widths = [0] * len(leaderboard[0] + [""])
-    for row in leaderboard:
+    for i, row in enumerate(leaderboard):
         for j, value in enumerate(row):
+            
+            value = f"`[{value}]`" if i == 0 else value
+
             if len(value) > col_widths[j]:
                 col_widths[j] = len(value)
 
@@ -288,11 +291,11 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
 
 
     header = [
-        f"`{leaderboard[0][0]}`".center(col_widths[0], " "),
-        f"`{leaderboard[0][1]}`".center(col_widths[1], " "),
-        f"`{leaderboard[0][2]}`".ljust(col_widths[2], " "),
-        f"`{leaderboard[0][3]}`".center(col_widths[3], " "),
-        f"`{leaderboard[0][4]}`".rjust(col_widths[4], " "),
+        f"`[{leaderboard[0][0]}]`".center(col_widths[0], " "),
+        f"`[{leaderboard[0][1]}]`".center(col_widths[1], " "),
+        f"`[{leaderboard[0][2]}]`".ljust(col_widths[2], " "),
+        f"`[{leaderboard[0][3]}]`".center(col_widths[3], " "),
+        f"`[{leaderboard[0][4]}]`".rjust(col_widths[4], " "),
     ]
 
     if "Div" in leaderboard[0][1]:
