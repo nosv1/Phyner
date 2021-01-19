@@ -35,7 +35,7 @@ table_styles = ["multi_markdown", "single_markdown", "plain"]
 ''' CLASSES '''
 
 class Table:
-    def __init__(self, guild_id=None, channel_id=None, msg_ids=[], range=None, workbook_key=None, worksheet_id=None, cells=[], left_aligned=["all"], right_aligned=['none'], centered=['none'], headers=['none'], no_markdown_cols=['none'], no_markdown_rows=['none'], table_style=table_styles[0], for_embed=False, update_interval=0, buffer_messages=0):
+    def __init__(self, guild_id=None, channel_id=None, msg_ids=[], range=None, workbook_key=None, worksheet_id=None, cells=[], left_aligned=["all"], right_aligned=['none'], centered=['none'], headers=['none'], no_markdown_cols=['none'], no_markdown_rows=['none'], table_style=table_styles[0], for_embed=True, update_interval=0, buffer_messages=0):
         self.guild_id = guild_id
         self.channel_id = channel_id
         self.msg_ids = msg_ids # max 9 messages per table, given max primary key length wont allow for 210 chars
@@ -155,7 +155,7 @@ class Table:
 
             for j, value in enumerate(row):
 
-                if row_col_in_range(i + row_offset, j + col_offset, self.headers) and is_single_markdown:
+                if row_col_in_range(i + row_offset, j + col_offset, self.headers) and (is_single_markdown or is_multi_markdown):
                     value = f"[{value}]"
 
                 col_max_widths[j] = len(value) if len(value) > col_max_widths[j] else col_max_widths[j]
@@ -225,9 +225,7 @@ class Table:
         tables[-1] += "```\n" if is_multi_markdown else ""
 
         # wrapping in zero width to be able to identify tables in messages later
-        print('yes')
         self.tables = [f"{Support.emojis.zero_width*2}{table[:-1]}{Support.emojis.zero_width*2}" for table in tables]
-        print(Support.emojis.zero_width*2 in self.tables[-1])
     # end get_table_displays
 
 
@@ -252,8 +250,6 @@ class Table:
         if prev_message: # possible existing messages to accomodate an edit
             
             if len(self.tables) <= len(self.msg_ids): # if enough possible messages to accomodate
-                print('yes')
-                send_new = False
 
                 mesges = []
                 self.messages = []
@@ -261,9 +257,16 @@ class Table:
                 # first, checking for validitiy in all the message ids, are they suitable to place tables in
                 for mesge_id in self.msg_ids:
 
-                    mesge = await destination.fetch_message(mesge_id)
-                    embed = mesge.embeds[0] if mesge.embeds else None
-                    content = mesge.content # is "" if blank
+                    mesge = None
+                    embed = None
+                    content = None
+                    try:
+                        mesge = await destination.fetch_message(mesge_id)
+                        embed = mesge.embeds[0] if mesge.embeds else None
+                        content = mesge.content # is "" if blank
+
+                    except discord.NotFound:
+                        pass
 
                     if embed:
                         if embed.description:
@@ -281,11 +284,12 @@ class Table:
 
 
                 if len(self.tables) <= len(mesges): # enough valid messages to accomodate
+                    send_new = False
                 
                     for i, table in enumerate(self.tables): # udpate messages for needed tables, later clearing not used messages
                         mesge = mesges[i]
                         
-                        embed = mesge.embeds[0] if mesge.embeds else None
+                        embed = mesge.embeds[0] if mesge.embeds else simple_bot_response(destination, description="", send=False)
                         content = mesge.content
 
                         split = []
@@ -330,10 +334,13 @@ class Table:
                                 split[1] = ""
                                 content = "".join(split)
 
-                        await mesge.edit(content=content, embed=embed)
+                        try:
+                            await mesge.edit(content=content, embed=embed)
+                        except discord.errors.HTTPException:
+                            pass
 
 
-        print('send, new')
+        print('send new', send_new)
         if send_new: # SEND IT
 
             new_ids = []
@@ -366,7 +373,7 @@ class Table:
             '''
 
 
-            self.old_msg_ids = self.msg_ids
+            self.old_msg_ids = [m.id for m in self.messages]
             self.msg_ids = new_ids
 
 
@@ -384,9 +391,7 @@ class Table:
         existing = False
         for table in tables:
 
-            print(self.old_msg_ids, table.msg_ids)
             if self.old_msg_ids == table.msg_ids:
-                print('yes')
                 existing = True
 
                 sql = f"""
