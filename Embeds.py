@@ -629,7 +629,7 @@ async def edit_user_embed(client, message, args):
         embed, content, errors = await get_embed_from_content(
             client,
             message, 
-            roles=message.guild.roles, 
+            roles=message.guild.roles if message.guild else [], 
             embed=embed if embed else discord.Embed()
         )
         await msg.edit(content=content if content else msg.content, embed=embed)
