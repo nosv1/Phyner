@@ -78,6 +78,7 @@ spreadsheets = SimpleNamespace(**{
         "quali_submisisons" : 530052553,
         "quali" : 128540696,
         "signups" : 253796822,
+        "driver_history" : 744645833,
     }),
 
     "season_6" : SimpleNamespace(**{
@@ -125,6 +126,10 @@ async def main(client, message, args, author_perms):
     elif message.channel.id == quali_submit:
         pass
 
+    
+    if args[0] == "!license":
+        await display_license(message, args)
+
 
 # end main
 
@@ -158,8 +163,8 @@ def get_season_6_stats(user_id, gc=None):
     if not gc:
         gc = Support.get_g_client()
 
-    workbook = gc.open_by_key(spreadsheets.season_6.key)
-    worksheets = workbook.worksheets()
+    wb = gc.open_by_key(spreadsheets.season_6.key)
+    worksheets = wb.worksheets()
     driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.season_6.driver_stats][0]
 
     r = driver_stats_ws.get(f"A4:J{driver_stats_ws.row_count}")
@@ -258,6 +263,89 @@ async def unsignup_user(): # TODO !unsignup @user
 # end unsignup_user
 
 
+## LICENSE ##
+
+def get_license(gt, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.key), ws=None, driver_history_ws=None):
+    """
+        gt should be exact
+    """
+
+    if not driver_history_ws:
+        driver_history_ws = Support.get_worksheet(ws if ws else wb.worksheets(), spreadsheets.season_7.driver_history)    
+
+    driver_history = driver_history_ws.get("C4:O")
+
+    i, row, j = Support.find_value_in_range(driver_history, gt, get=True)
+
+    if row:
+        return SimpleNamespace(**{
+            "gt" : row[0],
+            "starts" : row[1],
+            "finishes" : row[2],
+            "dnss" : row[3],
+            "reserves" : row[4],
+            "penalty_time" : row[5],
+            "penalty_points" : row[6],
+            "best_4" : row[7], # Average of overall positions of best 5 races # Finish Position Overall / Number of Drivers
+            "division" : row[8],
+            "points" : row[10], # avg dif of best 5 to quali to pts
+            "points_as_reserve" : row[11]
+        })
+
+    else:
+        return None
+# end get_license
+
+
+async def display_license(message, args):
+    """
+    """
+
+    await message.channel.trigger_typing()
+
+    user = message.mentions[0] if message.mentions else message.author
+    gt = get_gt(user.id)
+
+    license = get_license(gt)
+
+    if not license:
+        await simple_bot_response(message.channel,
+            description=f"**{user.mention} has not signed up for Season 7.**",
+            reply_message=message
+        )
+        return
+
+    embed = discord.Embed(color=Support.colors.phyner_grey)
+
+    embed.title = f"**{gt}'s COTM License**"
+    embed.set_thumbnail(url=user.avatar_url)
+
+
+    value = "```"
+    value += f"Starts: {license.starts}\n"
+    value += f"Finishes: {license.finishes}\n"
+    value += f"DNSs: {license.dnss}\n"
+    value += f"Reserves: {license.reserves}\n"
+    value += "```"
+
+    embed.add_field(name="**Attendance**", value=value)
+
+
+    value = "```"
+    value += f"Division: {license.division}\n"
+    value += f"Points: {license.points}\n"
+    value += f"Pts as Rsv: {license.points_as_reserve}\n\n"
+
+    value += f"Penalty Sec: {license.penalty_time}\n"
+    value += f"Penalty Pts: {license.penalty_points}\n"
+    value += "```"
+
+    embed.add_field(name="**Performance**", value=value)
+
+    await message.channel.send(embed=embed)
+# end display_license
+
+
 
 ## QUALIFYING ##
 
@@ -326,7 +414,6 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
         msg.embeds[0].description = "\n".join(table)
         await msg.edit(embed=msg.embeds[0])
         log("cotm leaderboard", f"updated {m}")
-
 # end update_discord_leaderboard
 
 
@@ -610,6 +697,7 @@ async def invalidate_time(message):
 
 
 ## SUPPORT ##
+
 async def update_division(guild, div, user, gt):
     """
         add role
@@ -648,5 +736,18 @@ async def update_division(guild, div, user, gt):
 
     if not role_added: # to avoid editing twice
         await user.edit(nick=f"{gt}")
-
 # end update_division
+
+def get_gt(discord_id, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.key), ws=None, signups_ws=None):
+    """
+    """
+
+    if not signups_ws:
+        signups_ws = Support.get_worksheet(ws if ws else wb.worksheets(), spreadsheets.season_7.signups)
+
+    signups = signups_ws.get("B2:C")
+    i, row, j = Support.find_value_in_range(signups, discord_id, get=True)
+
+    if row:
+        return row[1]
+# end get_gt
