@@ -100,7 +100,7 @@ async def prepare_series_report_channel(channel, user):
 
     series_report_embed = Embeds.get_saved_embeds(link=series_report_embed_link)[0].embed
     # series_report_embed = Embeds.get_saved_embeds(link="https://discord.com/channels/789181254120505386/789182513633427507/791648883343884328")[0].embed
-    msg = await channel.send(content=user.mention, embed=series_report_embed)
+    msg = await channel.send(embed=series_report_embed)
     await msg.add_reaction(Support.emojis.ok_emoji)
 
     log("templar leagues", "submit series report")
