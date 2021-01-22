@@ -75,10 +75,11 @@ num_divs = 8
 spreadsheets = SimpleNamespace(**{
     "season_7" : SimpleNamespace(**{
         "key" : "1BIFN9DlU50pWOZqQrz4C44Dk-neDCteZMimTSblrR5U",
+        "driver_history" : 744645833,
+        "roster" : 1284096187,
         "quali_submisisons" : 530052553,
         "quali" : 128540696,
         "signups" : 253796822,
-        "driver_history" : 744645833,
     }),
 
     "season_6" : SimpleNamespace(**{
@@ -123,12 +124,16 @@ async def main(client, message, args, author_perms):
             await message.delete()
 
 
-    elif message.channel.id == quali_submit:
+    elif message.channel.id == quali_submit: # quali submit
         pass
 
     
-    if args[0] == "!license":
+    if args[0] == "!license": # view license
         await display_license(message, args)
+
+
+    elif args[0] == "!stream": # link stream
+        await link_stream(message, args)
 
 
 # end main
@@ -156,38 +161,6 @@ async def on_reaction_add(client, message, user, payload):
 # end on_reaction_add
 
 
-def get_season_6_stats(user_id, gc=None):
-    """
-    """
-
-    if not gc:
-        gc = Support.get_g_client()
-
-    wb = gc.open_by_key(spreadsheets.season_6.key)
-    worksheets = wb.worksheets()
-    driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.season_6.driver_stats][0]
-
-    r = driver_stats_ws.get(f"A4:J{driver_stats_ws.row_count}")
-
-    row_i, row, col_j = Support.find_value_in_range(r, user_id, get=True)
-
-    if col_j >= 0:
-        return SimpleNamespace(**{
-            "id" : user_id,
-            "gt" : row[1],
-            "starts" : row[2],
-            "finishes" : row[3],
-            "dnss" : row[4],
-            "reserves" : row[5],
-            "best_5" : row[6], # Average of overall positions of best 5 races # Finish Position Overall / Number of Drivers
-            "quali" : row[7],
-            "pts" : row[8],
-            "avg_dif" : row[9], # avg dif of best 5 to quali to pts
-        })
-
-    else:
-        return None
-# end get_season_6_stats
 
 
 ## SIGNUP ##
@@ -261,6 +234,48 @@ async def unsignup_user(): # TODO !unsignup @user
     """
     pass
 # end unsignup_user
+
+
+async def link_stream(message, args):
+    """
+    """
+
+
+    wb = Support.get_g_client().open_by_key(spreadsheets.season_7.key)
+    ws = wb.worksheets()
+    
+    roster_ws = Support.get_worksheet(ws, spreadsheets.season_7.roster)
+    roster = roster_ws.range(f"D4:G{roster_ws.row_count}")
+    i, _, __ = Support.find_value_in_range(roster, message.author.id)
+
+    if i < 0:
+        await simple_bot_response(message.channel,
+            description=f"**You cannot link your stream channel if you have not signed up to the event.**\n\n<#{signup_id}>\n`!signup <gamertag>`",
+            reply_message=message
+        )
+        return
+        
+    args[-2] = re.sub(r"[<>]", "", args[-2])
+    if validators.url(args[-2]):
+        roster[i+3].value = args[-2]
+        for c in roster:
+            if c.col == 4:
+                c.value = ""
+
+        roster_ws.update_cells(roster, value_input_option="USER_ENTERED")
+
+        await simple_bot_response(message.channel,
+            description="**Stream Linked**"
+        )
+
+    else:
+        await simple_bot_response(message.channel,
+            description=f"**`{args[-2]}` is not a valid link.**\n\n`!stream https://twitch.tv/moshots`\ncan also be YouTube link",
+            reply_message=message
+        )
+        return
+# end link_stream
+
 
 
 ## LICENSE ##
@@ -738,6 +753,7 @@ async def update_division(guild, div, user, gt):
         await user.edit(nick=f"{gt}")
 # end update_division
 
+
 def get_gt(discord_id, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.key), ws=None, signups_ws=None):
     """
     """
@@ -751,3 +767,37 @@ def get_gt(discord_id, wb=Support.get_g_client().open_by_key(spreadsheets.season
     if row:
         return row[1]
 # end get_gt
+
+
+def get_season_6_stats(user_id, gc=None):
+    """
+    """
+
+    if not gc:
+        gc = Support.get_g_client()
+
+    wb = gc.open_by_key(spreadsheets.season_6.key)
+    worksheets = wb.worksheets()
+    driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.season_6.driver_stats][0]
+
+    r = driver_stats_ws.get(f"A4:J{driver_stats_ws.row_count}")
+
+    row_i, row, col_j = Support.find_value_in_range(r, user_id, get=True)
+
+    if col_j >= 0:
+        return SimpleNamespace(**{
+            "id" : user_id,
+            "gt" : row[1],
+            "starts" : row[2],
+            "finishes" : row[3],
+            "dnss" : row[4],
+            "reserves" : row[5],
+            "best_5" : row[6], # Average of overall positions of best 5 races # Finish Position Overall / Number of Drivers
+            "quali" : row[7],
+            "pts" : row[8],
+            "avg_dif" : row[9], # avg dif of best 5 to quali to pts
+        })
+
+    else:
+        return None
+# end get_season_6_stats
