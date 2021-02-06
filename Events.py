@@ -14,6 +14,7 @@ from Logger import log
 import Help
 import Role
 from Servers import TemplarLeagues
+from Servers import COTM
 import Support
 from Support import simple_bot_response
 from Support import quote
@@ -781,11 +782,17 @@ async def perform_action(client, message, user, event):
         if channel:
             remove_reaction = True
 
-        if event.guild_id == TemplarLeagues.templar_leagues_id:
-            if event.condition.id == TemplarLeagues.series_report_message_id:
-                if event.object.id == Support.emojis.tick_emoji:
-                    await TemplarLeagues.prepare_series_report_channel(channel, user)
-                    remove_reaction = True
+            if event.guild_id == TemplarLeagues.templar_leagues_id:
+                if event.condition.id == TemplarLeagues.series_report_message_id:
+                    if event.object.id == Support.emojis.tick_emoji:
+                        await TemplarLeagues.prepare_series_report_channel(channel, user)
+                        remove_reaction = True
+
+            elif event.guild_id == COTM.cotm_id:
+                if event.condition.id == COTM.vote_message_id:
+                    if event.object.id == Support.emojis.tick_emoji:
+                        await COTM.prepare_vote_channel(channel, user, msg.embed)
+                        remove_reaction = True
 
 
     elif event.action.action in ["add_role", "remove_role"]:

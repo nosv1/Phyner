@@ -416,7 +416,13 @@ async def on_raw_reaction_add(payload):
         remove_reaction = False
         if user: # message and user are found
 
-            if not user.bot: # not bot reaction
+            if (
+                not user.bot and 
+                (
+                    host == "PI4" or
+                    user.id == Support.mo_id
+                )
+            ): # not bot reaction
 
                 restart_delta = (restart_time - datetime.utcnow()).seconds
                 if restart_delta < restart_interval:
@@ -465,26 +471,16 @@ async def on_raw_reaction_add(payload):
 
                 ## SERVER CHECKS ##
 
-                # this is used to enable testing whilst running pi version
-                okay_mobot_support = Support.ids.mobot_support_id if os.getenv("HOST") == "PC" else 0
-                okay_phyner_support = Support.ids.phyner_support_id if okay_mobot_support else 0
-
                 if message.guild:
 
                     if message.guild.id in [ # Templar Leagues
                         TemplarLeagues.templar_leagues_id,
-                        TemplarLeagues.staff_templar_leagues_id, 
-                        okay_mobot_support,
-                        okay_phyner_support
+                        TemplarLeagues.staff_templar_leagues_id
                     ]:
                         await TemplarLeagues.on_reaction_add(client, message, user, payload)
 
 
-                    if message.guild.id in [ # COTM
-                        COTM.cotm_id, 
-                        okay_mobot_support,
-                        okay_phyner_support
-                    ]:
+                    if message.guild.id == COTM.cotm_id: # COTM
                         await COTM.on_reaction_add(client, message, user, payload)
 
 
@@ -511,9 +507,8 @@ async def on_raw_reaction_add(payload):
     except AttributeError: # possibly NoneType.fetch_message, happens in DMs after bot is restarted
         error = traceback.format_exc()
 
-    #except discord.errors.NotFound: # bot aint finding messages...
-     #   Logger.log_error(traceback.format_exc())
-      #  return
+    except discord.errors.NotFound: # bot aint finding messages...
+        pass
 
     except discord.errors.Forbidden:
         error = traceback.format_exc()
