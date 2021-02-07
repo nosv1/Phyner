@@ -420,7 +420,10 @@ async def on_raw_reaction_add(payload):
                 not user.bot and 
                 (
                     host == "PI4" or
-                    user.id == Support.ids.mo_id
+                    (
+                        host == "PC" and 
+                        user.id == Support.ids.mo_id
+                    )
                 )
             ): # not bot reaction
 

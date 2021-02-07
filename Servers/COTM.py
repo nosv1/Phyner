@@ -160,7 +160,7 @@ async def on_reaction_add(client, message, user, payload):
                 await invalidate_time(message)
 
             if (
-                str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[1:6]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji] and
+                str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[1:max_votes+1]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji, Support.emojis.tick_emoji]  and
                 "Voting" in embed.title
             ):
                 await handle_voting_reaction(message, payload, user)
@@ -373,6 +373,8 @@ async def display_license(message, args):
 
 ## VOTING ##
 
+max_votes = 5
+
 async def prepare_vote_channel(channel, source_embed):
     """
     """
@@ -436,8 +438,8 @@ async def reset_vote(msg):
 
 
     await msg.edit(embed=embed)
+    [await msg.add_reaction(Support.emojis.number_emojis[i]) for i in range(1, max_votes+1)]
     await msg.add_reaction(Support.emojis.x_emoji)
-    [await msg.add_reaction(Support.emojis.number_emojis[i]) for i in range(1, 6)]
 
 # end reset_vote
 
@@ -457,30 +459,64 @@ async def handle_voting_reaction(msg, payload, user):
         return
 
 
-    embed = msg.embeds[0]
+    embed = msg.embeds[0].to_dict()
 
 
-    options = embed.to_dict()["fields"][0]["value"].split("\n") # [:number: [option](link) :arrow:, ...]
+    options = embed["fields"][0]["value"].split("\n") # [:number: [option](link) :arrow:, ...]
 
-    for i, o in enumerate(options):
+    for i, o in enumerate(options): # get current counts
         o = o.split(" ")
-        count = Support.emoijs.number_emojis.index(o[0])
-        options[i] = [count, o[1:], Support.emojis.arrow_left_emoji == o[-1]]
+
+        is_current_option = Support.emojis.arrow_left_emoji == o[-1]
+        
+        count = Support.emojis.number_emojis.index(o[0])
+        count += Support.emojis.number_emojis.index(payload.emoji.name) if is_current_option else 0
+
+        options[i] = [count, o[1:], is_current_option]
 
     # [[count, [option], is_current_option], ...] where option is a list of words from a .split(" ")
 
 
+    votes_left = max_votes - sum(o[0] for o in options)
 
 
+    if votes_left < 0: # somehow used more than allotted votes
+        reset_vote(msg)
+        return
+        
+    reactions_to_remove = []
+
+    for reaction in msg.reactions: # remove vote buttons that exceed votes left
+
+        try:
+
+            if Support.emojis.number_emojis.index(str(reaction)) > votes_left:
+                reactions_to_remove.append(reaction)
+
+        except ValueError: # reaction was not a number emoji
+            pass
+
+    await Support.remove_reactions(msg, user, payload)
+    await Support.remove_reactions(msg, Support.get_phyner_from_channel(msg.channel), reactions_to_remove)
 
 
+    del embed["fields"]
+
+    embed = discord.Embed.from_dict(embed)
 
 
+    for i, o in enumerate(options):
+        print(o)
+
+        o = f"{Support.emojis.number_emojis[o[0]]} {' '.join(o[1])}" # :count: option
+        o += f" {Support.emojis.arrow_left_emoji}" if (len(options) - i) * -1 - 1 else ''
+
+        options[i] = o
 
 
-    # end get_option_totals
+    embed.add_field(name="**Options**", value="\n".join(options))
 
-
+    await msg.edit(embed=embed)
 
 # end handle_voting_reaction
 
