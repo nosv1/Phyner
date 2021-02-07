@@ -62,6 +62,8 @@ time_trial_leaderboard = [
     800212136449015878,
 ]
 
+vote_message_id = 807766191015067700
+
 # EMOJIs
 emojis = SimpleNamespace(**{
     "invalid_emoji" : "<:invalid:797893546295296011>",
@@ -156,6 +158,13 @@ async def on_reaction_add(client, message, user, payload):
 
             if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time-Trial)|(Consistency Test)) Submitted)", embed.title):
                 await invalidate_time(message)
+
+            if (
+                str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[1:6]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji] and
+                "Voting" in embed.title
+            ):
+                await handle_voting_reaction(message, payload, user)
+
 
     return remove_reaction
 # end on_reaction_add
@@ -265,7 +274,7 @@ async def link_stream(message, args):
         roster_ws.update_cells(roster, value_input_option="USER_ENTERED")
 
         await simple_bot_response(message.channel,
-            description="**Stream Linked**"
+            title="**Stream Linked**",
         )
 
     else:
@@ -359,6 +368,121 @@ async def display_license(message, args):
 
     await message.channel.send(embed=embed)
 # end display_license
+
+
+
+## VOTING ##
+
+async def prepare_vote_channel(channel, source_embed):
+    """
+    """
+
+    options = source_embed.to_dict()["fields"][0]["value"].split(Support.emojis.bullet)[1:5]
+    options = [f'{Support.emojis.number_emojis[0]} {o.split(chr(10))[0].strip()}' for o in options] # [:0: Option #\n, ...]
+
+
+    vote_type = re.sub(r"[*_]", "", source_embed.title) # removing **__ from title
+    vote_type = "car" if "Car" in vote_type else "track"
+
+
+    embed = await simple_bot_response(channel, send=False)
+
+    embed.title = "__**Voting**__"
+    embed.add_field(name="**Options**", value="\n".join(options))
+
+    embed.description = "To receive eligibility to vote, please post your screenshot of the playlist results below. You will be pinged when you may continue."
+
+
+    msg = await channel.send(embed=embed)
+    await msg.add_reaction(Support.emojis.counter_clockwise_arrows_emoji)
+
+
+    if vote_type == "car":
+        await reset_vote(msg)
+# end prepare_vote_channel
+
+
+async def reset_vote(msg):
+    """
+    """
+    
+    await Support.clear_reactions(msg)
+
+
+    embed = msg.embeds[0]
+
+
+    embed.description = f"You have 5 votes to spend. You can spend all 5 on one option, or 3 on one and 2 on another, etc., but you must use all 5 votes.\n{Support.emojis.space_char}\n"
+
+    embed.description += "To cast a vote for the current option, shown by the :arrow_left:, click one of the number buttons below. Once all 5 votes are spent, a :white_check_mark: will appear, and you will need to click it to submit your votes.\n\n"
+
+    embed.description += f"To restart, click the :x:.\n{Support.emojis.space_char}"
+
+
+    embed = embed.to_dict()
+
+    options = []
+    for o in embed["fields"][0]["value"].split("\n"):
+
+        option = re.findall(r"(\[.*\]\(.*\))", o)[0]
+        options.append(f"{Support.emojis.number_emojis[0]} {option}")
+
+    options[0] += f" {Support.emojis.arrow_left_emoji}"
+        
+
+    del embed["fields"]
+    embed = discord.Embed.from_dict(embed)
+    embed.add_field(name="**Options**", value="\n".join(options))
+
+
+    await msg.edit(embed=embed)
+    await msg.add_reaction(Support.emojis.x_emoji)
+    [await msg.add_reaction(Support.emojis.number_emojis[i]) for i in range(1, 6)]
+
+# end reset_vote
+
+
+async def handle_voting_reaction(msg, payload, user):
+    """
+    """
+
+    user_perms = Support.get_member_perms(msg.channel, user)
+    if (
+        (
+            payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji and user_perms.administrator
+        ) or
+        payload.emoji.name == Support.emojis.x_emoji
+    ):
+        await reset_vote(msg)
+        return
+
+
+    embed = msg.embeds[0]
+
+
+    options = embed.to_dict()["fields"][0]["value"].split("\n") # [:number: [option](link) :arrow:, ...]
+
+    for i, o in enumerate(options):
+        o = o.split(" ")
+        count = Support.emoijs.number_emojis.index(o[0])
+        options[i] = [count, o[1:], Support.emojis.arrow_left_emoji == o[-1]]
+
+    # [[count, [option], is_current_option], ...] where option is a list of words from a .split(" ")
+
+
+
+
+
+
+
+
+
+
+    # end get_option_totals
+
+
+
+# end handle_voting_reaction
 
 
 
