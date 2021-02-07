@@ -163,6 +163,7 @@ async def on_reaction_add(client, message, user, payload):
                 str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[1:max_votes+1]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji, Support.emojis.tick_emoji]  and
                 "Voting" in embed.title
             ):
+                return remove_reaction
                 await handle_voting_reaction(message, payload, user)
 
 
@@ -481,7 +482,7 @@ async def handle_voting_reaction(msg, payload, user):
 
 
     if votes_left < 0: # somehow used more than allotted votes
-        reset_vote(msg)
+        await reset_vote(msg)
         return
         
     reactions_to_remove = []
@@ -496,7 +497,7 @@ async def handle_voting_reaction(msg, payload, user):
         except ValueError: # reaction was not a number emoji
             pass
 
-    await Support.remove_reactions(msg, user, payload)
+    await msg.remove_reaction(payload.emoji, user)
     await Support.remove_reactions(msg, Support.get_phyner_from_channel(msg.channel), reactions_to_remove)
 
 
@@ -506,7 +507,6 @@ async def handle_voting_reaction(msg, payload, user):
 
 
     for i, o in enumerate(options):
-        print(o)
 
         o = f"{Support.emojis.number_emojis[o[0]]} {' '.join(o[1])}" # :count: option
         o += f" {Support.emojis.arrow_left_emoji}" if (len(options) - i) * -1 - 1 else ''
