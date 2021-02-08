@@ -33,6 +33,8 @@ bot_stuff_id = 527168346404159488
 signup_id = 796401927411728414
 s7_leaderboard_id = 796786622191763487
 quali_submit = 705787893364555785
+voting_log_id = 530284914071961619
+vote_id = 608472349712580608
 
 # ROLES
 children_id = 529112570448183296
@@ -62,7 +64,7 @@ time_trial_leaderboard = [
     800212136449015878,
 ]
 
-vote_message_id = 807766191015067700
+vote_msg_id = 807766191015067700
 
 # EMOJIs
 emojis = SimpleNamespace(**{
@@ -82,6 +84,7 @@ spreadsheets = SimpleNamespace(**{
         "quali_submisisons" : 530052553,
         "quali" : 128540696,
         "signups" : 253796822,
+        "voting" : 242811195,
     }),
 
     "season_6" : SimpleNamespace(**{
@@ -160,10 +163,9 @@ async def on_reaction_add(client, message, user, payload):
                 await invalidate_time(message)
 
             if (
-                str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[1:max_votes+1]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji, Support.emojis.tick_emoji]  and
+                str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[0:max_votes+1]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji, Support.emojis.tick_emoji]  and
                 "Voting" in embed.title
             ):
-                return remove_reaction
                 await handle_voting_reaction(message, payload, user)
 
 
@@ -402,6 +404,8 @@ async def prepare_vote_channel(channel, source_embed):
 
     if vote_type == "car":
         await reset_vote(msg)
+
+    log("cotm vote", "vote channel prepared")
 # end prepare_vote_channel
 
 
@@ -439,8 +443,10 @@ async def reset_vote(msg):
 
 
     await msg.edit(embed=embed)
-    [await msg.add_reaction(Support.emojis.number_emojis[i]) for i in range(1, max_votes+1)]
+    [await msg.add_reaction(Support.emojis.number_emojis[i]) for i in range(0, max_votes+1)]
     await msg.add_reaction(Support.emojis.x_emoji)
+
+    log("cotm vote", "vote reset")
 
 # end reset_vote
 
@@ -448,6 +454,8 @@ async def reset_vote(msg):
 async def handle_voting_reaction(msg, payload, user):
     """
     """
+
+    log("cotm vote", f"{user} {payload.emoji.name}")
 
     user_perms = Support.get_member_perms(msg.channel, user)
     if (
@@ -471,9 +479,14 @@ async def handle_voting_reaction(msg, payload, user):
         is_current_option = Support.emojis.arrow_left_emoji == o[-1]
         
         count = Support.emojis.number_emojis.index(o[0])
-        count += Support.emojis.number_emojis.index(payload.emoji.name) if is_current_option else 0
 
-        options[i] = [count, o[1:], is_current_option]
+        try:
+            count += Support.emojis.number_emojis.index(payload.emoji.name) if is_current_option else 0
+            
+        except ValueError: # non number clicked
+            pass
+
+        options[i] = [count, o[1:len(options) if not is_current_option else -1], is_current_option]
 
     # [[count, [option], is_current_option], ...] where option is a list of words from a .split(" ")
 
@@ -484,6 +497,80 @@ async def handle_voting_reaction(msg, payload, user):
     if votes_left < 0: # somehow used more than allotted votes
         await reset_vote(msg)
         return
+
+
+    elif votes_left == 0 and payload.emoji.name == Support.emojis.tick_emoji: # submit votes
+        await msg.channel.trigger_typing()
+
+        g = Support.get_g_client()
+        wb = g.open_by_key(spreadsheets.season_7.key)
+        ws = wb.worksheets()
+        voting_ws = Support.get_worksheet(ws, spreadsheets.season_7.voting)
+
+        r = voting_ws.get("C9:G", value_render_option="FORMULA")
+
+        row_index, row, col_index = Support.find_value_in_range(r, user.display_name, get=True)
+
+        if row: # duplicate vote
+            await msg.channel.send(f"<@{Support.ids.mo_id}>, this guy tried to vote > 1 time.")
+            return
+
+        r.append([user.display_name] + [o[0] for o in options])
+
+        voting_ws.update("C9:G", r, value_input_option="USER_ENTERED")
+
+        await simple_bot_response(msg.channel,
+            description="**Thank you for voting. :)**"
+        )
+
+        await asyncio.sleep(3)
+
+        voting_log = msg.guild.get_channel(voting_log_id)
+        embed = await simple_bot_response(voting_log,
+            title="**__Vote Submitted__**",
+            send=False
+        )
+
+        counts = "\n".join([f"{' '.join(o[1])} - **{o[0]}**" for o in options])
+        embed.add_field(
+            name=f"**{user.display_name}**", 
+            value=f"{counts}\n{Support.emojis.space_char}"
+        )
+
+
+        totals = [0, 0, 0, 0]
+        for vote in r[1:]:
+            for i, v in enumerate(vote[1:]):
+                totals[i] += int(v)
+
+        totals = "\n".join([f"{' '.join(options[i][1])} - **{v}**" for i, v in enumerate(totals)])
+        embed.add_field(
+            name="**Totals**", 
+            value=f"{totals}\n{Support.emojis.space_char}"
+        )
+
+
+        embed.add_field(
+            name="**Total Votes**",
+            value="".join([Support.emojis.number_emojis[int(c)] for c in str(len(r))]),
+            inline=False
+        )
+
+
+        await voting_log.send(embed=embed)
+
+
+        vote = msg.guild.get_channel(vote_id)
+        vote_msg = await vote.fetch_message(vote_msg_id)
+        vote_embed = vote_msg.embeds[0].to_dict()
+        vote_embed["fields"][-1] = embed.to_dict()["fields"][-1]
+
+        await vote_msg.edit(embed=discord.Embed.from_dict(vote_embed))
+
+        await msg.channel.delete()
+
+        log("cotm vote", "vote submitted")
+        return
         
     reactions_to_remove = []
 
@@ -491,32 +578,37 @@ async def handle_voting_reaction(msg, payload, user):
 
         try:
 
-            if Support.emojis.number_emojis.index(str(reaction)) > votes_left:
+            if Support.emojis.number_emojis.index(str(reaction)) > votes_left or votes_left == 0:
                 reactions_to_remove.append(reaction)
 
         except ValueError: # reaction was not a number emoji
             pass
 
-    await msg.remove_reaction(payload.emoji, user)
-    await Support.remove_reactions(msg, Support.get_phyner_from_channel(msg.channel), reactions_to_remove)
-
 
     del embed["fields"]
 
     embed = discord.Embed.from_dict(embed)
-
+    embed.add_field(name="**Options**", value="")
+    embed = embed.to_dict()
 
     for i, o in enumerate(options):
 
         o = f"{Support.emojis.number_emojis[o[0]]} {' '.join(o[1])}" # :count: option
-        o += f" {Support.emojis.arrow_left_emoji}" if (len(options) - i) * -1 - 1 else ''
+        o += f" {Support.emojis.arrow_left_emoji}" if options[i - 1][2] else '' # += :arrow_left_emoji:
+        
+        embed["fields"][0]["value"] += f"{o}\n"
 
-        options[i] = o
+
+    await msg.edit(embed=discord.Embed.from_dict(embed))
+
+    await msg.remove_reaction(payload.emoji, user)
+    await Support.remove_reactions(msg, msg.author, reactions_to_remove)
+
+    if votes_left == 0:
+        await msg.add_reaction(Support.emojis.tick_emoji)
 
 
-    embed.add_field(name="**Options**", value="\n".join(options))
-
-    await msg.edit(embed=embed)
+    log("cotm vote", f"votes left: {votes_left}")
 
 # end handle_voting_reaction
 
