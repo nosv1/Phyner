@@ -789,7 +789,7 @@ async def perform_action(client, message, user, event):
                         remove_reaction = True
 
             elif event.guild_id == COTM.cotm_id:
-                if event.condition.id == COTM.vote_message_id:
+                if event.condition.id == COTM.vote_msg_id:
                     if event.object.id == Support.emojis.tick_emoji:
                         await COTM.prepare_vote_channel(channel, message.embeds[0])
                         remove_reaction = True
