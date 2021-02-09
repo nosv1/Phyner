@@ -552,7 +552,7 @@ async def handle_voting_reaction(msg, payload, user):
 
         embed.add_field(
             name="**Total Votes**",
-            value="".join([Support.emojis.number_emojis[int(c)] for c in str(len(r))]),
+            value="".join([Support.emojis.number_emojis[int(c)] for c in str(len(r)-1)]),
             inline=False
         )
 
