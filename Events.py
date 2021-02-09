@@ -334,6 +334,7 @@ async def wait_for_tick_x_options(client, message, msg, embed, poss_selection=No
                         break
 
                     else: # has not clicked a number emoji yet
+                        field_footer = embed.to_dict()["fields"][-1]["value"]
                         embed = Support.revert_confirm_input_last_field_exclamation(field_footer, embed)
 
                         await Support.remove_reactions(msg, message.author, msg.reactions)
