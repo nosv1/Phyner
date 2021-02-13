@@ -64,10 +64,6 @@ time_trial_leaderboard = [
 
 vote_msg_id = 807766191015067700
 
-saved_embeds = SimpleNamespace(**{
-    "signup_conditions" : "https://discord.com/channels/527156310366486529/527168346404159488/810052959836438529"
-})
-
 # EMOJIs
 emojis = SimpleNamespace(**{
     "invalid_emoji" : "<:invalid:797893546295296011>",
@@ -77,7 +73,7 @@ drivers_per_div = 14
 num_divs = 8
 
 
-# Spreadsheets
+# SPREADSHEETS
 spreadsheets = SimpleNamespace(**{
     "season_7" : SimpleNamespace(**{
         "key" : "1BIFN9DlU50pWOZqQrz4C44Dk-neDCteZMimTSblrR5U",
@@ -97,8 +93,8 @@ spreadsheets = SimpleNamespace(**{
     }),
 })
 
-# embeds
-# series_report_embed_link = "https://discord.com/channels/437936224402014208/519260837727436810/791050164067893329"
+# EMBEDS
+signup_conditions_link = "https://discord.com/channels/527156310366486529/527168346404159488/810052959836438529"
 
 aliases = ["", ]
 
@@ -220,7 +216,7 @@ async def request_signup(client, message, args): # TODO TEST THIS
         return
 
 
-    embed = Embeds.get_saved_embeds(link=saved_embeds.signup_conditions)[0] # signup condition embed
+    embed = Embeds.get_saved_embeds(link=signup_conditions_link)[0] # signup condition embed
     msg = await message.channel.send(embed=embed)
 
     await asyncio.sleep(5) # this matches the saved embed footer
