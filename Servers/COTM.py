@@ -112,6 +112,8 @@ async def main(client, message, args, author_perms):
 
     args[0] = args[0].lower()
 
+    # TODO remember to move the commands from == bot_stuff_id: to proper if blocks
+
     if message.channel.id == bot_stuff_id: # in bot stuff
         
         if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
