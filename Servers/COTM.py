@@ -1,6 +1,3 @@
-# TODO #bot-spam !stream <link> !yt <link>
-# TODO accept/reject signup
-
 ''' IMPORTS '''
 
 from datetime import datetime
@@ -38,6 +35,7 @@ vote_id = 608472349712580608
 
 # ROLES
 children_id = 529112570448183296
+fetuses_id = 796357522536661033
 
 # MESSAGES
 consisteny_test_leaderboard = [
@@ -65,6 +63,10 @@ time_trial_leaderboard = [
 ]
 
 vote_msg_id = 807766191015067700
+
+saved_embeds = SimpleNamespace(**{
+    "signup_conditions" : "https://discord.com/channels/527156310366486529/527168346404159488/810052959836438529"
+})
 
 # EMOJIs
 emojis = SimpleNamespace(**{
@@ -116,7 +118,9 @@ async def main(client, message, args, author_perms):
             await submit_time(client, message, args)
 
         if args[0] == "!signup": # !signup <gamertag>
-            await request_signup(message, args)
+            await simple_bot_response(message.channel, description="```testing on PC```")
+            # await request_signup(client, message, args)
+            return
 
 
     elif message.channel.id == signup_id: # signup
@@ -133,7 +137,7 @@ async def main(client, message, args, author_perms):
         pass
 
     
-    if args[0] == "!license": # view license
+    elif args[0] == "!license": # view license
         await display_license(message, args)
 
 
@@ -162,11 +166,23 @@ async def on_reaction_add(client, message, user, payload):
             if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time-Trial)|(Consistency Test)) Submitted)", embed.title):
                 await invalidate_time(message)
 
+
             if (
                 str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[0:max_votes+1]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji, Support.emojis.tick_emoji]  and
                 "Voting" in embed.title
             ):
                 await handle_voting_reaction(message, payload, user)
+
+
+            if (
+                "Signup Pending Approval" in embed.title and
+                payload.emoji.name == Support.emojis.tick_emoji
+            ):
+                await message.add_reaction(Support.emojis._9b9c9f_emoji) # testing on pc
+                await Support.remove_reactions(message, client.user, [Support.emojis._9b9c9f_emoji])
+                # await handle_signup_reaction(message, user)
+                return
+
 
 
     return remove_reaction
@@ -177,9 +193,20 @@ async def on_reaction_add(client, message, user, payload):
 
 ## SIGNUP ##
 
-async def request_signup(message, args):
+async def request_signup(client, message, args): # TODO TEST THIS
     """
     """
+
+    msg = None
+    def reaction_check(r, u):
+        return (
+            u.id == message.author.id and
+            r.message.id == msg.id and
+            str(r.emoji) == Support.emojis.tick_emoji
+        )
+    # end reaction_check
+
+
     await message.channel.trigger_typing()
     now = timezone("UTC").localize(datetime.utcnow()).astimezone(timezone("Europe/London"))
 
@@ -191,31 +218,62 @@ async def request_signup(message, args):
         return
 
 
-    gc = Support.get_g_client()
-    wb = gc.open_by_key(spreadsheets.season_7.key)
-    ws = wb.worksheets()
-    signups_ws = Support.get_worksheet(ws, spreadsheets.season_7.signups)
-    signups = signups_ws.get(f"A1:C{signups_ws.row_count}")
+    embed = Embeds.get_saved_embeds(link=saved_embeds.signup_conditions)[0] # signup condition embed
+    msg = await message.channel.send(embed=embed)
+
+    await asyncio.sleep(5) # this matches the saved embed footer
+
+    embed.set_footer(text="(60 seconds)")
+    await msg.edit(embed=embed)
+    await msg.add_reaction(Support.emojis.tick_emoji)
+
+
+    try:
+        reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=60.0)
+        await Support.clear_reactions(msg)
+
+    except asyncio.TimeoutError:
+        embed.set_footer(text=f"TIMED OUT - resend '{message.content}'")
+        await msg.edit(embed=embed)
+        await Support.clear_reactions(msg)
+        return
+
+
+    # user has accepted the terms
 
 
     # get gt
     gt = re.sub(r'[<>]', '', ' '.join(args[1:])).strip()
     await message.author.edit(nick=gt)
 
+    try:
 
-    # update
-    signups.append([str(now), str(message.author.id), gt])
-    signups_ws.update(f"A1:C{signups_ws.row_count}", signups, value_input_option="USER_ENTERED")
+        gc = Support.get_g_client()
+        wb = gc.open_by_key(spreadsheets.season_7.key)
+        ws = wb.worksheets()
+        signups_ws = Support.get_worksheet(ws, spreadsheets.season_7.signups)
+        signups = signups_ws.get(f"A1:C{signups_ws.row_count}")
+
+
+        # update
+        signups.append([str(now), str(message.author.id), gt])
+        signups_ws.update(f"A1:C{signups_ws.row_count}", signups, value_input_option="USER_ENTERED")
+
+
+        # stats = get_season_6_stats(args[1])
+        stats = get_season_6_stats(message.author.id, gc)
+    
+    except: # just in case there is an error with getting the stats
+        await Logger.log_error(client, traceback.format_exc())
+        signups = 0
+        stats = 0
 
 
     embed = await simple_bot_response(message.channel, send=False)
     embed.title = f"**#{len(signups)-1} - {gt} - Signup Pending Approval**"
 
-    # stats = get_season_6_stats(args[1])
-    stats = get_season_6_stats(message.author.id, gc)
-
     if stats:
-        embed.set_footer(text=f"S6 GT: {stats.gt}")
+        embed.set_footer(text=f"S6 GT: {stats.gt} | ID: {message.author.id}")
 
         v = f"```Starts: {stats.starts}\n"
         v += f"Finishes: {stats.finishes}\n"
@@ -229,15 +287,73 @@ async def request_signup(message, args):
         v += f"Avg Dif: {stats.avg_dif}```\n"
         embed.add_field(name="**S6 Performance**", value=v)
 
-    else:
-        embed.description = "```S6 Stats Not Found```"
 
-    msg = await message.channel.send(embed=embed)
+    else:
+        embed.description = f"```S6 Stats Not Found{' (error)' if stats == 0 else ''}```"
+        embed.set_footer(text=f"ID: {message.author.id}")
+
+
+    await msg.edit(embed=embed)
     await msg.add_reaction(Support.emojis.tick_emoji)
     await msg.add_reaction(Support.emojis.x_emoji)
 
     log("cotm", embed.to_dict())
 # end request_signup
+
+
+async def handle_signup_reaction(msg, user): # TODO test this
+    """
+    """
+    
+    threshold = 2 # at least 2 staff members hits tick, accepts signup (account for phyner reaction)
+
+
+    embed = msg.embeds[0].to_dict()
+
+
+    reactions = msg.reactions
+    for reaction in reactions:
+        count = 0
+
+        async for user in reaction.users():
+
+            if user.id == Support.ids.phyner_id: # is phyner
+                continue
+
+            if Support.get_member_perms(msg.channel, user).administrator: # is staff
+                count += 1
+
+
+        if str(reaction.emoji) == Support.emojis.tick_emoji:
+
+            if count != threshold:
+                return
+
+            else:
+                embed["title"] = embed["title"].replace("Signup Pending Approval", "Signup Accepted")
+
+                member = msg.guild.get_member(int(embed["footer"]["text"].split("ID:")[1].strip()))
+
+                fetuses_role = [r for r in msg.guild.roles if r.id == fetuses_id][0]
+
+                await member.add_roles(fetuses_role)
+                log("cotm", "signup accepted")
+
+            break
+
+
+        elif str(reaction.emoji) == Support.emojis.x_emoji:
+
+            if count == threshold:
+                embed["title"] = embed["title"].replace("Signup Pending Approval", "Signup Rejected")
+                log("cotm", "signup rejected")
+
+            break
+
+
+    await msg.edit(embed=discord.Embed().from_dict(embed))
+
+# end handle_signup_reaction
 
 
 async def unsignup_user(): # TODO !unsignup @user
@@ -251,7 +367,6 @@ async def unsignup_user(): # TODO !unsignup @user
 async def link_stream(message, args):
     """
     """
-
 
     wb = Support.get_g_client().open_by_key(spreadsheets.season_7.key)
     ws = wb.worksheets()
