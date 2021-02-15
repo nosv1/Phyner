@@ -190,6 +190,14 @@ async def on_message(message):
                         import Test
                         await Test.test(client, message, args)
                         return
+
+                    elif args[1] == "setstatus":
+                        await client.change_presence(
+                            activity=discord.Activity(
+                                type=discord.ActivityType.playing, name=message.content.split("setstatus")[1]
+                            ),
+                            status=discord.Status.online
+                        )
                         
                     elif args[1] == "setavatar":
                         with open('Images/9b9c9f.png', 'rb') as f:
