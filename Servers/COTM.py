@@ -111,19 +111,14 @@ async def main(client, message, args, author_perms):
     # TODO remember to move the commands from == bot_stuff_id: to proper if blocks
 
     if message.channel.id == bot_stuff_id: # in bot stuff
-        
-        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
-            await submit_time(client, message, args)
 
-        if args[0] == "!signup": # !signup <gamertag>
-            # await simple_bot_response(message.channel, description="```testing on PC```")
-            await request_signup(client, message, args)
-            return
+        pass
 
 
     elif message.channel.id == signup_id: # signup
 
-        if not author_perms.administrator:
+        if not author_perms.administrator: # deleting messages that aren't from staff
+
             await simple_bot_response(message.channel,
                 description="**Only `!signup <gamertag>` messages can be sent in this channel.**",
                 delete_after=10
@@ -131,7 +126,17 @@ async def main(client, message, args, author_perms):
             await message.delete()
 
 
+            if args[0] == "!signup": # !signup <gamertag>
+                # await simple_bot_response(message.channel, description="```testing on PC```")
+                await request_signup(client, message, args)
+                return
+
+
     elif message.channel.id == quali_submit: # quali submit
+        
+        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
+            await submit_time(client, message, args)
+            
         pass
 
     
