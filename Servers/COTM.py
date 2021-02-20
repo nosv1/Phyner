@@ -111,6 +111,9 @@ async def main(client, message, args, author_perms):
     # TODO remember to move the commands from == bot_stuff_id: to proper if blocks
 
     if message.channel.id == bot_stuff_id: # in bot stuff
+        
+        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
+            await submit_time(client, message, args)
 
         pass
 
@@ -133,9 +136,6 @@ async def main(client, message, args, author_perms):
 
 
     elif message.channel.id == quali_submit: # quali submit
-        
-        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
-            await submit_time(client, message, args)
             
         pass
 
@@ -166,8 +166,8 @@ async def on_reaction_add(client, message, user, payload):
 
         if embed.title:
 
-            if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time-Trial)|(Consistency Test)) Submitted)", embed.title):
-                await invalidate_time(message)
+            if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time Trial)|(Consistency Test)) Submitted)", embed.title):
+                await invalidate_time(client, message)
 
 
             if (
@@ -756,7 +756,7 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
     for i, row in enumerate(leaderboard):
         for j, value in enumerate(row):
             
-            value = f"`[{value}]`" if i == 0 else value
+            value = f"[{value}]" if i == 0 else value
 
             if len(value) > col_widths[j]:
                 col_widths[j] = len(value)
@@ -784,13 +784,13 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
 
         for i, row in enumerate(leaderboard[m*14+1:m*14+1+15]):
 
-            table.append([
+            line = [
                 f"{row[0]}".center(col_widths[0], " "),
                 f"{row[1]}".center(col_widths[1], " "),
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[3]}".center(col_widths[3], " "),
-                f"{row[4]}".rjust(col_widths[4], " "),
-            ])
+            ] + [f"{row[4]}".rjust(col_widths[4], " ")] if col_widths[-1] != 0 else []
+            table.append(line) # in case it's a TT and not a CT update
 
             if "Div" in leaderboard[0][1]:
                 del table[-1][1]
@@ -926,7 +926,7 @@ async def submit_time(client, message, args):
 
 
             # prepare
-            footer = f"Submission " # Submission 0-0-0-0 • %d %b %I:%M%p %Z 
+            footer = f"Submission " # Submission 0.0.0.0 • %d %b %I:%M%p %Z 
             
             submission_counts = [
                 str(len([i for i in range(len(ranges[0])) if str(ranges[0][i][1]) == str(message.author.id) and ranges[1][i][0] in args[0]])), # user specific
@@ -934,7 +934,7 @@ async def submit_time(client, message, args):
                 str(len([i for i in range(len(ranges[0])) if ranges[1][i][0] in args[0]])), # total specific
                 str(len(ranges[0])-1) # total
             ]
-            footer += "-".join(submission_counts)
+            footer += ".".join(submission_counts)
 
             footer += f" {Support.emojis.bullet} "
 
@@ -944,7 +944,7 @@ async def submit_time(client, message, args):
                 
             # send it
             embed = await simple_bot_response(message.channel,
-                title=f"**{gt} - {'Consistency Test' if ct else 'Time-Trial'} Submitted**",
+                title=f"**{gt} - {'Consistency Test' if ct else 'Time Trial'} Submitted**",
                 footer=footer,
                 send=False
             )
@@ -1039,7 +1039,7 @@ async def submit_time(client, message, args):
 # end submit_consitency_test
 
 
-async def invalidate_time(message):
+async def invalidate_time(client, message):
     """
     """
 
@@ -1063,7 +1063,7 @@ async def invalidate_time(message):
     quali_submissions = quali_submissions_ws.get("I1:I", value_render_option="FORMULA")
 
 
-    submission_index = int(embed.footer.text.split("-")[-1].split(" ")[0])
+    submission_index = int(embed.footer.text.split(".")[-1].split(" ")[0])
     quali_submissions[submission_index][0] = "TRUE"
 
 
@@ -1072,11 +1072,11 @@ async def invalidate_time(message):
     
     # get time details from quali sheet
     ct = "Consistency Test" in embed.title
-    tt = "Time-Trial" in embed.title
+    tt = "Time Trial" in embed.title
     gt = embed.title.split("-")[0].strip()
     leaderboard = quali_ws.get(f"B3:H{quali_ws.row_count}" if ct else f"J3:O{quali_ws.row_count}")
-    
-    _i, row, _j = Support.find_value_in_range(leaderboard, gt, get=True)
+
+    await update_discord_leaderboard(client, leaderboard, consisteny_test_leaderboard if ct else time_trial_leaderboard)
 
     log("cotm", embed.to_dict())
 # end invalidate_time
