@@ -309,7 +309,7 @@ async def handle_signup_reaction(msg, user):
     """
     """
     
-    threshold = 1 # at least 2 staff members hits tick, accepts signup (account for phyner reaction)
+    threshold = 2 # at least 2 staff members hits tick, accepts signup (account for phyner reaction)
 
 
     embed = msg.embeds[0].to_dict()
