@@ -174,7 +174,7 @@ async def main(client, message, args, author_perms):
 
 def get_saved_embeds(guild_id="", channel_id="", message_id="", name="", link=""):
     """
-        returns [embed] if link or ids and name provided otherwise [embed, ...]
+        returns [SavedEmbed] if link or ids and name provided otherwise [SavedEmbed, ...]
     """
 
     embeds_folder = pathlib.Path(f"Embeds/{'testing/' if os.getenv('HOST') == 'PC' else ''}")

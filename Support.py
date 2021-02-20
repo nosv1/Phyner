@@ -51,6 +51,8 @@ invite_links = SimpleNamespace(**{
 ## COLORS ##
 colors = SimpleNamespace(**{
     'phyner_grey' : 0x9B9C9F,
+    'bright_green' : 0x1bff00,
+    'red' : 0xff0000,
 })
 
 

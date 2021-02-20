@@ -116,8 +116,8 @@ async def main(client, message, args, author_perms):
             await submit_time(client, message, args)
 
         if args[0] == "!signup": # !signup <gamertag>
-            await simple_bot_response(message.channel, description="```testing on PC```")
-            # await request_signup(client, message, args)
+            # await simple_bot_response(message.channel, description="```testing on PC```")
+            await request_signup(client, message, args)
             return
 
 
@@ -174,11 +174,9 @@ async def on_reaction_add(client, message, user, payload):
 
             if (
                 "Signup Pending Approval" in embed.title and
-                payload.emoji.name == Support.emojis.tick_emoji
+                payload.emoji.name in [Support.emojis.tick_emoji, Support.emojis.x_emoji]
             ):
-                await message.add_reaction(Support.emojis._9b9c9f_emoji) # testing on pc
-                await Support.remove_reactions(message, client.user, [Support.emojis._9b9c9f_emoji])
-                # await handle_signup_reaction(message, user)
+                await handle_signup_reaction(message, user)
                 return
 
 
@@ -191,9 +189,11 @@ async def on_reaction_add(client, message, user, payload):
 
 ## SIGNUP ##
 
-async def request_signup(client, message, args): # TODO TEST THIS
+async def request_signup(client, message, args):
     """
     """
+    await message.channel.trigger_typing()
+
 
     msg = None
     def reaction_check(r, u):
@@ -216,7 +216,7 @@ async def request_signup(client, message, args): # TODO TEST THIS
         return
 
 
-    embed = Embeds.get_saved_embeds(link=signup_conditions_link)[0] # signup condition embed
+    embed = Embeds.get_saved_embeds(link=signup_conditions_link)[0].embed # signup condition embed
     msg = await message.channel.send(embed=embed)
 
     await asyncio.sleep(5) # this matches the saved embed footer
@@ -238,6 +238,7 @@ async def request_signup(client, message, args): # TODO TEST THIS
 
 
     # user has accepted the terms
+    await message.channel.trigger_typing()
 
 
     # get gt
@@ -299,11 +300,11 @@ async def request_signup(client, message, args): # TODO TEST THIS
 # end request_signup
 
 
-async def handle_signup_reaction(msg, user): # TODO test this
+async def handle_signup_reaction(msg, user):
     """
     """
     
-    threshold = 2 # at least 2 staff members hits tick, accepts signup (account for phyner reaction)
+    threshold = 1 # at least 2 staff members hits tick, accepts signup (account for phyner reaction)
 
 
     embed = msg.embeds[0].to_dict()
@@ -321,32 +322,33 @@ async def handle_signup_reaction(msg, user): # TODO test this
             if Support.get_member_perms(msg.channel, user).administrator: # is staff
                 count += 1
 
+                if str(reaction.emoji) == Support.emojis.tick_emoji:
 
-        if str(reaction.emoji) == Support.emojis.tick_emoji:
+                    if count != threshold:
+                        return
 
-            if count != threshold:
-                return
+                    else:
+                        embed["title"] = embed["title"].replace("Signup Pending Approval", "Signup Accepted")
+                        embed["color"] = Support.colors.bright_green
 
-            else:
-                embed["title"] = embed["title"].replace("Signup Pending Approval", "Signup Accepted")
+                        member = msg.guild.get_member(int(embed["footer"]["text"].split("ID:")[1].strip()))
 
-                member = msg.guild.get_member(int(embed["footer"]["text"].split("ID:")[1].strip()))
+                        fetuses_role = [r for r in msg.guild.roles if r.id == fetuses_id][0]
 
-                fetuses_role = [r for r in msg.guild.roles if r.id == fetuses_id][0]
+                        await member.add_roles(fetuses_role)
+                        log("cotm", "signup accepted")
 
-                await member.add_roles(fetuses_role)
-                log("cotm", "signup accepted")
-
-            break
+                        break
 
 
-        elif str(reaction.emoji) == Support.emojis.x_emoji:
+                elif str(reaction.emoji) == Support.emojis.x_emoji:
 
-            if count == threshold:
-                embed["title"] = embed["title"].replace("Signup Pending Approval", "Signup Rejected")
-                log("cotm", "signup rejected")
+                    if count == threshold:
+                        embed["title"] = embed["title"].replace("Signup Pending Approval", "Signup Rejected")
+                        embed["color"] = Support.colors.red
+                        log("cotm", "signup rejected")
 
-            break
+                        break
 
 
     await msg.edit(embed=discord.Embed().from_dict(embed))
