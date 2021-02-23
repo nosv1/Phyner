@@ -140,7 +140,9 @@ async def main(client, message, args, author_perms):
         pass
 
     
-    elif args[0] == "!license": # view license
+    # end channel specific commands
+    
+    if args[0] == "!license": # view license
         await display_license(message, args)
 
 
