@@ -32,6 +32,7 @@ s7_leaderboard_id = 796786622191763487
 quali_submit = 705787893364555785
 voting_log_id = 530284914071961619
 vote_id = 608472349712580608
+cotm_streams_id = 527161746473877504
 
 # ROLES
 children_id = 529112570448183296
@@ -398,13 +399,16 @@ async def link_stream(message, args):
 
         roster_ws.update_cells(roster, value_input_option="USER_ENTERED")
 
+        #  TODO update #cotm-streams 
+
         await simple_bot_response(message.channel,
             title="**Stream Linked**",
+            description=f"<#{cotm_streams_id}> is automatically updated based on the races streamers are in."
         )
 
     else:
         await simple_bot_response(message.channel,
-            description=f"**`{args[-2]}` is not a valid link.**\n\n`!stream https://twitch.tv/moshots`\ncan also be YouTube link",
+            description=f"**`{args[-2]}` is not a valid link.**\n\n`!stream https://twitch.tv/moshots`\nlink can also be your YouTube channel's link",
             reply_message=message
         )
         return
