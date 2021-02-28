@@ -37,6 +37,7 @@ cotm_streams_id = 527161746473877504
 # ROLES
 children_id = 529112570448183296
 fetuses_id = 796357522536661033
+peeker_id = 534230087244185601
 
 # MESSAGES
 consisteny_test_leaderboard = [
@@ -69,6 +70,18 @@ vote_msg_id = 807766191015067700
 emojis = SimpleNamespace(**{
     "invalid_emoji" : "<:invalid:797893546295296011>",
 })
+
+division_emojis = [
+  702654860801081474,
+  702654861006602299,
+  702654861065322526,
+  702655539112443997,
+  702654861086294086,
+  702655538831425547,
+  702654859983454318,
+  702654860478251128
+]
+
 
 drivers_per_div = 14
 num_divs = 8
@@ -1003,8 +1016,14 @@ async def submit_time(client, message, args):
                 await update_division(message.guild, div, message.author, gt)
 
                 children_role = message.guild.get_role(children_id)
+                fetuses_role = message.guild.get_role(fetuses_id)
+                peeker_role = message.guild.get_role(peeker_id)
+
                 if children_role not in message.author.roles:
                     await message.author.add_roles(children_role)
+                    await message.author.remove_roles(peeker_role)
+                    await message.author.remove_roles(fetuses_role)
+                    
 
 
             await update_discord_leaderboard(client, leaderboard, consisteny_test_leaderboard if ct else time_trial_leaderboard)
@@ -1021,7 +1040,7 @@ async def submit_time(client, message, args):
 
             try:
                 embed = await simple_bot_response(message.channel,
-                    description=f"**There were technical difficulties whilst submitting. Trying again in {attempts[attempt_count]} seconds.**",
+                    description=f"**There were technical difficulties whilst submitting - trying again in {attempts[attempt_count]} seconds.**",
                     send=False
                 )
 
@@ -1086,6 +1105,54 @@ async def invalidate_time(client, message):
 
     log("cotm", embed.to_dict())
 # end invalidate_time
+
+
+
+## RESERVES ## TODO RESERVES
+
+async def handle_reserve_reaciton(message, payload, user):
+    '''
+    '''
+
+    if payload.emoji.name == Support.emojis.wave_emoji: # need reserve
+
+        await message.add_reaction(Support.emojis._9b9c9f_emoji)
+        await handle_need_reserve(message, user)
+        await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
+
+
+    elif int(Support.get_id_from_str(payload.emoji.name)) in division_emojis: # reserve available
+
+        await message.add_reaction(Support.emojis._9b9c9f_emoji)
+        await handle_reserve_available(message, user)
+        await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
+
+
+# end reserve_reaciton
+
+
+async def handle_need_reserve(message, user):
+    '''
+    '''
+
+    embed = message.embeds[0].to_dict()
+    
+    try:
+        div = int(user.display_name.split("[D")[1].split("]")[0])
+
+    except IndexError:
+        return
+
+    
+
+
+# end handle_need_reserve
+
+
+async def handle_reserve_available(message, user):
+    '''
+    '''
+# end handle_reserve_available
 
 
 
