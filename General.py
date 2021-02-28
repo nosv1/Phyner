@@ -162,3 +162,50 @@ async def feedback(client, message, args):
         description=description
     )
 # end feedback
+
+
+async def reaction(message, args):
+    '''
+        ..p reaction add/remove reaction ... message_id [#channel] [all] # all is used when using remove
+    '''
+
+    reactions = [r for r in args if ":" in r or len(r) == 1]
+
+    channel = message.channel_mentions[0] if message.channel_mentions else message.channel
+
+    try:
+        msg_id = args[args.index(reactions[-1]) + 1]
+        msg = await channel.fetch_message(int(msg_id))
+
+    except IndexError:
+        await simple_bot_response(message.channel,
+            description=f"**There was not a Message ID included in your [message]({message.jump_url}).**\n\n`@Phyner#2797 reaction {args[2]} <reaction> ... <MESSAGE_ID> [#channel] all (if removing reaction)`"
+        )
+        return
+
+    except discord.errors.NotFound:
+        await simple_bot_response(message.channel,
+            description=f"**The given Message ID was not a message in {channel.mention}. If the message is in a different channel, type the channel mention after the message id.**\n\n`..p reaction ... <message_id> #channel`"
+        )
+        return
+
+    for r in reactions:
+        
+        if args[2] == "add":
+            await msg.add_reaction(r)
+
+        elif args[2] == "remove":
+            
+            if args[-2] == "all":
+
+                for ur in msg.reactions:
+
+                    if str(ur.emoji) == r:
+                        
+                        async for user in ur.users():
+                            await Support.remove_reactions(msg, user, ur.emoji)
+
+            else:
+                await Support.remove_reactions(msg, Support.get_phyner_from_channel, r)
+
+# end reaction

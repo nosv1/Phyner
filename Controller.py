@@ -269,6 +269,9 @@ async def on_message(message):
                 elif args[1] in General.feedback_aliases:
                     await General.feedback(client, message, args[1:])
 
+                elif args[1] == "reaction":
+                    await General.reaction(message, args)
+
 
                 
                 ## COPY ##
