@@ -318,7 +318,7 @@ async def edit_command(client, message, command):
             except discord.errors.NotFound:
                 await delete_command(message, command)
                 await simple_bot_response(message.channel,
-                    description=f"The reference message no longer exists. The command was deleted."
+                    description=f"**The reference message no longer exists. The command was deleted.**"
                 )
                 log("edit command", "msg does not exist") # edit command error
                 return
@@ -326,7 +326,7 @@ async def edit_command(client, message, command):
             except IndexError:
                 await delete_command(message, command)
                 await simple_bot_response(message.channel,
-                    description=f"The reference message channel no longer exists. The command was deleted."
+                    description=f"**The reference message channel no longer exists. The command was deleted.**"
                 )
                 return
 
@@ -344,7 +344,7 @@ async def edit_command(client, message, command):
 
     # build starter embed from existing command
     embed = await build_embed()
-    
+
     if not embed: # embed could be empty if there were errors
         return
 
