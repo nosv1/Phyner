@@ -413,7 +413,7 @@ def get_member_perms(channel, member):
 # end get_member_perms
 
 
-async def simple_bot_response(channel, author=discord.Embed().Empty, author_url=discord.Embed().Empty, author_icon_url=discord.Embed().Empty, title=discord.Embed().Empty, thumbnail_url=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
+async def simple_bot_response(channel, content=None, author=discord.Embed().Empty, author_url=discord.Embed().Empty, author_icon_url=discord.Embed().Empty, title=discord.Embed().Empty, thumbnail_url=discord.Embed().Empty, description=discord.Embed().Empty, footer=discord.Embed().Empty, send=True, reply_message=False, delete_after=None):
     """
         Bot sends message as basic embed
         reply_message is defaulted to False, but expects a discord.Message if declared in call
@@ -444,10 +444,10 @@ async def simple_bot_response(channel, author=discord.Embed().Empty, author_url=
 
     if send:
         if type(reply_message) == discord.message.Message:
-            msg = await reply_message.reply(embed=embed, delete_after=delete_after)
+            msg = await reply_message.reply(content=content, embed=embed, delete_after=delete_after)
             
         else:
-            msg = await channel.send(embed=embed, delete_after=delete_after)
+            msg = await channel.send(content=content, embed=embed, delete_after=delete_after)
                 
         return msg
 
