@@ -345,7 +345,7 @@ async def handle_signup_reaction(msg, user):
                 if str(reaction.emoji) == Support.emojis.tick_emoji:
 
                     if count != threshold:
-                        return
+                        continue
 
                     else:
                         embed["title"] = embed["title"].replace("Signup Pending Approval", "Signup Accepted")
