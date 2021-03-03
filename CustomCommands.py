@@ -60,8 +60,17 @@ class Command:
         """
 
         if self.ref_msg_id: # referencing a message
-            self.ref_channel = client.get_channel(self.ref_channel_id)
-            self.ref_msg = await self.ref_channel.fetch_message(self.ref_msg_id)
+
+            try:
+                self.ref_channel = client.get_channel(self.ref_channel_id)
+                self.ref_msg = await self.ref_channel.fetch_message(self.ref_msg_id)
+
+            except:
+                await simple_bot_response(message.channel,
+                    content=f"<@{self.editor_id}>",
+                    description=f"**There was an error sending this command. Use `@Phyner#2797 command edit {self.prefix}` to check for issues.**"
+                )
+                return
 
             await message.channel.send(
                 content=self.ref_msg.content, 
@@ -440,6 +449,8 @@ async def edit_command(client, message, command):
                         command.ref_msg = None
                         command.ref_channel_id = None
                         command.ref_channel = None
+
+                    command.editor_id = mesge.author.id
 
 
                 embed = await build_embed()
