@@ -316,13 +316,18 @@ async def edit_command(client, message, command):
                 command.ref_msg = await command.ref_channel.fetch_message(command.ref_msg_id)
 
             except discord.errors.NotFound:
-                Support.previous_action_error(client, message)
+                await delete_command(message, command)
+                await simple_bot_response(message.channel,
+                    description=f"The reference message no longer exists. The command was deleted."
+                )
                 log("edit command", "msg does not exist") # edit command error
                 return
                 
             except IndexError:
-                Support.previous_action_error(client, message) # TODO edit command error
-                log("edit command", "channel does not exist")
+                await delete_command(message, command)
+                await simple_bot_response(message.channel,
+                    description=f"The reference message channel no longer exists. The command was deleted."
+                )
                 return
 
 
@@ -339,6 +344,10 @@ async def edit_command(client, message, command):
 
     # build starter embed from existing command
     embed = await build_embed()
+    
+    if not embed: # embed could be empty if there were errors
+        return
+
     msg = await message.channel.send(embed=embed)
 
     await msg.add_reaction(Support.emojis.floppy_disk_emoji)
