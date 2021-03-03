@@ -131,19 +131,18 @@ async def main(client, message, args, author_perms):
 
     elif message.channel.id == signup_id: # signup
 
-        if not author_perms.administrator: # deleting messages that aren't from staff
+        if args[0] == "!signup": # !signup <gamertag>
+            # await simple_bot_response(message.channel, description="```testing on PC```")
+            await request_signup(client, message, args)
+            return
+
+        elif not author_perms.administrator: # deleting messages that aren't from staff
 
             await simple_bot_response(message.channel,
                 description="**Only `!signup <gamertag>` messages can be sent in this channel.**",
                 delete_after=10
             )
             await message.delete()
-
-
-        if args[0] == "!signup": # !signup <gamertag>
-            # await simple_bot_response(message.channel, description="```testing on PC```")
-            await request_signup(client, message, args)
-            return
 
 
     elif message.channel.id == quali_submit: # quali submit
