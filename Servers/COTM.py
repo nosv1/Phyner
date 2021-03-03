@@ -300,9 +300,9 @@ async def request_signup(client, message, args):
         v += f"Reserves: {stats.reserves}```\n"
         embed.add_field(name="**S6 Attendance**", value=v)
 
-        v = f"```Best 5: Top {stats.best_5} {f'(D{round(float(stats.best_5[:-1]) / 100 * 7)+1})' if stats.best_5 else ''}\n"
-        v += f"Quali: Top {stats.quali} {f'(D{round(float(stats.quali[:-1]) / 100 * 7)+1})' if stats.quali else ''}\n"
-        v += f"Points: Top {stats.pts} {f'(D{round(float(stats.pts[:-1]) / 100 * 7)+1})' if stats.pts else ''}\n"
+        v = f"```Best 5: Top {stats.best_5} {f'(D{int(float(stats.best_5[:-1]) / 100 * 8)+1})' if stats.best_5 else ''}\n"
+        v += f"Quali: Top {stats.quali} {f'(D{int(float(stats.quali[:-1]) / 100 * 8)+1})' if stats.quali else ''}\n"
+        v += f"Points: Top {stats.pts} {f'(D{int(float(stats.pts[:-1]) / 100 * 8)+1})' if stats.pts else ''}\n"
         v += f"Avg Dif: {stats.avg_dif}```\n"
         embed.add_field(name="**S6 Performance**", value=v)
 
