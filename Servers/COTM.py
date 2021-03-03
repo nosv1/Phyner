@@ -105,6 +105,11 @@ spreadsheets = SimpleNamespace(**{
         "driver_history" : 744645833,
         "driver_stats" : 1734830265,
     }),
+
+    "driver_history" : SimpleNamespace(**{
+        "key" : "1WgGMgiUF4NVZyFCo-8DW2gnY3kwhXB8l02ov0Cp4pRQ", 
+        "s6_stats" : 1668927625,
+    }),
 })
 
 # EMBEDS
@@ -1220,9 +1225,9 @@ def get_season_6_stats(user_id, gc=None):
     if not gc:
         gc = Support.get_g_client()
 
-    wb = gc.open_by_key(spreadsheets.season_6.key)
+    wb = gc.open_by_key(spreadsheets.drivery_history.key)
     worksheets = wb.worksheets()
-    driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.season_6.driver_stats][0]
+    driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.drivery_history.s6_stats][0]
 
     r = driver_stats_ws.get(f"A4:J{driver_stats_ws.row_count}")
 
