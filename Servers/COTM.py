@@ -140,10 +140,10 @@ async def main(client, message, args, author_perms):
             await message.delete()
 
 
-            if args[0] == "!signup": # !signup <gamertag>
-                # await simple_bot_response(message.channel, description="```testing on PC```")
-                await request_signup(client, message, args)
-                return
+        if args[0] == "!signup": # !signup <gamertag>
+            # await simple_bot_response(message.channel, description="```testing on PC```")
+            await request_signup(client, message, args)
+            return
 
 
     elif message.channel.id == quali_submit: # quali submit
