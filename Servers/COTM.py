@@ -252,7 +252,7 @@ async def request_signup(client, message, args):
 
 
     try:
-        reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=60.0)
+        reaction, user = await client.wait_for("reaction_add", check=reaction_check, timeout=120.0)
         await Support.clear_reactions(msg)
 
     except asyncio.TimeoutError:
