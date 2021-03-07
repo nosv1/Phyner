@@ -1244,7 +1244,7 @@ def get_season_6_stats(user_id, gc=None):
             "best_5" : row[6], # Average of overall positions of best 5 races # Finish Position Overall / Number of Drivers
             "quali" : row[7],
             "pts" : row[8],
-            "avg_dif" : row[9] if len(row) >= 9 else '-', # avg dif of best 5 to quali to pts
+            "avg_dif" : row[9] if len(row) >= 10 else '-', # avg dif of best 5 to quali to pts
         })
 
     else:
