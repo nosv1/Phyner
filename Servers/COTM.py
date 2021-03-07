@@ -289,7 +289,7 @@ async def request_signup(client, message, args):
     
     except: # just in case there is an error with getting the stats
         await Logger.log_error(client, traceback.format_exc())
-        signups = 0
+        signups = []
         stats = 0
 
 
@@ -866,7 +866,7 @@ async def submit_time(client, message, args):
     
 
     # get race time
-    race_time = re.findall(r"[2-4][0-9]:[0-5]\d.\d{3}", args[1]) if ct else None
+    race_time = re.findall(r"[1-3][0-9]:[0-5]\d.\d{3}", args[1]) if ct else None
     lap_time = re.findall(r"[1-3]:[0-5]\d.\d{3}", args[1]) if tt else None
 
     time = None
@@ -1225,7 +1225,7 @@ def get_season_6_stats(user_id, gc=None):
     if not gc:
         gc = Support.get_g_client()
 
-    wb = gc.open_by_key(spreadsheets.drivery_history.key)
+    wb = gc.open_by_key(spreadsheets.driver_history.key)
     worksheets = wb.worksheets()
     driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.drivery_history.s6_stats][0]
 
