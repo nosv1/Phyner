@@ -1227,7 +1227,7 @@ def get_season_6_stats(user_id, gc=None):
 
     wb = gc.open_by_key(spreadsheets.driver_history.key)
     worksheets = wb.worksheets()
-    driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.drivery_history.s6_stats][0]
+    driver_stats_ws = [ws for ws in worksheets if ws.id == spreadsheets.driver_history.s6_stats][0]
 
     r = driver_stats_ws.get(f"A4:J{driver_stats_ws.row_count}")
 
