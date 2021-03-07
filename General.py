@@ -1,6 +1,7 @@
 ''' IMPORTS '''
 
 import discord
+import re
 
 import Logger
 from Logger import log
@@ -169,12 +170,12 @@ async def reaction(message, args):
         ..p reaction add/remove reaction ... message_id [#channel] [all] # all is used when using remove
     '''
 
-    reactions = [r for r in args if ":" in r or len(r) == 1]
+    reactions = [r for r in args[2:]]
 
     channel = message.channel_mentions[0] if message.channel_mentions else message.channel
 
     try:
-        msg_id = args[args.index(reactions[-1]) + 1]
+        msg_id = re.findall(r"\s\d{18}\s", " ".join(args))[0].strip()
         msg = await channel.fetch_message(int(msg_id))
 
     except IndexError:
@@ -192,7 +193,12 @@ async def reaction(message, args):
     for r in reactions:
         
         if args[2] == "add":
-            await msg.add_reaction(r)
+
+            try:
+                await msg.add_reaction(r)
+
+            except: # couldn't add emoji to message, likely was one of the args after the last reaction
+                pass
 
         elif args[2] == "remove":
             
