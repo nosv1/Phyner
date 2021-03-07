@@ -246,7 +246,7 @@ async def request_signup(client, message, args):
 
     await asyncio.sleep(5) # this matches the saved embed footer
 
-    embed.set_footer(text="(60 seconds)")
+    embed.set_footer(text="(120 seconds)")
     await msg.edit(embed=embed)
     await msg.add_reaction(Support.emojis.tick_emoji)
 
