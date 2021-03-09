@@ -805,7 +805,7 @@ async def perform_action(client, message, user, event):
             if success:
                 try:
                     embed = await simple_bot_response(message.channel,
-                        description=f"The role `{success}` was {'added to' if add else 'removed from'} you in `{message.guild.name}`.",
+                        description=f"**The role `{success}` was {'added to' if add else 'removed from'} you in `{message.guild.name}`.**",
                         send=False
                     )
                     await user.send(embed=embed)
