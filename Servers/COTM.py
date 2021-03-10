@@ -27,12 +27,13 @@ cotm_id = 527156310366486529
 
 # CHANNELS
 bot_stuff_id = 527168346404159488
-signup_id = 796401927411728414
-s7_leaderboard_id = 796786622191763487
-quali_submit = 705787893364555785
-voting_log_id = 530284914071961619
-vote_id = 608472349712580608
 cotm_streams_id = 527161746473877504
+quali_submit = 705787893364555785
+s7_leaderboard_id = 796786622191763487
+signup_id = 796401927411728414
+start_orders = 622484589465829376
+vote_id = 608472349712580608
+voting_log_id = 530284914071961619
 
 # ROLES
 children_id = 529112570448183296
@@ -62,6 +63,18 @@ time_trial_leaderboard = [
     800212135258357770,
     800212135812399104,
     800212136449015878,
+]
+
+start_orders = [
+    805657555682590751,
+    805657556386578452,
+    805657556671397909,
+    805657557548138566,
+    805657558199042099,
+    805657577227681853,
+    805657577929048135,
+    805657578700668929,
+    805657578868441179    
 ]
 
 vote_msg_id = 807766191015067700
@@ -96,10 +109,11 @@ spreadsheets = SimpleNamespace(**{
     "season_7" : SimpleNamespace(**{
         "key" : "1BIFN9DlU50pWOZqQrz4C44Dk-neDCteZMimTSblrR5U",
         "driver_history" : 744645833,
-        "roster" : 1284096187,
         "quali_submisisons" : 530052553,
         "quali" : 128540696,
+        "roster" : 1284096187,
         "signups" : 253796822,
+        "start_orders" : 1636306417,
         "voting" : 242811195,
     }),
 
@@ -215,6 +229,14 @@ async def on_reaction_add(client, message, user, payload):
             ): # refresh clicked on streams embed
                 await update_streamers(message)
                 remove_reaction = True
+
+
+        if message.id in start_orders:
+
+            if payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji:
+                await update_start_order(message, get_start_orders()[start_orders.index(message.id)])
+                remove_reaction = True
+
 
 
 
@@ -474,8 +496,6 @@ def get_streamers():
 
     log("COTM", f"Received Streamers: {streamers}")
     return streamers
-
-
 # end get_streamers
 
 
@@ -1245,6 +1265,79 @@ async def handle_reserve_available(message, user):
     '''
     '''
 # end handle_reserve_available
+
+
+
+## START ORDERS ##
+
+def get_start_orders():
+    '''
+    '''
+
+    gc = Support.get_g_client()
+    wb = gc.open_by_key(spreadsheets.season_7.key)
+    ws = wb.worksheets()
+    start_orders_ws = Support.get_worksheet(ws, spreadsheets.season_7.start_orders)
+
+    
+    a1_ranges = [
+        f"B3:F31",
+        f"H3:L31",
+        f"N3:R31",
+        f"T3:X31",
+        f"Z3:AD31",
+        f"AF3:AJ31",
+        f"AL3:AP31",
+        f"AR3:AV31",
+        f"AX3:BB31",
+    ]
+
+    ranges = start_orders_ws.batch_get(a1_ranges) # D1-WL
+
+    log("COTM", f"Received Start Orders: {ranges}")
+
+    return ranges
+
+# end get_start_orders
+
+
+async def update_start_order(start_order_msg, start_order_range):
+    '''
+        start_order_range = [[pos, div, driver, reserve, ppr], ...]
+    '''
+
+    await start_order_msg.add_reaction(Support.emojis._9b9c9f_emoji)
+
+    embed = start_order_msg.embeds[0]
+
+    col_widths = [3, 0, 0] # pos, driver, reserve
+
+    for driver in start_order_range:
+        if len(driver[2]) > col_widths[1]:
+            col_widths[1] = len(driver[2]) # driver name
+
+        if len(driver[3]) > col_widths[2]:
+            col_widths[2] = len(driver[3]) # reserve name
+    
+
+    start_order = []
+
+    for driver in start_order_range:
+        start_order.append(f"`{driver[0].rjust(col_widths[0], ' ')}` `{driver[2].ljust(col_widths[1])}` `{driver[3].ljust(col_widths[2])}`")
+
+
+    embed.description = "\n".join(start_order)
+
+    await start_order_msg.edit(embed=embed)
+
+    await Support.remove_reactions(start_order_msg, start_order_msg.author, Support.emojis._9b9c9f_emoji)
+
+
+    div = start_orders.index(start_order_msg.id) + 1
+    log("COTM", f"Updated Start Order {div}")
+
+# end update_start_order
+
 
 
 
