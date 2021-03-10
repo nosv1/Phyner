@@ -524,7 +524,8 @@ async def update_streamers(streams_msg):
         elif "mixer" in streamer[2].lower():
             emoji = emojis.mixer_emoji
 
-        streamers_string += f"{emoji} [{streamer[0]}]({streamer[2]}) - <@{streamer[1]}>\n"
+        # streamers_string += f"{emoji} [{streamer[0]}]({streamer[2]})\n" # - <@{streamer[1]}>\n"
+        streamers_string += f"[{streamer[0]}]({streamer[2]})\n"
 
 
 
