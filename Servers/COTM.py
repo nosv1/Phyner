@@ -938,7 +938,7 @@ async def no_proof(message, quali_type):
 
 async def submit_time(client, message, args):
     """
-        !ct <race_time> <screenshot.com> [video.com]
+        !ct <race_time> <screenshot.com> <video.com>
         !tt <lap_time> <screenshot.com> [video.com]
     """
     await message.channel.trigger_typing()
