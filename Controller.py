@@ -495,7 +495,7 @@ async def on_raw_reaction_add(payload):
 
 
                     if message.guild.id == COTM.cotm_id: # COTM
-                        await COTM.on_reaction_add(client, message, user, payload)
+                        remove_reaction = await COTM.on_reaction_add(client, message, user, payload)
 
 
                 ## PHYNER AUTHOR ##

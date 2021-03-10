@@ -69,6 +69,9 @@ vote_msg_id = 807766191015067700
 # EMOJIs
 emojis = SimpleNamespace(**{
     "invalid_emoji" : "<:invalid:797893546295296011>",
+    "youtube_emoji" : "<:Youtube:622139522502754304>",
+    "twitch_emoji" : "<:Twitch:622139375282683914>",
+    "mixer_emoji" : "<:Mixer:622139665306353675>",
 })
 
 division_emojis = [
@@ -186,23 +189,31 @@ async def on_reaction_add(client, message, user, payload):
 
         if embed.title:
 
-            if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time Trial)|(Consistency Test)) Submitted)", embed.title):
+            if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time Trial)|(Consistency Test)) Submitted)", embed.title): # invalid emojii clicked on submission
                 await invalidate_time(client, message)
 
 
-            if (
+            elif (
                 str(payload.emoji.name) in [e for e in Support.emojis.number_emojis[0:max_votes+1]] + [Support.emojis.counter_clockwise_arrows_emoji, Support.emojis.x_emoji, Support.emojis.tick_emoji]  and
                 "Voting" in embed.title
-            ):
+            ): # number emoji or tick or x or refresch clicked on voting embed
                 await handle_voting_reaction(message, payload, user)
 
 
-            if (
+            elif (
                 "Signup Pending Approval" in embed.title and
                 payload.emoji.name in [Support.emojis.tick_emoji, Support.emojis.x_emoji]
-            ):
+            ): # tick or x clicked on signup embed
                 await handle_signup_reaction(message, user)
                 return
+
+
+            elif (
+                "Streams" in embed.title and 
+                payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji
+            ): # refresh clicked on streams embed
+                await update_streamers(message)
+                remove_reaction = True
 
 
 
@@ -430,6 +441,82 @@ async def link_stream(message, args):
         )
         return
 # end link_stream
+
+
+
+## STREAM ##
+
+def get_streamers():
+    '''
+    '''
+
+    gc = Support.get_g_client()
+    wb = gc.open_by_key(spreadsheets.season_7.key)
+    ws = wb.worksheets()
+    roster_ws = Support.get_worksheet(ws, spreadsheets.season_7.roster)
+
+    
+    a1_ranges = [
+        f"C4:D{roster_ws.row_count}",
+        f"G4:G{roster_ws.row_count}"
+    ]
+
+    ranges = roster_ws.batch_get(a1_ranges)
+    
+    streamers = [] # [[gt, discord_id, link], ...]
+
+    for i, link in enumerate(ranges[1]): # loop through links
+
+        if link: # is streamer
+            streamers.append([ranges[0][i][0], ranges[0][i][1], link[0]])
+
+
+    log("COTM", f"Received Streamers: {streamers}")
+    return streamers
+
+
+# end get_streamers
+
+
+async def update_streamers(streams_msg):
+    '''
+    '''
+
+    await streams_msg.add_reaction(Support.emojis._9b9c9f_emoji)
+
+    streamers = get_streamers()
+
+
+    embed = streams_msg.embeds[0].to_dict()
+
+    streamers_string = ""
+
+    for streamer in streamers:
+
+        emoji = ""
+        if "twitch" in streamer[2].lower():
+            emoji = emojis.twitch_emoji
+
+        elif "youtube" in streamer[2].lower():
+            emoji = emojis.youtube_emoji
+
+        elif "mixer" in streamer[2].lower():
+            emoji = emojis.mixer_emoji
+
+        streamers_string += f"{emoji} [{streamer[0]}]({streamer[2]}) - <@{streamer[1]}>\n"
+
+
+
+    embed["fields"][0]["value"] = f"{streamers_string}{Support.emojis.space_char}"
+    
+    await streams_msg.edit(embed=discord.Embed().from_dict(embed))
+
+    await Support.remove_reactions(streams_msg, streams_msg.author, Support.emojis._9b9c9f_emoji)
+
+
+    log("COTM", "Streams Message Updated")
+
+# end update_streamers
 
 
 

@@ -214,4 +214,6 @@ async def reaction(message, args):
             else:
                 await Support.remove_reactions(msg, Support.get_phyner_from_channel, r)
 
+    await Support.process_complete_reaction(message)
+
 # end reaction
