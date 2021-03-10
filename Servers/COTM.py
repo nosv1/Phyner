@@ -65,6 +65,7 @@ time_trial_leaderboard = [
 ]
 
 vote_msg_id = 807766191015067700
+streams_msg_id = 819078511302017035
 
 # EMOJIs
 emojis = SimpleNamespace(**{
@@ -427,12 +428,12 @@ async def link_stream(message, args):
 
         roster_ws.update_cells(roster, value_input_option="USER_ENTERED")
 
-        #  TODO update #cotm-streams 
-
         await simple_bot_response(message.channel,
             title="**Stream Linked**",
             description=f"<#{cotm_streams_id}> is automatically updated based on the races streamers are in."
         )
+
+        await update_streamers(await message.guild.get_channel(cotm_streams_id).fetch_message(streams_msg_id))
 
     else:
         await simple_bot_response(message.channel,
