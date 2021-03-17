@@ -424,7 +424,14 @@ async def on_raw_reaction_add(payload):
 
         phyner = Support.get_phyner_from_channel(message.channel)
 
-        remove_reaction = False
+        remove_reaction_bool = False
+
+        async def remove_reaction(remove_reaction_bool):
+            if remove_reaction_bool and not is_dm:
+                await message.remove_reaction_bool(payload.emoji, user)
+        # end remove_reaction
+
+
         if user: # message and user are found
 
             if (
@@ -451,7 +458,9 @@ async def on_raw_reaction_add(payload):
                         event.condition.id == message.id,
                         str(event.object.id) == str(payload.emoji)
                     ]):
-                        remove_reaction = await Events.perform_action(client, message, user, event)
+                        remove_reaction_bool = await Events.perform_action(client, message, user, event)
+                
+                await remove_reaction(remove_reaction_bool)
 
 
                 ## PHYNER REACTION REMOVE CHECKS 
@@ -495,7 +504,9 @@ async def on_raw_reaction_add(payload):
 
 
                     if message.guild.id == COTM.cotm_id: # COTM
-                        remove_reaction = await COTM.on_reaction_add(client, message, user, payload)
+                        remove_reaction_bool = await COTM.on_reaction_add(client, message, user, payload)
+                
+                await remove_reaction(remove_reaction_bool)
 
 
                 ## PHYNER AUTHOR ##
@@ -509,14 +520,14 @@ async def on_raw_reaction_add(payload):
                         if poss_table:
                             await message.add_reaction(Support.emojis._9b9c9f_emoji)
                             await poss_table[0].send_table(client)
-                            await Support.remove_reactions(message, phyner, Support.emojis._9b9c9f_emoji)
-                            remove_reaction = True
+                            await Support.remove_reaction_bools(message, phyner, Support.emojis._9b9c9f_emoji)
+                            remove_reaction_bool = True
+                
+                await remove_reaction(remove_reaction_bool)
 
 
     
 
-        if remove_reaction and not is_dm:
-            await message.remove_reaction(payload.emoji, user)
 
     except AttributeError: # possibly NoneType.fetch_message, happens in DMs after bot is restarted
         error = traceback.format_exc()
