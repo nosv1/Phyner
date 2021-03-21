@@ -456,7 +456,7 @@ async def get_embed_from_content(client, message, roles=[], embed=discord.Embed(
         ### TITLE ###
 
         elif attr in [".title"]:
-            embed.title = value[:256]
+            embed.title = value[:256] if value else value
 
 
         ### DESCRIPTION ###
