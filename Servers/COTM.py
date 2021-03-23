@@ -148,9 +148,6 @@ async def main(client, message, args, author_perms):
     # TODO remember to move the commands from == bot_stuff_id: to proper if blocks
 
     if message.channel.id == bot_stuff_id: # in bot stuff
-        
-        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
-            await submit_time(client, message, args)
             
 
         pass
@@ -877,7 +874,7 @@ async def invalid_time(message, time):
     """
 
     await simple_bot_response(message.channel,
-        description=f"**`{time}` is not a valid time.**\n```mm:ss.000 >> 1:23.456```",
+        description=f"**`{time}` is not a valid submission time.**\n```mm:ss.000 >> 1:23.456```",
         reply_message=message
     )
 # end invalid_time
