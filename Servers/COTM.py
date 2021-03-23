@@ -1509,7 +1509,7 @@ async def update_division(guild, div, user, gt):
 
                 await user.remove_roles(role)
                 print(div_channels[i_div])
-                # await div_channels.[i_div].send("removed_from_role") # TODO send message in div channel
+                # await div_channels[i_div].send("removed_from_role") # TODO send message in div channel
 
                 log("cotm", f"{user} removed from div{i_div + 1}")
 
@@ -1520,7 +1520,7 @@ async def update_division(guild, div, user, gt):
             await user.add_roles(role)
             await user.edit(nick=f"[D{div}] {gt}")
             print(div_channels[i_div])
-            # await div_channels.[i_div].send("added_to_role") # TODO send message in div channel
+            # await div_channels[i_div].send("added_to_role") # TODO send message in div channel
 
             log("cotm", f"{user} added to div{i_div + 1}")
 
