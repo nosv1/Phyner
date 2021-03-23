@@ -33,6 +33,7 @@ from Servers import TemplarLeagues
 import Support
 import Tables
 
+
 Logger.create_log_file()
 
 
