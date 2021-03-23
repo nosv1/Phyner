@@ -33,8 +33,6 @@ from Servers import TemplarLeagues
 import Support
 import Tables
 
-print(discord.__version__)
-
 Logger.create_log_file()
 
 
