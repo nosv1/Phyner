@@ -148,6 +148,10 @@ async def main(client, message, args, author_perms):
     # TODO remember to move the commands from == bot_stuff_id: to proper if blocks
 
     if message.channel.id == bot_stuff_id: # in bot stuff
+        
+        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
+            await submit_time(client, message, args)
+            
 
         pass
 
@@ -169,10 +173,6 @@ async def main(client, message, args, author_perms):
 
 
     elif message.channel.id == quali_submit: # quali submit
-        
-        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
-            await submit_time(client, message, args)
-            
         pass
 
     
@@ -945,7 +945,7 @@ async def no_proof(message, quali_type):
         quali type should be ct or tt
     """
  
-    description = "There was no proof found in your message."
+    description = "There was not enough proof found in your message."
 
     if quali_type == "ct":
         description += f"```!ct <race-time> <last-lap-video.com> <screenshot.com>```"
@@ -997,6 +997,10 @@ async def submit_time(client, message, args):
     if not message.attachments:
 
         if not any(proof): # no proof
+            await no_proof(message, args[0][1:])
+            return
+
+        elif len(proof) < 2 and ct: # must have screenshot and last lap video
             await no_proof(message, args[0][1:])
             return
 
@@ -1074,7 +1078,7 @@ async def submit_time(client, message, args):
 
             footer += f" {Support.emojis.bullet} "
 
-            formatted_timestamp = now.strftime(Support.smart_day_time_format("{S} %b %I:%M%p %Z", now))
+            formatted_timestamp = now.strftime(Support.smart_day_time_format("{S} %B %I:%M%p %Z", now))
             footer += formatted_timestamp.replace("AM ", "am ").replace("PM ", "pm ").replace(" 0", " ")
 
                 
