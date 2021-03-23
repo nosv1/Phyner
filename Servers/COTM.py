@@ -147,8 +147,7 @@ async def main(client, message, args, author_perms):
 
     # TODO remember to move the commands from == bot_stuff_id: to proper if blocks
 
-    if message.channel.id == bot_stuff_id: # in bot stuff
-            
+    if message.channel.id == bot_stuff_id: # in bot stuff            
 
         pass
 
@@ -170,6 +169,10 @@ async def main(client, message, args, author_perms):
 
 
     elif message.channel.id == quali_submit: # quali submit
+        
+        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
+            await submit_time(client, message, args)
+            
         pass
 
     
@@ -894,6 +897,7 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
             if len(value) > col_widths[j]:
                 col_widths[j] = len(value)
 
+
     channel = await client.fetch_channel(s7_leaderboard_id)
     msg = None
 
@@ -912,6 +916,7 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
     header = [" ".join(header)]
 
 
+
     for m, m_id in enumerate(message_ids):
         table = [] + header
 
@@ -922,7 +927,7 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
                 f"{row[1]}".center(col_widths[1], " "),
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[3]}".center(col_widths[3], " "),
-            ] + [f"{row[4]}".rjust(col_widths[4], " ")] if col_widths[-1] != 0 else []
+            ] + ([f"{row[4]}".rjust(col_widths[4], " ")] if col_widths[-1] != 0 else [])
             table.append(line) # in case it's a TT and not a CT update
 
             if "Div" in leaderboard[0][1]:
@@ -951,7 +956,7 @@ async def no_proof(message, quali_type):
         description += f"```!tt <lap-time> <screenshot.com>```"
 
     await simple_bot_response(message.channel,
-        title="No Proof!",
+        title="Not Enough Proof!",
         description=description,
         reply_message=message
     )
