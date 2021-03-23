@@ -36,6 +36,8 @@ import Tables
 
 Logger.create_log_file()
 
+log("startup", discord.__version__)
+
 
 ''' CONSTANTS '''
 
