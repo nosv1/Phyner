@@ -230,6 +230,10 @@ async def on_reaction_add(client, message, user, payload):
                 await update_streamers(message)
                 remove_reaction = True
 
+            
+            elif "Reserves" in embed.title:
+                await handle_reserve_reaciton(message, payload, user)
+
 
         if message.id in start_orders:
 
@@ -1223,6 +1227,83 @@ async def invalidate_time(client, message):
 
 ## RESERVES ## TODO RESERVES
 
+
+class Reservee:
+
+    def __init__(self, reservee=None, reserve=None, div=None, requested=0, date=None):
+        '''
+        '''
+
+        self.reservee = reservee
+        self.reserve = reserve
+        self.div = div
+        self.requested = requested
+        self.date = date
+    # end __init__
+
+# end Reservee
+
+class Reserve:
+
+    def __init__(self, reservee=None, reserve=None, div=None, requested=0, date=None):
+        '''
+        '''
+        
+        self.reservee = reservee
+        self.reserve = reserve
+        self.div = div
+        self.requested = requested
+        self.date = date
+    # end __init__
+
+# end Reserve
+
+
+def get_reserve_combo_from_entry(r):
+
+    reservee = None
+    reserve = None
+
+    if r[0]: # reservee
+        reservee = Reservee(
+            reservee=int(r[0]),
+            div=int(r[2]),
+            requested=int(r[3]),
+            date=float(r[4])
+        )
+
+    if r[1]: # reserve
+        reserve = Reserve(
+            reservee=reservee,
+            reserve=int(r[1]),
+            div=int(r[2]),
+            requested=int(r[3]),
+            date=float(r[4])
+        )
+
+    if reserve and reservee:
+        reservee.reserve = reserve
+
+
+    return [reservee, reserve]
+
+# end get_reserve_from_entry
+
+
+def get_reserve_comobs():
+    '''
+    '''
+
+    db = Database.connect_database(db_name="COTM")
+    db.cursor.execute(f"""
+        SELECT `reservee`, `reserve`, `div`, `requested`, `date` FROM reserves
+    """)
+    db.connection.close()
+
+    return [get_reserve_combo_from_entry(r) for r in db.cursor.fetchall()]
+# end get_reserves
+
+
 async def handle_reserve_reaciton(message, payload, user):
     '''
     '''
@@ -1240,7 +1321,6 @@ async def handle_reserve_reaciton(message, payload, user):
         await handle_reserve_available(message, user)
         await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
 
-
 # end reserve_reaciton
 
 
@@ -1249,16 +1329,75 @@ async def handle_need_reserve(message, user):
     '''
 
     embed = message.embeds[0].to_dict()
-    
+
+
     try:
         div = int(user.display_name.split("[D")[1].split("]")[0])
+
+
+        combos = get_reserve_comobs() # [reservee, reserve]
+
+        spot_open = None # reserve avail
+        reservee_present = None # already present
+
+        for i, combo in enumerate(combos): # find reserve avail and/or see if reservee already present
+
+            if not combo[0] and combo[1].div == div: # reservee slot empty and proper div
+
+                if not spot_open: # first come first served
+                    spot_open = i 
+
+            if combo[0] and combo[0].reservee == user.id: # already present
+                reservee_present = True
+
+
+        if not reservee_present: # create reservee
+
+            reservee = Reservee(reservee=user.id, div=div, date=datetime.utcnow())
+
+            db = Database.connect_database(db_name="COTM")
+
+            if spot_open != None: # set combo
+
+                reservee.reserve = combos[spot_open][1].reserve
+                combos[spot_open][0] = reservee
+
+                db.cursor.execute(f"""
+                    UPDATE reserves 
+                    SET `reservee` = '{reservee.reservee}'
+                    WHERE
+                        `reserve` = '{reservee.reserve}' AND
+                        `div` = '{reservee.div}'
+                """)
+
+            else:
+
+                combos.append([reservee, None])
+
+                db.cursor.execute(f"""
+                    INSERT INTO reserves (
+                        `reservee`, 
+                        `div`, 
+                        `date`
+                    ) VALUES (
+                        '{reservee.reservee}',
+                        '{reservee.div}',
+                        '{(reservee.date - datetime(2021, 3, 26)).total_seconds()}'
+                    )
+                """)
+
+            db.connection.commit()
+            db.connection.close()
+
+            log("COTM Reservee", f"{user}, {reservee.reserve}, {div}, {reservee.date}")
+
+            # at this point, combos should be right as well as the database, just need to update spreadsheet and discord
+
 
     except IndexError:
         return
 
     
-
-
 # end handle_need_reserve
 
 
