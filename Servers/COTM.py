@@ -1021,17 +1021,14 @@ async def submit_time(client, message, args):
     # get proof
     proof = [re.sub(r"[<>]", "", a) for a in args[2:4] if validators.url(re.sub(r"[<>]", "", a))]
 
-    if not any(proof) and not message.attachments: # no proof
+    if message.attachments:
+        for a in message.attachments[0]:
+            proof.append(a.url)
+
+    if not proof or (ct and len(proof) < 2):
         await no_proof(message, args[0][1:])
         return
-
-    elif ct:
-        if len(proof) < 2 and not message.attachments:
-            await no_proof(message, args[0][1:])
-            return
-
-    elif message.attachments:
-        proof.append(message.attachments[0].url)
+        
     proof += ["", "", ""]
 
 
