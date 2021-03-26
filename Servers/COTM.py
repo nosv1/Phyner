@@ -1021,13 +1021,12 @@ async def submit_time(client, message, args):
     # get proof
     proof = [re.sub(r"[<>]", "", a) for a in args[2:4] if validators.url(re.sub(r"[<>]", "", a))]
 
-    if not message.attachments:
+    if not any(proof) and not message.attachments: # no proof
+        await no_proof(message, args[0][1:])
+        return
 
-        if not any(proof): # no proof
-            await no_proof(message, args[0][1:])
-            return
-
-        elif len(proof) < 2 and ct: # must have screenshot and last lap video
+    elif ct:
+        if len(proof) < 2 and not message.attachments:
             await no_proof(message, args[0][1:])
             return
 
