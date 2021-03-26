@@ -931,7 +931,7 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
         f"`{('[' + leaderboard[0][1] + ']').center(col_widths[1], ' ')}`",
         f"`{('[' + leaderboard[0][2] + ']').center(col_widths[2], ' ')}`",
         f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`",
-        # f"`{('[' + leaderboard[0][4] + ']').rjust(col_widths[4], ' ')}`",
+        # f"`{('[' + leaderboard[0][4] + ']').rjust(col_widths[4], ' ')}`", leader column toooo wide for discord
     ]
 
     if "Div" in leaderboard[0][1]:
@@ -944,7 +944,7 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
     for m, m_id in enumerate(message_ids):
         table = [] + header
 
-        for i, row in enumerate(leaderboard[m*14+1:m*14+1+15]):
+        for i, row in enumerate(leaderboard[1:][m*14:m*14+14]):
 
             line = [
                 f"{row[0]}".center(col_widths[0], " "),
