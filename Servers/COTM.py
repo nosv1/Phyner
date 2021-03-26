@@ -41,7 +41,7 @@ fetuses_id = 796357522536661033
 peeker_id = 534230087244185601
 
 # MESSAGES
-consisteny_test_leaderboard = [
+consistency_test_leaderboard = [
     800211294271569952, # d1
     800211319214440468, # d2
     800211328403898399, # d3
@@ -153,6 +153,17 @@ async def main(client, message, args, author_perms):
         if args[0] == "!updatedivs":
             await update_divisions(message.guild)
             await Support.process_complete_reaction(message, remove=True)
+
+        elif args[0] == "!updatequali":
+            # get the sheet
+
+            g = Support.get_g_client()
+            wb = g.open_by_key(spreadsheets.season_7.key)
+            ws = wb.worksheets()
+            quali_submissions_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali_submisisons)
+            quali_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali)
+            await update_discord_leaderboard(client, quali_ws.get(f"J3:O{quali_ws.row_count}"), time_trial_leaderboard)
+            # await update_discord_leaderboard(client, quali_ws.get(f"B3:H{quali_ws.row_count}"), consistency_test_leaderboard)
 
         pass
 
@@ -916,11 +927,11 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
 
 
     header = [
-        f"`[{leaderboard[0][0]}]`".center(col_widths[0], " "),
-        f"`[{leaderboard[0][1]}]`".center(col_widths[1], " "),
-        f"`[{leaderboard[0][2]}]`".ljust(col_widths[2], " "),
-        f"`[{leaderboard[0][3]}]`".center(col_widths[3], " "),
-        f"`[{leaderboard[0][4]}]`".rjust(col_widths[4], " "),
+        f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`",
+        f"`{('[' + leaderboard[0][1] + ']').center(col_widths[1], ' ')}`",
+        f"`{('[' + leaderboard[0][2] + ']').center(col_widths[2], ' ')}`",
+        f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`",
+        # f"`{('[' + leaderboard[0][4] + ']').rjust(col_widths[4], ' ')}`",
     ]
 
     if "Div" in leaderboard[0][1]:
@@ -940,7 +951,8 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
                 f"{row[1]}".center(col_widths[1], " "),
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[3]}".center(col_widths[3], " "),
-            ] + ([f"{row[4]}".rjust(col_widths[4], " ")] if col_widths[-1] != 0 else [])
+            ]
+            # ] + ([f"{row[4]}".rjust(col_widths[4], " ")] if col_widths[-1] != 0 else [])
             table.append(line) # in case it's a TT and not a CT update
 
             if "Div" in leaderboard[0][1]:
@@ -1162,7 +1174,7 @@ async def submit_time(client, message, args):
                     
 
 
-            await update_discord_leaderboard(client, leaderboard, consisteny_test_leaderboard if ct else time_trial_leaderboard)
+            await update_discord_leaderboard(client, leaderboard, consistency_test_leaderboard if ct else time_trial_leaderboard)
 
             log("cotm", embed.to_dict())
             break
@@ -1237,7 +1249,7 @@ async def invalidate_time(client, message):
     gt = embed.title.split("-")[0].strip()
     leaderboard = quali_ws.get(f"B3:H{quali_ws.row_count}" if ct else f"J3:O{quali_ws.row_count}")
 
-    await update_discord_leaderboard(client, leaderboard, consisteny_test_leaderboard if ct else time_trial_leaderboard)
+    await update_discord_leaderboard(client, leaderboard, consistency_test_leaderboard if ct else time_trial_leaderboard)
 
     log("cotm", embed.to_dict())
 # end invalidate_time
