@@ -96,7 +96,8 @@ division_emojis = [
   702654861086294086,
   702655538831425547,
   702654859983454318,
-  702654860478251128
+  702654860478251128,
+  808444919701569647 # waiting list
 ]
 
 
@@ -147,7 +148,11 @@ async def main(client, message, args, author_perms):
 
     # TODO remember to move the commands from == bot_stuff_id: to proper if blocks
 
-    if message.channel.id == bot_stuff_id: # in bot stuff            
+    if message.channel.id == bot_stuff_id: # in bot stuff
+
+        if args[0] == "!updatedivs":
+            await update_divisions(message.guild)
+            await Support.process_complete_reaction(message, remove=True)
 
         pass
 
@@ -204,7 +209,11 @@ async def on_reaction_add(client, message, user, payload):
 
         if embed.title:
 
-            if str(payload.emoji.id) in emojis.invalid_emoji and re.findall(r"(((Time Trial)|(Consistency Test)) Submitted)", embed.title): # invalid emojii clicked on submission
+            if (
+                str(payload.emoji.id) in emojis.invalid_emoji and 
+                re.findall(r"(((Time Trial)|(Consistency Test)) Submitted)", embed.title) and
+                Support.get_member_perms(message.channel, user).administrator
+            ): # invalid emojii clicked on submission
                 await invalidate_time(client, message)
 
 
@@ -1136,7 +1145,7 @@ async def submit_time(client, message, args):
 
 
             if ct:
-                await update_division(message.guild, div, message.author, gt)
+                await update_divisions(message.guild, Support.get_worksheet(ws, spreadsheets.season_7.roster))
 
                 children_role = message.guild.get_role(children_id)
                 fetuses_role = message.guild.get_role(fetuses_id)
@@ -1489,45 +1498,103 @@ async def update_start_order(start_order_msg, start_order_range):
 
 ## SUPPORT ##
 
-async def update_division(guild, div, user, gt):
-    """
-        add role
-        edit name
-        send message in div channel
-    """
+async def update_divisions(guild, roster_ws=None):
+    '''
+    '''
 
-    div_channels = [c for c in guild.channels if re.findall(rf"division-[1-{num_divs}]", c.name)]
-    div_roles = [r for r in guild.roles if re.findall(rf"^Division [1-{num_divs}]$", r.name)]
+    log('cotm', 'Updating Divisions')
+
+    if not roster_ws:
+        wb = Support.get_g_client().open_by_key(spreadsheets.season_7.key)
+        ws = wb.worksheets()
+        
+        roster_ws = Support.get_worksheet(ws, spreadsheets.season_7.roster)
+
+    roster = roster_ws.get(f"C4:G{roster_ws.row_count}")
+
+    
+    div_channels = [c for c in guild.channels if re.findall(rf"(division-[1-{num_divs}])|(waiting-list)", c.name)]
+    div_channels.sort(key=lambda x:x.name)
+    div_roles = [r for r in guild.roles if re.findall(rf"(^Division [1-{num_divs}]$)|(Waiting List)", r.name)]
+
+    for row in roster:
+        
+        member = [m for m in guild.members if row[1] == str(m.id)]
+
+        if member: # member in server
+
+            member = member[0]
+
+            gt = row[0]
+            div = row[3] if len(row) >= 4 else None
+
+            member_div_role = [r for r in member.roles if r in div_roles]
+            incorrect_role = None
+
+            role_added = False
+
+            if div:
+                incorrect_role = (
+                    member_div_role and (
+                        (
+                            member_div_role[0].name == "Waiting List" and 
+                            div != 'WL'
+                        ) or (
+                            member_div_role[0].name != 'Waiting List' and
+                            member_div_role[0].name[-1] != div
+                        )
+                    )
+                )
+
+            
+                if (not member_div_role or incorrect_role): # needs role
+
+                    div_role = [r for r in div_roles if r.name[-1] == div or (r.name == "Waiting List" and div == "WL")][0]
+
+                    await member.add_roles(div_role)
+                    await member.edit(nick=f"[{'D' + div if div != 'WL' else 'WL'}] {gt}")
+
+                    role_added = True
+
+                    div_name = f"D{div}" if div != 'WL' else div
+                    div = int(div.replace("WL", str(len(division_emojis))))
+
+                    await simple_bot_response(div_channels[div-1],
+                        content=member.mention,
+                        description=f"**{gt} was added to <:{div_name}:{division_emojis[div-1]}>.**"
+                    )
 
 
-    role_added = False
-    for i_div, role in enumerate(div_roles):
-
-        if i_div != div: # not in div
-
-            if role in user.roles: # has role for div
-
-                await user.remove_roles(role)
-                print(div_channels[i_div])
-                # await div_channels[i_div].send("removed_from_role") # TODO send message in div channel
-
-                log("cotm", f"{user} removed from div{i_div + 1}")
+                    log("cotm", f"{member.display_name} added to {div}")
 
 
-        elif role not in user.roles: # in div, and does not have role
-            role_added = True
+            if incorrect_role or (member_div_role and not div): # has wrong role or has role and shouldn't
 
-            await user.add_roles(role)
-            await user.edit(nick=f"[D{div}] {gt}")
-            print(div_channels[i_div])
-            # await div_channels[i_div].send("added_to_role") # TODO send message in div channel
+                await member.remove_roles(member_div_role[0])
 
-            log("cotm", f"{user} added to div{i_div + 1}")
+                if not role_added: # gt was not udpated already
+                    await member.edit(nick=gt)
 
 
-    if not role_added: # to avoid editing twice
-        await user.edit(nick=f"{gt}")
-# end update_division
+                div_name = None
+                if 'Division' in member_div_role[0].name:
+                    div = int(member_div_role[0].name[-1])
+                    div_name = f'D{div}'
+
+                else:
+                    div = len(division_emojis)
+                    div_name = 'WL'
+                
+                await simple_bot_response(div_channels[div-1],
+                    content=member.mention,
+                        description=f"**{gt} was removed from <:{div_name}:{division_emojis[div-1]}>.**"
+                )
+
+
+                log("cotm", f"{member.display_name} removed from {div}")
+
+    log("cotm", "Divisions Updated")
+# end update_divisions
 
 
 def get_gt(discord_id, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.key), ws=None, signups_ws=None):
