@@ -903,8 +903,12 @@ async def update_discord_leaderboard(client, leaderboard, message_ids):
             
             value = f"[{value}]" if i == 0 else value
 
-            if len(value) > col_widths[j]:
-                col_widths[j] = len(value)
+            try:
+                if len(value) > col_widths[j]:
+                    col_widths[j] = len(value)
+
+            except IndexError: # when leader, div, interval times are blank
+                pass
 
 
     channel = await client.fetch_channel(s7_leaderboard_id)
@@ -1131,7 +1135,7 @@ async def submit_time(client, message, args):
             if ct:
                 value += f"To Div Leader: {row[5]}\n"
 
-            value += f"To Driver Ahead: {row[6]}```"
+            value += f"To Driver Ahead: {row[5]}```"
             value += f"<#{s7_leaderboard_id}>"
             embed.add_field(name="**Gaps**", value=value)
 
