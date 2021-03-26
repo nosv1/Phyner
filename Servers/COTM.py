@@ -1010,7 +1010,7 @@ async def submit_time(client, message, args):
     lap_time = re.findall(r"2:[0-2]\d.\d{3}", args[1]) if tt else None
 
     time = None
-    if ct and not race_time or tt and not lap_time:
+    if (ct and not race_time) or (tt and not lap_time):
         await invalid_time(message, args[1])
         return
 
