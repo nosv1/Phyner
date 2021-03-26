@@ -1146,7 +1146,7 @@ async def submit_time(client, message, args):
             if ct:
                 value += f"To Div Leader: {row[5]}\n"
 
-            value += f"To Driver Ahead: {row[5]}```"
+            value += f"To Driver Ahead: {row[5 if tt else 6]}```"
             value += f"<#{s7_leaderboard_id}>"
             embed.add_field(name="**Gaps**", value=value)
 
