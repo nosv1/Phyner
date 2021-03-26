@@ -1030,7 +1030,7 @@ async def submit_time(client, message, args):
             await no_proof(message, args[0][1:])
             return
 
-    else:
+    elif message.attachments:
         proof.append(message.attachments[0].url)
     proof += ["", "", ""]
 
