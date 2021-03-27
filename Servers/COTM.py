@@ -1006,7 +1006,7 @@ async def submit_time(client, message, args):
     
 
     # get race time
-    race_time = re.findall(r"2[0-9]:[0-5]\d[.]\d{3}", args[1]) if ct else None
+    race_time = re.findall(r"2[0-5]:[0-5]\d[.]\d{3}", args[1]) if ct else None
     lap_time = re.findall(r"2:[0-2]\d[.]\d{3}", args[1]) if tt else None
 
     time = None
