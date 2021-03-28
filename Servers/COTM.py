@@ -1128,7 +1128,7 @@ async def submit_time(client, message, args):
             value += f"Position: {row[0]}{Support.num_suffix(int(row[0]))}"
 
             if ct:
-                value += f" / {row[0]}{Support.num_suffix(int(row[0]) % 14)}"
+                value += f" / {int(row[0]) % 14}{Support.num_suffix(int(row[0]) % 14)}"
 
             value += "```"
 
