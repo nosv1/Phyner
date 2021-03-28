@@ -356,7 +356,7 @@ def switch_last_two_fields(embed):
 
 
 def num_suffix(num):
-    return 'th' if 11 <= num <= 13 else {1:'st', 2:'nd', 3:'rd'}.get(num % 10, 'th')
+    return f"{num}{'th' if 11 <= num <= 13 else {1:'st', 2:'nd', 3:'rd'}.get(num % 10, 'th')}"
 # end num_suffix
 
 def smart_day_time_format(format, dt):
