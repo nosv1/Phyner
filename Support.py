@@ -363,7 +363,7 @@ def smart_day_time_format(format, dt):
     """
         day in format should be {S}
     """
-    return dt.strftime(format).replace("{S}", f"{dt.day}{num_suffix(dt.day)}")
+    return dt.strftime(format).replace("{S}", f"{num_suffix(dt.day)}")
 # end time_format_with_smart_date
 
 
