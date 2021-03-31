@@ -612,12 +612,20 @@ async def on_raw_reaction_remove(payload):
                     ]):
                         await Events.perform_action(client, message, user, event)
 
+
+                ## SERVER CHECKS ##
+
+                if message.guild:
+
+
+                    if message.guild.id == COTM.cotm_id: # COTM
+                        await COTM.on_reaction_remove(client, message, user, payload)
+
     except AttributeError: # possibly NoneType.fetch_message, happens in DMs after bot is restarted
         error = traceback.format_exc()
 
-    #except discord.errors.NotFound: # bot aint finding messages...
-     #   Logger.log_error(traceback.format_exc())
-      #  return
+    except discord.errors.NotFound: # bot aint finding messages...
+        pass
 
     except discord.errors.Forbidden:
         error = traceback.format_exc()

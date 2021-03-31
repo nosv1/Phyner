@@ -253,7 +253,7 @@ async def on_reaction_add(client, message, user, payload):
 
             
             '''elif "Reserves" in embed.title:
-                await handle_reserve_reaciton(message, payload, user)'''
+                remove_reaction = await handle_reserve_reaction(message, payload, user)'''
 
 
         if message.id in start_orders:
@@ -263,10 +263,30 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = True
 
 
-
-
     return remove_reaction
 # end on_reaction_add
+
+
+async def on_reaction_remove(client, message, user, payload):
+    '''
+    '''
+
+    embed = message.embeds[0] if message.embeds else None
+
+    if embed:
+
+        if embed.author:
+
+            if embed.author.url:
+                pass
+
+
+        if embed.title:
+
+            '''if "Reserves" in embed.title:
+                await handle_reserve_reaction(message, payload, user, remove=True)'''
+
+# end on_reaction_remove
 
 
 
@@ -1007,7 +1027,7 @@ async def submit_time(client, message, args):
     
 
     # get race time
-    race_time = re.findall(r"2[0-5]:[0-5]\d[.]\d{3}", args[1]) if ct else None
+    race_time = re.findall(r"2[0-4]:[0-5]\d[.]\d{3}", args[1]) if ct else None
     lap_time = re.findall(r"2:[0-1]\d[.]\d{3}", args[1]) if tt else None
 
     time = None
@@ -1256,245 +1276,248 @@ async def invalidate_time(client, message):
 ## RESERVES ## TODO RESERVES
 
 
-class Reservee:
+class R_Driver:
 
-    def __init__(self, reservee=None, reserve=None, div=None, date=None):
+    def __init__(self, r_driver=None, type=None, div=None, date=None):
         '''
         '''
 
-        self.reservee = reservee
-        self.reserve = reserve
+        self.r_driver = r_driver
+        self.type = type # 0 is reservee, 1 is reserve
         self.div = div
         self.date = date
     # end __init__
 
-# end Reservee
 
-class Reserve:
+    def to_string(self):
+        return f"{self.r_driver}, {self.type}, {self.div}, {self.date}"
+    # end to_string
 
-    def __init__(self, reservee=None, reserve=None, div=None, date=None):
-        '''
-        '''
-        
-        self.reservee = reservee
-        self.reserve = reserve
-        self.div = div
-        self.date = date
-    # end __init__
-
-# end Reserve
+# end Driver
 
 
-def get_reserve_combo_from_entry(r):
-
-    reservee = None
-    reserve = None
-
-    if r[0]: # reservee
-        reservee = Reservee(
-            reservee=int(r[0]),
-            div=int(r[2]),
-            date=float(r[3])
-        )
-
-    if r[1]: # reserve
-        reserve = Reserve(
-            reservee=reservee,
-            reserve=int(r[1]),
-            div=int(r[2]),
-            date=float(r[3])
-        )
-
-    if reserve and reservee:
-        reservee.reserve = reserve
-
-
-    return [reservee, reserve]
-# end get_reserve_from_entry
-
-
-def get_reserve_combos():
+def remove_r_driver(driver_id, type, div):
     '''
-        gets existing combos
+    '''
+
+    db = Database.connect_database('COTM')
+
+    db.cursor.execute(f"""
+        DELETE FROM reserves
+        WHERE
+            `r_driver` = '{driver_id}' AND
+            `type` = '{type}' AND
+            `div` = '{div}'
+    """)
+
+    db.connection.commit()
+    db.connection.close()
+    
+# end remove_r_driver
+
+
+def insert_r_driver(driver_id, type, div):
+    '''
+    '''
+
+    db = Database.connect_database('COTM')
+
+    db.cursor.execute(f"""
+        INSERT INTO reserves (
+            `r_driver`, `type`, `div`, `date`
+        ) VALUES (
+            '{driver_id}', 
+            '{type}',
+            '{div}',
+            '{(datetime.utcnow() - datetime(2021, 3, 26)).total_seconds()}'
+        )
+    """)
+
+    db.connection.commit()
+    db.connection.close()
+# end insert_r_driver
+
+
+def get_r_driver_from_entry(r):
+    '''
+    '''
+
+    return R_Driver(
+        r_driver=int(r[0]),
+        type=int(r[1]), # 0 is reservee, 1 is reserve
+        div=int(r[2]),
+        date=float(r[3])
+    )
+# end get_driver_from_entry
+
+
+def get_r_drivers():
+    '''
     '''
 
     db = Database.connect_database(db_name="COTM")
     db.cursor.execute(f"""
-        SELECT `reservee`, `reserve`, `div`, `date` FROM reserves
-    """)
+        SELECT `r_driver`, `type`, `div`, `date` FROM reserves
+    """) # type, 0 is reservee, 1 is reserve
     db.connection.close()
 
-    reserves = db.cursor.fetchall()
+    r_drivers = db.cursor.fetchall()
 
-    if reserves:
-        reserves.sort(key=lambda x:x[3])  # sorted based on click order, first to last
+    if r_drivers:
+        r_drivers.sort(key=lambda x:float(x[3]))  # sorted based on click order, first to last
 
-    return [get_reserve_combo_from_entry(r) for r in reserves]
-# end get_reserves
+    return [get_r_driver_from_entry(r) for r in r_drivers]
+# end get_r_drivers
 
 
-async def handle_reserve_reaciton(message, payload, user):
+async def handle_reserve_reaction(message, payload, user, remove=False):
     '''
     '''
+
+    remove_reaction = False
+
 
     if payload.emoji.name == Support.emojis.wave_emoji: # need reserve
 
         await message.add_reaction(Support.emojis._9b9c9f_emoji)
-        await handle_need_reserve(message, user)
+        remove_reaction = await handle_need_reserve(message, user, remove=remove)
         await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
 
 
-    elif int(Support.get_id_from_str(payload.emoji.name)) in division_emojis: # reserve available
+    elif payload.emoji.id in division_emojis: # reserve available
 
         await message.add_reaction(Support.emojis._9b9c9f_emoji)
-        await handle_reserve_available(message, user)
+        remove_reaction = await handle_reserve_available(message, user, division_emojis.index(payload.emoji.id) + 1, remove=remove)
         await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
+
+    return remove_reaction
 
 # end reserve_reaciton
 
 
-def generate_new_combos(combos):
+def generate_div_combos(r_drivers):
     '''
-        combos = [[reservee, reserve], ...]
     '''
 
-    # filter by div
-    # so loop for d1, seperating d1 from others
-    # filter by combo, sperating full combos and missing
-    # pick out reserves, randomize, put back in, return combo to div list, return div to combos
+    # assign by first come first served first, then randomize
+
+    divs = [[[], []] for d in range(num_divs)] # will be [[[d1_reservees, ...], [d1_reserves, ...]], ...]
+
+    for r_driver in r_drivers:
+
+        if r_driver.type: # is reserve
+            divs[r_driver.div-1][1].append(r_driver)
+
+        else:
+            divs[r_driver.div-1][0].append(r_driver)
+
+    div_combos = [list(zip(*div)) for div in divs] # [[(d1_reservee, d1_reserve), ...], ...]
 
 
-    for i in range(num_divs):
+    # randomize
 
-        div = i + 1
+    for i, div_combo in enumerate(div_combos):
 
-        div_combos = []
-
-        j = len(combos) - 1
-        while j >= 0:
-
-            if None not in combos[j]: # full combo
-
-                if combos[j][0].div == div:
-
-                    div_combos.append(combos[j]) # filter out the combo
-
-                    del combos[j] # remove and add back later after randomizing
-
-                else:
-
-                    j -= 1
-            
-            else:
-                
-                j -= 1
-
+        reservees = []
         reserves = []
 
-        for div_combo in div_combos:
-
-            reserves.append(div_combo[1])
-
+        for combo in div_combo:
+            reservees.append(combo[0])
+            reserves.append(combo[1])
 
         random.shuffle(reserves)
 
-        for j, div_combo in enumerate(div_combos): # assign new reserves
+        div_combos[i] = list(zip(*[reservees, reserves]))
 
-            div_combo[0].reserve = reserves[j] # reserve assigned to reservee
-            div_combo[1] = reserves[j] # reserve put in combo
-            div_combo[1].reservee = div_combo[0] # reservee assinged to reserve
+    return div_combos # [[(d1_reservee, d1_reserve), ...], ...]
 
-        combos += div_combos
-
-# end generate_new_combos
+# end generate_combos
 
 
-async def handle_need_reserve(message, user):
+async def handle_need_reserve(message, user, remove=False):
     '''
     '''
 
     embed = message.embeds[0].to_dict()
 
-
     try:
         div = int(user.display_name.split("[D")[1].split("]")[0])
 
+        if remove:
+            remove_r_driver(user.id, 0, div)
 
-        combos = get_reserve_combos() # [reservee, reserve]
+        else:
+            insert_r_driver(user.id, 0, div)
 
-        spot_open = None # reserve avail
-        reservee_present = None # already present
+        div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
 
-        for i, combo in enumerate(combos): # find reserve avail and/or see if reservee already present
+        for div_combo in div_combos:
+            for combo in div_combo:
+                print(combo[0].to_string())
+                print(combo[1].to_string())
+        print()
 
-            if not combo[0] and combo[1].div == div: # reservee slot empty and proper div
-
-                if not spot_open: # first come first served
-                    spot_open = i 
-
-            if combo[0] and combo[0].reservee == user.id: # already present
-                reservee_present = True
-
-
-        if not reservee_present: # create reservee
-
-            reservee = Reservee(reservee=user.id, div=div, date=datetime.utcnow())
-
-            db = Database.connect_database(db_name="COTM")
-
-            if spot_open != None: # set combo
-
-                reservee.reserve = combos[spot_open][1].reserve
-                combos[spot_open][0] = reservee
-
-                '''db.cursor.execute(f"""
-                    UPDATE reserves 
-                    SET `reservee` = '{reservee.reservee}'
-                    WHERE
-                        `reserve` = '{reservee.reserve}' AND
-                        `div` = '{reservee.div}'
-                """)'''
-
-            else:
-
-                combos.append([reservee, None])
-
-                '''db.cursor.execute(f"""
-                    INSERT INTO reserves (
-                        `reservee`, 
-                        `div`, 
-                        `date`
-                    ) VALUES (
-                        '{reservee.reservee}',
-                        '{reservee.div}',
-                        '{(reservee.date - datetime(2021, 3, 26)).total_seconds()}'
-                    )
-                """)'''
-
-            combos = generate_new_combos(combos)
-
-            '''db.connection.commit()
-            db.connection.close()'''
-
-
-            for combo in combos:
-                print(combo[0])
-                print(combo[1])
-
-
-            # log("COTM Reservee", f"{user}, {reservee.reserve}, {div}, {reservee.date}")
-
-            # at this point, combos should be right as well as the database, just need to update spreadsheet and discord
-
-
-    except IndexError:
-        return
+    except ValueError: # Div couldn't be recognized
+        return True # remove reaction
 # end handle_need_reserve
 
 
-async def handle_reserve_available(message, user):
+async def handle_reserve_available(message, user, div, remove=False):
     '''
     '''
+
+    def div_check(div, r_driver_div):
+        '''
+        '''
+
+        if r_driver_div == "WL": # check spreadsheet for elgible reserve divs
+
+            gc = Support.get_g_client()
+            wb = gc.open_by_key(spreadsheets.season_7.key)
+            ws = wb.worksheets()
+            quali_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali)
+
+            ct_driver_divs = quali_ws.get("C4:C")
+            row_i, row, col_i = Support.find_value_in_range(ct_driver_divs, get_gt(user.id, wb, ws), get=True)
+
+            if row: # driver has completed CT
+                r_driver_div = int(row[0])
+                return div in [r_driver_div - 1, r_driver_div, r_driver_div + 1] # div below, div, div above
+
+        else:
+            return div in [r_driver_div - 1, r_driver_div + 1] # div below, div above
+    # end div_check
+
+
+    embed = message.embeds[0].to_dict()
+
+    try:
+        r_driver_div = int(user.display_name.split("[D")[1].split("]")[0])
+
+    except ValueError:
+        r_driver_div = "WL" if "[WL]" in user.display_name else None
+
+
+    if not r_driver_div: # not in a div/WL...
+        return True
+
+    if not div_check(div, r_driver_div): # not in an elgiible div compared to the div clicked
+        return True
+
+
+    if remove:
+        remove_r_driver(user.id, 1, div)
+
+    else:
+        insert_r_driver(user.id, 1, div)
+
+    div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
+
+    for div_combo in div_combos:
+        for combo in div_combo:
+            print(combo[0].to_string())
+            print(combo[1].to_string())
+    print()
 # end handle_reserve_available
 
 
@@ -1528,7 +1551,6 @@ def get_start_orders():
     log("COTM", f"Received Start Orders: {ranges}")
 
     return ranges
-
 # end get_start_orders
 
 
