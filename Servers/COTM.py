@@ -8,6 +8,7 @@ import traceback
 from types import SimpleNamespace
 import re
 import validators
+import random
 
 
 import Database
@@ -251,8 +252,8 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = True
 
             
-            elif "Reserves" in embed.title:
-                await handle_reserve_reaciton(message, payload, user)
+            '''elif "Reserves" in embed.title:
+                await handle_reserve_reaciton(message, payload, user)'''
 
 
         if message.id in start_orders:
@@ -1257,14 +1258,13 @@ async def invalidate_time(client, message):
 
 class Reservee:
 
-    def __init__(self, reservee=None, reserve=None, div=None, requested=0, date=None):
+    def __init__(self, reservee=None, reserve=None, div=None, date=None):
         '''
         '''
 
         self.reservee = reservee
         self.reserve = reserve
         self.div = div
-        self.requested = requested
         self.date = date
     # end __init__
 
@@ -1272,14 +1272,13 @@ class Reservee:
 
 class Reserve:
 
-    def __init__(self, reservee=None, reserve=None, div=None, requested=0, date=None):
+    def __init__(self, reservee=None, reserve=None, div=None, date=None):
         '''
         '''
         
         self.reservee = reservee
         self.reserve = reserve
         self.div = div
-        self.requested = requested
         self.date = date
     # end __init__
 
@@ -1295,8 +1294,7 @@ def get_reserve_combo_from_entry(r):
         reservee = Reservee(
             reservee=int(r[0]),
             div=int(r[2]),
-            requested=int(r[3]),
-            date=float(r[4])
+            date=float(r[3])
         )
 
     if r[1]: # reserve
@@ -1304,8 +1302,7 @@ def get_reserve_combo_from_entry(r):
             reservee=reservee,
             reserve=int(r[1]),
             div=int(r[2]),
-            requested=int(r[3]),
-            date=float(r[4])
+            date=float(r[3])
         )
 
     if reserve and reservee:
@@ -1313,21 +1310,26 @@ def get_reserve_combo_from_entry(r):
 
 
     return [reservee, reserve]
-
 # end get_reserve_from_entry
 
 
-def get_reserve_comobs():
+def get_reserve_combos():
     '''
+        gets existing combos
     '''
 
     db = Database.connect_database(db_name="COTM")
     db.cursor.execute(f"""
-        SELECT `reservee`, `reserve`, `div`, `requested`, `date` FROM reserves
+        SELECT `reservee`, `reserve`, `div`, `date` FROM reserves
     """)
     db.connection.close()
 
-    return [get_reserve_combo_from_entry(r) for r in db.cursor.fetchall()]
+    reserves = db.cursor.fetchall()
+
+    if reserves:
+        reserves.sort(key=lambda x:x[3])  # sorted based on click order, first to last
+
+    return [get_reserve_combo_from_entry(r) for r in reserves]
 # end get_reserves
 
 
@@ -1351,6 +1353,62 @@ async def handle_reserve_reaciton(message, payload, user):
 # end reserve_reaciton
 
 
+def generate_new_combos(combos):
+    '''
+        combos = [[reservee, reserve], ...]
+    '''
+
+    # filter by div
+    # so loop for d1, seperating d1 from others
+    # filter by combo, sperating full combos and missing
+    # pick out reserves, randomize, put back in, return combo to div list, return div to combos
+
+
+    for i in range(num_divs):
+
+        div = i + 1
+
+        div_combos = []
+
+        j = len(combos) - 1
+        while j >= 0:
+
+            if None not in combos[j]: # full combo
+
+                if combos[j][0].div == div:
+
+                    div_combos.append(combos[j]) # filter out the combo
+
+                    del combos[j] # remove and add back later after randomizing
+
+                else:
+
+                    j -= 1
+            
+            else:
+                
+                j -= 1
+
+        reserves = []
+
+        for div_combo in div_combos:
+
+            reserves.append(div_combo[1])
+
+
+        random.shuffle(reserves)
+
+        for j, div_combo in enumerate(div_combos): # assign new reserves
+
+            div_combo[0].reserve = reserves[j] # reserve assigned to reservee
+            div_combo[1] = reserves[j] # reserve put in combo
+            div_combo[1].reservee = div_combo[0] # reservee assinged to reserve
+
+        combos += div_combos
+
+# end generate_new_combos
+
+
 async def handle_need_reserve(message, user):
     '''
     '''
@@ -1362,7 +1420,7 @@ async def handle_need_reserve(message, user):
         div = int(user.display_name.split("[D")[1].split("]")[0])
 
 
-        combos = get_reserve_comobs() # [reservee, reserve]
+        combos = get_reserve_combos() # [reservee, reserve]
 
         spot_open = None # reserve avail
         reservee_present = None # already present
@@ -1389,19 +1447,19 @@ async def handle_need_reserve(message, user):
                 reservee.reserve = combos[spot_open][1].reserve
                 combos[spot_open][0] = reservee
 
-                db.cursor.execute(f"""
+                '''db.cursor.execute(f"""
                     UPDATE reserves 
                     SET `reservee` = '{reservee.reservee}'
                     WHERE
                         `reserve` = '{reservee.reserve}' AND
                         `div` = '{reservee.div}'
-                """)
+                """)'''
 
             else:
 
                 combos.append([reservee, None])
 
-                db.cursor.execute(f"""
+                '''db.cursor.execute(f"""
                     INSERT INTO reserves (
                         `reservee`, 
                         `div`, 
@@ -1411,20 +1469,26 @@ async def handle_need_reserve(message, user):
                         '{reservee.div}',
                         '{(reservee.date - datetime(2021, 3, 26)).total_seconds()}'
                     )
-                """)
+                """)'''
 
-            db.connection.commit()
-            db.connection.close()
+            combos = generate_new_combos(combos)
 
-            log("COTM Reservee", f"{user}, {reservee.reserve}, {div}, {reservee.date}")
+            '''db.connection.commit()
+            db.connection.close()'''
+
+
+            for combo in combos:
+                print(combo[0])
+                print(combo[1])
+
+
+            # log("COTM Reservee", f"{user}, {reservee.reserve}, {div}, {reservee.date}")
 
             # at this point, combos should be right as well as the database, just need to update spreadsheet and discord
 
 
     except IndexError:
         return
-
-    
 # end handle_need_reserve
 
 
