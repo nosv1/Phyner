@@ -36,6 +36,18 @@ start_orders = 622484589465829376
 vote_id = 608472349712580608
 voting_log_id = 530284914071961619
 
+div_channels = [
+    527225908613087279,
+    527225928712060938,
+    527225947997601814,
+    527225959745585161,
+    527226003722862613,
+    527226023146684427,
+    527226036232912927,
+    702658342669254676,
+    800926709205434378, # waiting list
+]
+
 # ROLES
 children_id = 529112570448183296
 fetuses_id = 796357522536661033
@@ -111,6 +123,7 @@ spreadsheets = SimpleNamespace(**{
     "season_7" : SimpleNamespace(**{
         "key" : "1BIFN9DlU50pWOZqQrz4C44Dk-neDCteZMimTSblrR5U",
         "driver_history" : 744645833,
+        "my_sheet" : 762852343,
         "quali_submisisons" : 530052553,
         "quali" : 128540696,
         "roster" : 1284096187,
@@ -187,8 +200,8 @@ async def main(client, message, args, author_perms):
 
     elif message.channel.id == quali_submit: # quali submit
         
-        if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
-            await submit_time(client, message, args)
+        '''if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
+            await submit_time(client, message, args)''' # working but closed after quali
             
         pass
 
@@ -252,8 +265,8 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = True
 
             
-            '''elif "Reserves" in embed.title:
-                remove_reaction = await handle_reserve_reaction(message, payload, user)'''
+            elif "Reserves" in embed.title:
+                remove_reaction = await handle_reserve_reaction(message, payload, user)
 
 
         if message.id in start_orders:
@@ -283,8 +296,8 @@ async def on_reaction_remove(client, message, user, payload):
 
         if embed.title:
 
-            '''if "Reserves" in embed.title:
-                await handle_reserve_reaction(message, payload, user, remove=True)'''
+            if "Reserves" in embed.title:
+                await handle_reserve_reaction(message, payload, user, remove=True)
 
 # end on_reaction_remove
 
@@ -1289,6 +1302,17 @@ class R_Driver:
     # end __init__
 
 
+    def __eq__(self, other):
+        return (
+            self.r_driver == other.r_driver and 
+            self.div == other.div and 
+            self.type == other.type and
+            self.date == other.date
+        )
+    # end __eq__
+
+
+
     def to_string(self):
         return f"{self.r_driver}, {self.type}, {self.div}, {self.date}"
     # end to_string
@@ -1296,7 +1320,7 @@ class R_Driver:
 # end Driver
 
 
-def remove_r_driver(driver_id, type, div):
+async def remove_r_driver(user, type, div):
     '''
     '''
 
@@ -1305,15 +1329,18 @@ def remove_r_driver(driver_id, type, div):
     db.cursor.execute(f"""
         DELETE FROM reserves
         WHERE
-            `r_driver` = '{driver_id}' AND
+            `r_driver` = '{user.id}' AND
             `type` = '{type}' AND
             `div` = '{div}'
     """)
 
     db.connection.commit()
     db.connection.close()
-    
-# end remove_r_driver
+
+    for role in user.roles:
+        if role.name == f"Reserve Division {div}":
+            await user.remove_roles(role)
+    # end remove_r_driver
 
 
 def insert_r_driver(driver_id, type, div):
@@ -1376,22 +1403,33 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
 
     remove_reaction = False
 
+    
+    await message.add_reaction(Support.emojis._9b9c9f_emoji)
+
 
     if payload.emoji.name == Support.emojis.wave_emoji: # need reserve
-
-        await message.add_reaction(Support.emojis._9b9c9f_emoji)
         remove_reaction = await handle_need_reserve(message, user, remove=remove)
-        await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
 
 
     elif payload.emoji.id in division_emojis: # reserve available
-
-        await message.add_reaction(Support.emojis._9b9c9f_emoji)
         remove_reaction = await handle_reserve_available(message, user, division_emojis.index(payload.emoji.id) + 1, remove=remove)
-        await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
+
+
+    elif payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji and user.id == Support.ids.mo_id: # refresh
+        div_combos = generate_div_combos(get_r_drivers())
+        await update_reserves(message, div_combos, div_combos)
+        remove_reaction = True
+
+
+    elif payload.emoji.name == Support.emojis.x_emoji and user.id == Support.ids.mo_id: # clear
+        await clear_reserves(message)
+        remove_reaction = True
+
+
+    await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
+
 
     return remove_reaction
-
 # end reserve_reaciton
 
 
@@ -1430,7 +1468,6 @@ def generate_div_combos(r_drivers):
         div_combos[i] = list(zip(*[reservees, reserves]))
 
     return div_combos # [[(d1_reservee, d1_reserve), ...], ...]
-
 # end generate_combos
 
 
@@ -1438,24 +1475,20 @@ async def handle_need_reserve(message, user, remove=False):
     '''
     '''
 
-    embed = message.embeds[0].to_dict()
-
     try:
         div = int(user.display_name.split("[D")[1].split("]")[0])
 
+        old_div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
+
         if remove:
-            remove_r_driver(user.id, 0, div)
+            await remove_r_driver(message, user, 0, div)
 
         else:
             insert_r_driver(user.id, 0, div)
 
         div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
-
-        for div_combo in div_combos:
-            for combo in div_combo:
-                print(combo[0].to_string())
-                print(combo[1].to_string())
-        print()
+        
+        await update_reserves(message, div_combos, old_div_combos)
 
     except ValueError: # Div couldn't be recognized
         return True # remove reaction
@@ -1477,7 +1510,7 @@ async def handle_reserve_available(message, user, div, remove=False):
             ws = wb.worksheets()
             quali_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali)
 
-            ct_driver_divs = quali_ws.get("C4:C")
+            ct_driver_divs = quali_ws.get("C4:D")
             row_i, row, col_i = Support.find_value_in_range(ct_driver_divs, get_gt(user.id, wb, ws), get=True)
 
             if row: # driver has completed CT
@@ -1505,20 +1538,181 @@ async def handle_reserve_available(message, user, div, remove=False):
         return True
 
 
+    old_div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
+
+
     if remove:
-        remove_r_driver(user.id, 1, div)
+        await remove_r_driver(message, user, 1, div)
 
     else:
         insert_r_driver(user.id, 1, div)
 
-    div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
 
-    for div_combo in div_combos:
-        for combo in div_combo:
-            print(combo[0].to_string())
-            print(combo[1].to_string())
-    print()
+    div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
+    
+
+    await update_reserves(message, div_combos, old_div_combos)
 # end handle_reserve_available
+
+
+async def update_reserves(message, div_combos, old_div_combos):
+    '''
+        div_combos = [[(d1_reservee, d1_reserve), ...], ...]
+    '''
+
+
+    has_reserve = [] # [reservee_id, ...]
+    is_reserving = [[] for i in div_combos] # [[d1_reserve_id, ...], ...]
+
+
+    # add roles
+
+    for i, div_combo in enumerate(div_combos): # add reserve roles
+
+        for combo in div_combo:
+
+            reservee = message.guild.get_member(combo[0].r_driver)
+            reserve = message.guild.get_member(combo[1].r_driver)
+
+            log('COTM', f"{reserve.display_name} is reserving for {reservee.display_name} in {combo[0].div}")
+
+            
+            has_reserve.append(reservee.id) # storing for later when adding tick emojis next to name
+            is_reserving[combo[1].div].append(reserve.id) # storing for later when checking to remove reserve roles
+
+            reserve_role_name = f"Reserve Division {combo[1].div}"
+            if reserve_role_name not in [r.name for r in reserve.roles]: # add role and send to channel
+                
+                await reserve.add_roles([r for r in message.guild.roles if r.name == reserve_role_name][0])
+
+                await simple_bot_response(message.guild.get_channel(div_channels[combo[1].div-1]),
+                    content=reserve.mention,
+                    description=f"**{reserve.display_name} is reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**"
+                )
+
+    
+    '''# update div channels to send the reserve situation, if changed - how many reserves avail, how many are without a reserve...
+
+    r_drivers = get_r_drivers()
+
+    div_reservees = [[] for i in range(num_divs)]
+    div_reserves = [[] for i in range(num_divs)]
+
+    for r_driver in r_drivers: # get lists of reservees and reserves
+
+        if r_driver.type == 0: # is reservee
+            div_reservees[r_driver.div].append(r_driver)
+
+        else: # is reserve
+            div_reserves[r_driver.div].append(r_driver)
+
+
+    for i, old_div_combo in enumerate(old_div_combos):
+
+        if len(old_div_combo) != len(div_combos[i]): # the number of reserves has changed
+
+            reserves_needed = len(div_reserves[i])
+            reservees_needed = len(div_reservees[i])
+
+            f""'''
+
+            
+
+
+
+    # update reserve embed
+
+    embed = message.embeds[0].to_dict()
+    
+    fields = [[] for i in range((len(embed["fields"])-2))] # empty the felds
+    
+    for r_driver in get_r_drivers(): # add drivers to fields
+
+        if r_driver.type == 0: # needs reserve
+
+            reservee = message.guild.get_member(r_driver.r_driver)
+
+            fields[0].append(f"{reservee.display_name}{(' ' + Support.emojis.tick_emoji) if r_driver.r_driver in has_reserve else ''}") # [D#] Driver tick_emoji if has reserve
+
+        else: # available to reserve
+
+            reserve = message.guild.get_member(r_driver.r_driver)
+            
+            is_reserve = r_driver.r_driver in is_reserving[r_driver.div-1]            
+
+            fields[r_driver.div].append(f"{reserve.display_name}{(' ' + Support.emojis.tick_emoji) if is_reserve else ''}") # [D#] Driver tick_emoji if reserving
+
+    
+    for i, f in enumerate(fields):
+        embed["fields"][i]["value"] = "\n".join(f + [Support.emojis.space_char])
+
+
+    await message.edit(embed=discord.Embed().from_dict(embed))    
+# end update_reserves
+
+
+async def clear_reserves(message):
+    '''
+    '''
+
+    r_drivers = get_r_drivers()
+
+
+    # clear database
+
+    db = Database.connect_database('COTM')
+    db.cursor.execute(f"""
+        DELETE FROM reserves
+        WHERE id > 0
+    """)
+    db.connection.commit()
+    db.connection.close()
+
+
+    # clear reserve roles
+
+    for r_driver in r_drivers: 
+
+        if r_driver.type == 1: # potiential reserve
+
+            member = message.guild.get_member(r_driver.r_driver)
+            [await member.remove_roles(r) for r in member.roles if 'Reserve Division' in r.name]
+
+
+    # clear spreadsheet
+
+    gc = Support.get_g_client()
+    wb = gc.open_by_key(spreadsheets.season_7.key)
+    ws = wb.worksheets()
+
+    my_sheet_ws = Support.get_worksheet(ws, spreadsheets.season_7.my_sheet)
+    reserves = my_sheet_ws.range(f"Q2:R{my_sheet_ws.row_count}")
+
+    for i in range(len(reserves)):
+        reserves[i].value = ""
+
+    my_sheet_ws.update_cells(reserves, value_input_option="USER_ENTERED")
+
+
+    # clear embed
+
+    embed = message.embeds[0].to_dict()
+    
+    for i in range(len(embed["fields"])-2):
+        embed["fields"][i]["value"] = Support.emojis.space_char
+
+    await message.edit(embed=discord.Embed().from_dict(embed))
+
+
+    # clear reactions
+
+    await message.clear_reactions()
+
+    await message.add_reaction(Support.emojis.wave_emoji)
+
+    for i in range(num_divs):
+        await message.add_reaction([e for e in message.guild.emojis if e.id == division_emojis[i]][0])
+# end clear_reserves
 
 
 
@@ -1588,7 +1782,6 @@ async def update_start_order(start_order_msg, start_order_range):
 
     div = start_orders.index(start_order_msg.id) + 1
     log("COTM", f"Updated Start Order {div}")
-
 # end update_start_order
 
 
@@ -1685,7 +1878,7 @@ async def update_divisions(guild, roster_ws=None):
                 
                 await simple_bot_response(div_channels[div-1],
                     content=member.mention,
-                        description=f"**{gt} was removed from <:{div_name}:{division_emojis[div-1]}>.**"
+                    description=f"**{gt} was removed from <:{div_name}:{division_emojis[div-1]}>.**"
                 )
 
 
