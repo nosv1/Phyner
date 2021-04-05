@@ -608,7 +608,7 @@ async def update_streamers(streams_msg):
                 if emoji == emojis.twitch_emoji:
 
                     multi_streams[div-1].append(streamer[-1].split(".tv/")[1].split("/")[0]) # https://twitch.tv/moshots -> moshots
-                    
+
 
     for i, field in enumerate(embed["fields"]):
 
@@ -621,7 +621,7 @@ async def update_streamers(streams_msg):
 
                 multi_stream = "https://multistre.am/" + "/".join(multi_streams[i])
 
-                embed["fields"][i]["value"] += f"\n[MultiStream]({multi_stream})\n{Support.emojis.space_char}"
+                embed["fields"][i]["value"] += f"\n[multi-stream]({multi_stream})\n{Support.emojis.space_char}"
 
 
         else: # no streamers
