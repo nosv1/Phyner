@@ -571,7 +571,7 @@ async def update_streamers(streams_msg):
 
     for i, field in enumerate(embed["fields"]):
 
-        embed["fields"][i]["value"] = [] 
+        embed["fields"][i]["value"] = [] # sotring in list for now, will join to \n string later
 
         multi_streams.append([])
 
