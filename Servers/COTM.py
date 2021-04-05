@@ -1514,7 +1514,7 @@ async def handle_reserve_available(message, user, div, remove=False):
             row_i, row, col_i = Support.find_value_in_range(ct_driver_divs, get_gt(user.id, wb, ws), get=True)
 
             if row: # driver has completed CT
-                r_driver_div = int(row[0])
+                r_driver_div = int(row[0]) if row[0] != "WL" else num_divs + 1
                 return div in [r_driver_div - 1, r_driver_div, r_driver_div + 1] # div below, div, div above
 
         else:
