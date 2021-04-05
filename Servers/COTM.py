@@ -198,7 +198,7 @@ async def main(client, message, args, author_perms):
             await message.delete()
 
 
-    elif message.channel.id == quali_submit and datetime.utcnow() < datetime(2021, 4, 4, 22, 59, 59): # quali submit
+    elif message.channel.id == quali_submit and (datetime.utcnow() < datetime(2021, 4, 4, 22, 59, 59) or message.author.id == Support.ids.mo_id): # quali submit
         
         if args[0] in ["!ct", "!tt"]: # !ct <race_time> <video.com> <screenshot.com>
             await submit_time(client, message, args)
