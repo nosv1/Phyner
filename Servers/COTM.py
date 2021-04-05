@@ -261,7 +261,7 @@ async def on_reaction_add(client, message, user, payload):
                 "Streams" in embed.title and 
                 payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji
             ): # refresh clicked on streams embed
-                await update_streamers(message)
+                # await update_streamers(message)
                 remove_reaction = True
 
             
@@ -537,8 +537,8 @@ def get_streamers():
 
     
     a1_ranges = [
-        f"C4:D{roster_ws.row_count}",
-        f"G4:G{roster_ws.row_count}"
+        f"C4:D{roster_ws.row_count}", # gt, discord_id
+        f"F4:G{roster_ws.row_count}" # link
     ]
 
     ranges = roster_ws.batch_get(a1_ranges)
@@ -562,31 +562,64 @@ async def update_streamers(streams_msg):
 
     await streams_msg.add_reaction(Support.emojis._9b9c9f_emoji)
 
-    streamers = get_streamers()
+    streamers = get_streamers() # [[gt, discord_id, div, link], ...]
 
 
     embed = streams_msg.embeds[0].to_dict()
 
-    streamers_string = ""
+    multi_streams = []
+
+    for i, field in enumerate(embed["fields"]):
+
+        embed["fields"][i]["value"] = [] 
+
+        multi_streams.append("")
+
 
     for streamer in streamers:
 
         emoji = ""
-        if "twitch" in streamer[2].lower():
+
+        if "twitch" in streamer[-1].lower():
             emoji = emojis.twitch_emoji
 
-        elif "youtube" in streamer[2].lower():
+        elif "youtube" in streamer[-1].lower():
             emoji = emojis.youtube_emoji
 
-        elif "mixer" in streamer[2].lower():
+        elif "mixer" in streamer[-1].lower():
             emoji = emojis.mixer_emoji
 
-        # streamers_string += f"{emoji} [{streamer[0]}]({streamer[2]})\n" # - <@{streamer[1]}>\n"
-        streamers_string += f"[{streamer[0]}]({streamer[2]})\n"
+
+        member = streams_msg.guild.get_member(int(streamer[1]))
+
+        member_divs = []
+
+        for role in member.roles:
+
+            if "Division" in role.name:
+                member_divs.append(int(role.name[-1]))
 
 
+        for div in member_divs:
 
-    embed["fields"][0]["value"] = f"{streamers_string}{Support.emojis.space_char}"
+            embed["fields"][div]["value"].append(f"[{member.display_name}]({streamer[-1]})") # [name](link)
+
+            if emoji == emojis.twitch_emoji:
+
+                multi_streams.append(streamer[-1].split(".tv/")[1].split("/")[0]) # https://twitch.tv/moshots -> moshots
+
+
+    for i, field in enumerate(embed["fields"]):
+
+        embed["fields"][i]["value"] = "\n".join(field[i]["value"])
+
+        if multi_streams[i]: # ttv profiles avail
+            
+            multi_stream = "https://multistre.am/" + "/".join(multi_streams[i])
+
+            embed["fields"][i]["value"] += "\n" + multi_stream + "\n" + Support.emojis.space_char
+
+
     
     await streams_msg.edit(embed=discord.Embed().from_dict(embed))
 
