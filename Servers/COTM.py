@@ -1481,7 +1481,7 @@ async def handle_need_reserve(message, user, remove=False):
         old_div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
 
         if remove:
-            await remove_r_driver(message, user, 0, div)
+            await remove_r_driver(user, 0, div)
 
         else:
             insert_r_driver(user.id, 0, div)
@@ -1542,7 +1542,7 @@ async def handle_reserve_available(message, user, div, remove=False):
 
 
     if remove:
-        await remove_r_driver(message, user, 1, div)
+        await remove_r_driver(user, 1, div)
 
     else:
         insert_r_driver(user.id, 1, div)
