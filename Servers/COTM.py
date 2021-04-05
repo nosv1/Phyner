@@ -265,8 +265,8 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = True
 
             
-            '''elif "Reserves" in embed.title:
-                remove_reaction = await handle_reserve_reaction(message, payload, user)'''
+            elif "Reserves" in embed.title:
+                remove_reaction = await handle_reserve_reaction(message, payload, user)
 
 
         if message.id in start_orders:
@@ -295,10 +295,9 @@ async def on_reaction_remove(client, message, user, payload):
 
 
         if embed.title:
-            pass
 
-            '''if "Reserves" in embed.title:
-                await handle_reserve_reaction(message, payload, user, remove=True)'''
+            if "Reserves" in embed.title:
+                await handle_reserve_reaction(message, payload, user, remove=True)
 # end on_reaction_remove
 
 
@@ -1574,38 +1573,39 @@ async def update_reserves(message, div_combos, old_div_combos):
 
             
             has_reserve.append(reservee.id) # storing for later when adding tick emojis next to name
-            is_reserving[combo[1].div].append(reserve.id) # storing for later when checking to remove reserve roles
+            is_reserving[combo[1].div-1].append(reserve.id) # storing for later when checking to remove reserve roles
+
 
             reserve_role_name = f"Reserve Division {combo[1].div}"
             if reserve_role_name not in [r.name for r in reserve.roles]: # add role and send to channel
                 
-                # await reserve.add_roles([r for r in message.guild.roles if r.name == reserve_role_name][0])
+                await reserve.add_roles([r for r in message.guild.roles if r.name == reserve_role_name][0])
 
                 await simple_bot_response(message.guild.get_channel(div_channels[combo[1].div-1]),
                     content=reserve.mention,
                     description=f"**{reserve.display_name} is reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
-                    send=False
                 )
 
                 log('cotm', 'message sent to div' + combo[1].div)
 
     
-    '''# update div channels to send the reserve situation, if changed - how many reserves avail, how many are without a reserve...
+    # update div channels to send the reserve situation, if changed - how many reserves avail, how many are without a reserve...
 
     r_drivers = get_r_drivers()
 
     div_reservees = [[] for i in range(num_divs)]
     div_reserves = [[] for i in range(num_divs)]
 
+    
     for r_driver in r_drivers: # get lists of reservees and reserves
 
         if r_driver.type == 0: # is reservee
-            div_reservees[r_driver.div].append(r_driver)
+            div_reservees[r_driver.div-1].append(r_driver)
 
         else: # is reserve
-            div_reserves[r_driver.div].append(r_driver)
+            div_reserves[r_driver.div-1].append(r_driver)
 
-
+    '''
     for i, old_div_combo in enumerate(old_div_combos):
 
         if len(old_div_combo) != len(div_combos[i]): # the number of reserves has changed
@@ -1615,8 +1615,39 @@ async def update_reserves(message, div_combos, old_div_combos):
 
             f""'''
 
-            
+    
+    # update spreadsheet
 
+    gc = Support.get_g_client()
+    wb = gc.open_by_key(spreadsheets.season_7.key)
+    ws = wb.worksheets()
+
+    my_sheet_ws = Support.get_worksheet(ws, spreadsheets.season_7.my_sheet)
+    reserves = my_sheet_ws.get(f"Q2:R")
+
+    for i, r in enumerate(reserves):
+        reserves[i] = ["" for c in r]
+        
+    
+    count = 0
+
+    for i, div_reservee in enumerate(div_reservees):
+
+        for j, reservee in enumerate(div_reservee):
+
+            if not reserves: # reserves was blank
+                reserves.append(["", ""])
+            
+            elif len(reserves) < len(div_reservees): # there was less reserves on ss than there are now
+                reserves.append(["", ""])
+
+            reserves[count][0] = get_gt(reservee.r_driver, wb, ws)
+            reserves[count][1] = get_gt(div_reserves[i][j].r_driver, wb, ws)
+
+            count += 1
+
+
+    my_sheet_ws.update("Q2:R", reserves)
 
 
     # update reserve embed
