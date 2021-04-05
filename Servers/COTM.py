@@ -265,8 +265,8 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = True
 
             
-            elif "Reserves" in embed.title:
-                remove_reaction = await handle_reserve_reaction(message, payload, user)
+            '''elif "Reserves" in embed.title:
+                remove_reaction = await handle_reserve_reaction(message, payload, user)'''
 
 
         if message.id in start_orders:
@@ -295,10 +295,10 @@ async def on_reaction_remove(client, message, user, payload):
 
 
         if embed.title:
+            pass
 
-            if "Reserves" in embed.title:
-                await handle_reserve_reaction(message, payload, user, remove=True)
-
+            '''if "Reserves" in embed.title:
+                await handle_reserve_reaction(message, payload, user, remove=True)'''
 # end on_reaction_remove
 
 
@@ -1286,9 +1286,6 @@ async def invalidate_time(client, message):
 
 
 
-## RESERVES ## TODO RESERVES
-
-
 class R_Driver:
 
     def __init__(self, r_driver=None, type=None, div=None, date=None):
@@ -1316,7 +1313,6 @@ class R_Driver:
     def to_string(self):
         return f"{self.r_driver}, {self.type}, {self.div}, {self.date}"
     # end to_string
-
 # end Driver
 
 
@@ -1583,12 +1579,15 @@ async def update_reserves(message, div_combos, old_div_combos):
             reserve_role_name = f"Reserve Division {combo[1].div}"
             if reserve_role_name not in [r.name for r in reserve.roles]: # add role and send to channel
                 
-                await reserve.add_roles([r for r in message.guild.roles if r.name == reserve_role_name][0])
+                # await reserve.add_roles([r for r in message.guild.roles if r.name == reserve_role_name][0])
 
                 await simple_bot_response(message.guild.get_channel(div_channels[combo[1].div-1]),
                     content=reserve.mention,
-                    description=f"**{reserve.display_name} is reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**"
+                    description=f"**{reserve.display_name} is reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
+                    send=False
                 )
+
+                log('cotm', 'message sent to div' + combo[1].div)
 
     
     '''# update div channels to send the reserve situation, if changed - how many reserves avail, how many are without a reserve...
