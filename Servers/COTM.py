@@ -177,7 +177,7 @@ async def main(client, message, args, author_perms):
             quali_submissions_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali_submisisons)
             quali_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali)
             await update_discord_leaderboard(client, quali_ws.get(f"J3:O{quali_ws.row_count}"), time_trial_leaderboard)
-            # await update_discord_leaderboard(client, quali_ws.get(f"B3:H{quali_ws.row_count}"), consistency_test_leaderboard)
+            await update_discord_leaderboard(client, quali_ws.get(f"B3:H{quali_ws.row_count}"), consistency_test_leaderboard)
 
         pass
 
@@ -1490,7 +1490,7 @@ async def handle_need_reserve(message, user, remove=False):
         
         await update_reserves(message, div_combos, old_div_combos)
 
-    except ValueError: # Div couldn't be recognized
+    except IndexError: # Div couldn't be recognized
         return True # remove reaction
 # end handle_need_reserve
 
@@ -1527,7 +1527,7 @@ async def handle_reserve_available(message, user, div, remove=False):
     try:
         r_driver_div = int(user.display_name.split("[D")[1].split("]")[0])
 
-    except ValueError:
+    except IndexError:
         r_driver_div = "WL" if "[WL]" in user.display_name else None
 
 
