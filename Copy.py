@@ -246,7 +246,8 @@ async def create_copy(client, message, sources, destination, new_name, author_pe
                     await Support.previous_action_error(client, message)
                     log("copy message error", "phyner missing perms") # TODO copy message error
 
-            await simple_bot_response(message.channel, description=description)
+            if new_name != "copy_event": # from event
+                await simple_bot_response(message.channel, description=description)
 
 
         else:

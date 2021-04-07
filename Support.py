@@ -229,16 +229,21 @@ def get_id_from_str(str):
 # end get_id_from_str
 
 
-def get_args_from_content(content):
+def get_args_from_content(content=""):
     """
         returns args, content
     """
-    content = re.sub(r"[“”]", '"', content)
-    content = re.sub(r"[\n\t\r]", ' ', content)
-    content += " "
-    while "  " in content:
-        content = content.replace("  ", " ")
-    args = content.split(" ")
+    if content:
+        content = re.sub(r"[“”]", '"', content)
+        content = re.sub(r"[\n\t\r]", ' ', content)
+        content += " "
+        while "  " in content:
+            content = content.replace("  ", " ")
+
+        args = content.split(" ")
+
+    else:
+        args = []
 
     return args, content
 # end get_args_from_content

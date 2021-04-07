@@ -6,6 +6,7 @@ import discord
 import re
 
 
+import Copy
 import Database
 import Embeds
 from Embeds import get_saved_embeds
@@ -378,6 +379,7 @@ async def watch_emoji(client, message):
     actions = [
         "add_role", 
         "remove_role",
+        "copy_message",
         "create_private_text_channel" # stuff regarding channels go at the bottom, using this logic to check channel mentions
     ]
 
@@ -388,7 +390,9 @@ async def watch_emoji(client, message):
     examples = {
         "add_role" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #role-selection add_role @role1 @role2`",
 
-        "remove_role" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #role-selection add_role @role1 @role2`",
+        "remove_role" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #role-selection remove_role @role1 @role2`",
+
+        "copy_mesesage" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #source-messages copy_message 789182513633427507`",
         
         "create_private_text_channel" : f"`{guild_prefix} watch emoji emoji_event_object_id 791701974809968640 #open-channels create_private_text_channel 789182513633427507 .user`",
     }
@@ -429,6 +433,7 @@ async def watch_emoji(client, message):
             missing_arg_embed.description += "**Available Actions:**\n"
             missing_arg_embed.description += "`add_role`\n"
             missing_arg_embed.description += "`remove_role`\n"
+            missing_arg_embed.description += "`copy_message`\n"
             missing_arg_embed.description += "`create_private_text_channel`\n\n"
 
             missing_arg_embed.description += "**Syntax:**\n"
@@ -462,7 +467,7 @@ async def watch_emoji(client, message):
     # end while
 
 
-    # get action souces
+    # get action sources
     action_sources = []
     while not action_sources:
 
@@ -481,7 +486,12 @@ async def watch_emoji(client, message):
                 guild_roles = message.guild.roles
                 action_sources = [r for r in guild_roles if r.id in action_ids]
 
-            elif emoji_event.action.action == actions[2]: # is create_private_text_channel
+            elif emoji_event.action.action == actions[2]: # is copy_message
+                guild_channels = message.guild.channels
+                action_sources = [ch for ch in guild_channels if ch.id == action_ids[0]] # get destination channel if exists
+
+
+            elif emoji_event.action.action == actions[3]: # is create_private_text_channel
                 guild_categories = message.guild.categories
                 guild_channels = message.guild.channels
 
@@ -815,6 +825,15 @@ async def perform_action(client, message, user, event):
             else: # hopefully it simply just works and no issues
                 remove_reaction = True
 
+    
+    elif event.action.action == "copy_message":
+        destination = message.guild.get_channel(event.action.id)
+
+        author_perms = Support.get_member_perms(message.channel, user)
+        author_perms.manage_messages = True # bypass the create copy restriction
+
+        await Copy.create_copy(client, message, [message], destination, "copy_event", author_perms)
+
 
 
     return remove_reaction
@@ -871,7 +890,6 @@ async def create_private_text_channel(client, message, user, event):
     else:
         log('reaction add event', "failed to create channel, name already exists ;)")
 # end create_private_text_channel
-
 
 ''' RESPONSES '''
 
@@ -941,5 +959,4 @@ async def send_event_help(client, message):
 
     except asyncio.TimeoutError:
         await Support.clear_reactions(msg)
-
 # end send_embed_help
