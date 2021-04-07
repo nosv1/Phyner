@@ -832,9 +832,10 @@ async def perform_action(client, message, user, event):
         author_perms = Support.get_member_perms(message.channel, user)
         author_perms.manage_messages = True # bypass the create copy restriction
 
-        await Copy.create_copy(client, message, [message], destination, "copy_event", author_perms)
+        success = await Copy.create_copy(client, message, [message], destination, "copy_event", author_perms)
 
-
+        remove_reaction = not success
+        
 
     return remove_reaction
 # end perform_action
