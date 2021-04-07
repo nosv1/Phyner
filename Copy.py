@@ -179,6 +179,8 @@ async def create_copy(client, message, sources, destination, new_name, author_pe
                 await simple_bot_response(message.channel,
                     description=f"**Source:** {source.mention}\n**Copy: **{source_copy.mention}"
                 )
+                
+                return True
 
             except discord.errors.Forbidden:
                 await Support.previous_action_error(client, message)
