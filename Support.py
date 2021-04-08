@@ -233,17 +233,14 @@ def get_args_from_content(content=""):
     """
         returns args, content
     """
-    if content:
-        content = re.sub(r"[“”]", '"', content)
-        content = re.sub(r"[\n\t\r]", ' ', content)
-        content += " "
-        while "  " in content:
-            content = content.replace("  ", " ")
+    
+    content = re.sub(r"[“”]", '"', content)
+    content = re.sub(r"[\n\t\r]", ' ', content)
+    content += " "
+    while "  " in content:
+        content = content.replace("  ", " ")
 
-        args = content.split(" ")
-
-    else:
-        args = []
+    args = content.split(" ")
 
     return args, content
 # end get_args_from_content

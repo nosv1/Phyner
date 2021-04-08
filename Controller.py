@@ -128,7 +128,6 @@ async def on_message(message):
     try:
         # prep message content for use
         args, mc = Support.get_args_from_content(message.content)
-        args += [""]
 
         ## BEGIN CHECKS ##
 
