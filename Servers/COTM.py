@@ -1628,7 +1628,7 @@ async def update_reserves(message, div_combos, old_div_combos):
                     description=f"**{reserve.display_name} is reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
                 )
 
-                log('cotm', 'message sent to div' + combo[1].div)
+                log('cotm', 'message sent to div' + str(combo[1].div))
 
     
     # update div channels to send the reserve situation, if changed - how many reserves avail, how many are without a reserve...
