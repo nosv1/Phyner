@@ -779,7 +779,8 @@ async def reset_vote(msg):
     embed = embed.to_dict()
 
     options = []
-    for o in embed["fields"][0]["value"].split("\n")[:-1]:
+    for o in embed["fields"][0]["value"].split("\n"):
+        print(o)
 
         option = re.findall(r"(\[.*\]\(.*\))", o)[0]
         options.append(f"{Support.emojis.number_emojis[0]} {option}")
@@ -789,7 +790,7 @@ async def reset_vote(msg):
 
     del embed["fields"]
     embed = discord.Embed.from_dict(embed)
-    embed.add_field(name="**Options**", value="\n".join(options) + Support.emojis.space_char)
+    embed.add_field(name="**Options**", value="\n".join(options))
 
 
     await msg.edit(embed=embed)
