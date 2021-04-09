@@ -837,7 +837,7 @@ async def handle_voting_reaction(msg, payload, user):
         except ValueError: # non number clicked
             pass
 
-        options[i] = [count, o[1:len(options) if not is_current_option else -1], is_current_option]
+        options[i] = [count, o[1:len(o) if not is_current_option else -1], is_current_option]
 
     # [[count, [option], is_current_option], ...] where option is a list of words from a .split(" ")
 
