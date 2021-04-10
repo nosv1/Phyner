@@ -1960,7 +1960,8 @@ async def update_divisions(guild, roster_ws=None):
 
                     await simple_bot_response(div_channels[div-1],
                         content=member.mention,
-                        description=f"**{gt} was added to <:{div_name}:{division_emojis[div-1]}>.**"
+                        description=f"**{gt} was added to <:{div_name}:{division_emojis[div-1]}>.**",
+                        send=False
                     )
 
 
@@ -1987,7 +1988,8 @@ async def update_divisions(guild, roster_ws=None):
                 
                 await simple_bot_response(div_channels[div-1],
                     content=member.mention,
-                    description=f"**{gt} was removed from <:{div_name}:{division_emojis[div-1]}>.**"
+                    description=f"**{gt} was removed from <:{div_name}:{division_emojis[div-1]}>.**",
+                    send=False
                 )
 
 
