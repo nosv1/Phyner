@@ -1666,32 +1666,34 @@ async def update_reserves(message, div_combos, old_div_combos):
 
     for div_reserve in div_reserves: # looping all reserves avail
 
-        for i, old_div_combo in enumerate(old_div_combos):
+        for reserve in div_reserve: # looping reserves per div
 
-            for combo in old_div_combo: # combos in div
+            for i, old_div_combo in enumerate(old_div_combos):
 
-                if combo[1] == div_reserve: # was reserve in this div
+                for combo in old_div_combo: # combos in div
 
-                    still_reserve = False
-                    
-                    for combo in div_combos[i]: # looping new div combos
+                    if combo[1] == reserve: # was reserve in this div
 
-                        if combo[1] == div_reserve: # still reserving in div
-                            still_reserve = True
-                            break
+                        still_reserve = False
+                        
+                        for combo in div_combos[i]: # looping new div combos
 
-                    if not still_reserve:
+                            if combo[1] == reserve: # still reserving in div
+                                still_reserve = True
+                                break
 
-                        for c in [div_channels[combo[1].div-1], division_updates_id]: # div and div updates channel
+                        if not still_reserve:
 
-                            c = message.guild.get_channel(c)
+                            for c in [div_channels[combo[1].div-1], division_updates_id]: # div and div updates channel
 
-                            await simple_bot_response(c,
-                                content=reserve.mention,
-                                description=f"**{reserve.display_name} is no longer reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
-                            )
+                                c = message.guild.get_channel(c)
 
-                        log('cotm', 'message sent to div' + str(combo[1].div))
+                                await simple_bot_response(c,
+                                    content=reserve.mention,
+                                    description=f"**{reserve.display_name} is no longer reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
+                                )
+
+                            log('cotm', 'message sent to div' + str(combo[1].div))
 
     
     # update spreadsheet
