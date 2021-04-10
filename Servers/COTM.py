@@ -1956,7 +1956,7 @@ async def update_divisions(guild, roster_ws=None):
                     role_added = True
 
                     div_name = f"D{div}" if div not in ['WL', 'CT'] else div
-                    div = int(div.replace("WL", str(len(division_emojis))))
+                    div = int(re.sub(r"(WL)|(CT)", str(len(division_emojis)), div))
 
                     await simple_bot_response(div_channels[div-1],
                         content=member.mention,
