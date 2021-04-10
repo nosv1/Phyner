@@ -1937,7 +1937,7 @@ async def update_divisions(guild, roster_ws=None):
                     member_div_role and (
                         (
                             member_div_role[0].name == "Waiting List" and 
-                            div != 'WL'
+                            div not in ['WL', 'CT']
                         ) or (
                             member_div_role[0].name != 'Waiting List' and
                             member_div_role[0].name[-1] != div
@@ -1948,14 +1948,14 @@ async def update_divisions(guild, roster_ws=None):
             
                 if (not member_div_role or incorrect_role): # needs role
 
-                    div_role = [r for r in div_roles if r.name[-1] == div or (r.name == "Waiting List" and div == "WL")][0]
+                    div_role = [r for r in div_roles if r.name[-1] == div or (r.name == "Waiting List" and div in ["WL", "CT"])][0]
 
                     # await member.add_roles(div_role)
                     # await member.edit(nick=f"[{'D' + div if div != 'WL' else 'WL'}] {gt}")
 
                     role_added = True
 
-                    div_name = f"D{div}" if div != 'WL' else div
+                    div_name = f"D{div}" if div not in ['WL', 'CT'] else div
                     div = int(div.replace("WL", str(len(division_emojis))))
 
                     await simple_bot_response(div_channels[div-1],
