@@ -1858,7 +1858,7 @@ def get_start_orders():
 # end get_start_orders
 
 
-async def update_start_order(start_order_msg, start_order_range, is_mo):
+async def update_start_order(start_order_msg, start_order_range):
     '''
         start_order_range = [[pos, div, driver, reserve, ppr], ...]
     '''
