@@ -1950,8 +1950,13 @@ async def update_divisions(guild, roster_ws=None):
 
                     div_role = [r for r in div_roles if r.name[-1] == div or (r.name == "Waiting List" and div in ["WL", "CT"])][0]
 
-                    # await member.add_roles(div_role)
-                    # await member.edit(nick=f"[{'D' + div if div != 'WL' else 'WL'}] {gt}")
+                    await member.add_roles(div_role)
+
+                    if div != "CT":
+                        await member.edit(nick=f"[{'D' + div if div != 'WL' else 'WL'}] {gt}")
+
+                    else:
+                        await member.edit(nick=gt)
 
                     role_added = True
 
@@ -1961,7 +1966,6 @@ async def update_divisions(guild, roster_ws=None):
                     await simple_bot_response(div_channels[div-1],
                         content=member.mention,
                         description=f"**{gt} was added to <:{div_name}:{division_emojis[div-1]}>.**",
-                        send=False
                     )
 
 
@@ -1970,11 +1974,10 @@ async def update_divisions(guild, roster_ws=None):
 
             if incorrect_role or (member_div_role and not div): # has wrong role or has role and shouldn't
 
-                # await member.remove_roles(member_div_role[0])
+                await member.remove_roles(member_div_role[0])
 
                 if not role_added: # gt was not udpated already
-                    # await member.edit(nick=gt)
-                    pass
+                    await member.edit(nick=gt)
 
 
                 div_name = None
@@ -1989,7 +1992,6 @@ async def update_divisions(guild, roster_ws=None):
                 await simple_bot_response(div_channels[div-1],
                     content=member.mention,
                     description=f"**{gt} was removed from <:{div_name}:{division_emojis[div-1]}>.**",
-                    send=False
                 )
 
 
