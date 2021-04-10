@@ -1688,6 +1688,11 @@ async def update_reserves(message, div_combos, old_div_combos):
 
                                 c = message.guild.get_channel(c)
 
+                                reserve_div_role = [r for r in message.guild.roles if r.name == f"Reserve Division {reserve.div}"][0]
+                                
+                                member = message.guild.get_member(reserve.r_driver)
+                                await member.remove_roles(reserve_div_role)
+
                                 await simple_bot_response(c,
                                     content=reserve.mention,
                                     description=f"**{reserve.display_name} is no longer reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
