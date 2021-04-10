@@ -166,8 +166,13 @@ async def main(client, message, args, author_perms):
     if message.channel.id == bot_stuff_id: # in bot stuff
 
         if args[0] == "!updatedivs":
+            await message.add_reaction(Support.emojis._9b9c9f_emoji)
+
             await update_divisions(message.guild)
+
+            await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
             await Support.process_complete_reaction(message, remove=True)
+
 
         elif args[0] == "!updatequali":
             # get the sheet
