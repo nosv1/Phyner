@@ -1914,7 +1914,7 @@ async def update_divisions(guild, roster_ws=None):
     
     div_channels = [c for c in guild.channels if re.findall(rf"(division-[1-{num_divs}])|(waiting-list)", c.name)]
     div_channels.sort(key=lambda x:x.name)
-    div_roles = [r for r in guild.roles if re.findall(rf"(^Division [1-{num_divs}]$)|(Waiting List)", r.name)]
+    div_roles = [r for r in guild.roles if re.findall(rf"(^Division [1-{num_divs}]$)|(^Waiting List$)", r.name)]
 
     for row in roster:
         
