@@ -512,7 +512,7 @@ async def link_stream(message, args):
             if c.col == 4:
                 c.value = ""
 
-        roster_ws.update_cells(roster, value_input_option="USER_ENTERED")
+        roster_ws.update_cells(roster, value_input_option="FORMULA")
 
         await simple_bot_response(message.channel,
             title="**Stream Linked**",
