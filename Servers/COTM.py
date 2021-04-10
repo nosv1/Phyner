@@ -273,11 +273,7 @@ async def on_reaction_add(client, message, user, payload):
         if message.id in start_orders:
 
             if payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji:
-                start_orders = get_start_orders()
-                await update_start_order(message, start_orders[start_orders.index(message.id)])
-
-                if user.id == Support.ids.mo_id: # update divs
-                    await update_divisions(message.guild)
+                await update_start_order(message, get_start_orders()[start_orders.index(message.id)])
 
                 remove_reaction = True
 
