@@ -35,6 +35,7 @@ signup_id = 796401927411728414
 start_orders = 622484589465829376
 vote_id = 608472349712580608
 voting_log_id = 530284914071961619
+division_updates_id = 527319768911314944
 
 div_channels = [
     527225908613087279,
@@ -272,7 +273,12 @@ async def on_reaction_add(client, message, user, payload):
         if message.id in start_orders:
 
             if payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji:
-                await update_start_order(message, get_start_orders()[start_orders.index(message.id)])
+                start_orders = get_start_orders()
+                await update_start_order(message, start_orders[start_orders.index(message.id)])
+
+                if user.id == Support.ids.mo_id: # update divs
+                    await update_divisions(message.guild)
+
                 remove_reaction = True
 
 
@@ -1623,10 +1629,15 @@ async def update_reserves(message, div_combos, old_div_combos):
                 
                 await reserve.add_roles([r for r in message.guild.roles if r.name == reserve_role_name][0])
 
-                await simple_bot_response(message.guild.get_channel(div_channels[combo[1].div-1]),
-                    content=reserve.mention,
-                    description=f"**{reserve.display_name} is reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
-                )
+
+                for c in [div_channels[combo[1].div-1], division_updates_id]: # div and div updates channel
+
+                    c = message.guild.get_channel(c)
+
+                    await simple_bot_response(c,
+                        content=reserve.mention,
+                        description=f"**{reserve.display_name} is reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
+                    )
 
                 log('cotm', 'message sent to div' + str(combo[1].div))
 
@@ -1647,15 +1658,37 @@ async def update_reserves(message, div_combos, old_div_combos):
         else: # is reserve
             div_reserves[r_driver.div-1].append(r_driver)
 
-    '''
-    for i, old_div_combo in enumerate(old_div_combos):
+    
+    # check if any reserves are no longer reserving
 
-        if len(old_div_combo) != len(div_combos[i]): # the number of reserves has changed
+    for div_reserve in div_reserves: # looping all reserves avail
 
-            reserves_needed = len(div_reserves[i])
-            reservees_needed = len(div_reservees[i])
+        for i, old_div_combo in enumerate(old_div_combos):
 
-            f""'''
+            for combo in old_div_combo: # combos in div
+
+                if combo[1] == div_reserve: # was reserve in this div
+
+                    still_reserve = False
+                    
+                    for combo in div_combos[i]: # looping new div combos
+
+                        if combo[1] == div_reserve: # still reserving in div
+                            still_reserve = True
+                            break
+
+                    if not still_reserve:
+
+                        for c in [div_channels[combo[1].div-1], division_updates_id]: # div and div updates channel
+
+                            c = message.guild.get_channel(c)
+
+                            await simple_bot_response(c,
+                                content=reserve.mention,
+                                description=f"**{reserve.display_name} is no longer reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
+                            )
+
+                        log('cotm', 'message sent to div' + str(combo[1].div))
 
     
     # update spreadsheet
@@ -1820,7 +1853,7 @@ def get_start_orders():
 # end get_start_orders
 
 
-async def update_start_order(start_order_msg, start_order_range):
+async def update_start_order(start_order_msg, start_order_range, is_mo):
     '''
         start_order_range = [[pos, div, driver, reserve, ppr], ...]
     '''
