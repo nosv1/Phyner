@@ -289,7 +289,7 @@ class Table:
                     for i, table in enumerate(self.tables): # udpate messages for needed tables, later clearing not used messages
                         mesge = mesges[i]
                         
-                        embed = mesge.embeds[0] if mesge.embeds else simple_bot_response(destination, description="", send=False)
+                        embed = mesge.embeds[0] if mesge.embeds else await simple_bot_response(destination, description="", send=False)
                         content = mesge.content
 
                         split = []
