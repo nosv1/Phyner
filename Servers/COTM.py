@@ -1772,7 +1772,7 @@ async def update_reserves(message, div_combos, old_div_combos):
 
 
     # update start orders
-    
+
     start_orders_channel = message.guild.get_channel(start_orders_id)
 
     start_orders = get_start_orders()
@@ -1781,7 +1781,7 @@ async def update_reserves(message, div_combos, old_div_combos):
 
         start_order_msg = await start_orders_channel.fetch_message(start_order)
 
-        update_start_order(start_order_msg, start_orders[i])
+        await update_start_order(start_order_msg, start_orders[i])
 # end update_reserves
 
 
