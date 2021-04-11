@@ -79,7 +79,7 @@ time_trial_leaderboard = [
     800212136449015878,
 ]
 
-start_orders = [
+start_order_msgs = [
     805657555682590751,
     805657556386578452,
     805657556671397909,
@@ -276,10 +276,10 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = await handle_reserve_reaction(message, payload, user)
 
 
-        if message.id in start_orders:
+        if message.id in start_order_msgs:
 
             if payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji:
-                await update_start_order(message, get_start_orders()[start_orders.index(message.id)])
+                await update_start_order(message, get_start_orders()[start_order_msgs.index(message.id)])
 
                 remove_reaction = True
 
@@ -1777,7 +1777,7 @@ async def update_reserves(message, div_combos, old_div_combos):
 
     start_orders = get_start_orders()
 
-    for i, start_order in enumerate(start_orders):
+    for i, start_order in enumerate(start_order_msgs):
 
         start_order_msg = await start_orders_channel.fetch_message(start_order)
 
@@ -1914,7 +1914,7 @@ async def update_start_order(start_order_msg, start_order_range):
     await Support.remove_reactions(start_order_msg, start_order_msg.author, Support.emojis._9b9c9f_emoji)
 
 
-    div = start_orders.index(start_order_msg.id) + 1
+    div = start_order_msgs.index(start_order_msg.id) + 1
     log("COTM", f"Updated Start Order {div}")
 # end update_start_order
 
