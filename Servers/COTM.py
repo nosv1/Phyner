@@ -32,7 +32,7 @@ cotm_streams_id = 527161746473877504
 quali_submit = 705787893364555785
 s7_leaderboard_id = 796786622191763487
 signup_id = 796401927411728414
-start_orders = 622484589465829376
+start_orders_id = 622484589465829376
 vote_id = 608472349712580608
 voting_log_id = 530284914071961619
 division_updates_id = 527319768911314944
@@ -1768,7 +1768,20 @@ async def update_reserves(message, div_combos, old_div_combos):
         embed["fields"][i]["value"] = "\n".join(f + [Support.emojis.space_char])
 
 
-    await message.edit(embed=discord.Embed().from_dict(embed))    
+    await message.edit(embed=discord.Embed().from_dict(embed))
+
+
+    # update start orders
+    
+    start_orders_channel = message.guild.get_channel(start_orders_id)
+
+    start_orders = get_start_orders()
+
+    for i, start_order in enumerate(start_orders):
+
+        start_order_msg = await start_orders_channel.fetch_message(start_order)
+
+        update_start_order(start_order_msg, start_orders[i])
 # end update_reserves
 
 
