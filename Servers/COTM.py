@@ -185,6 +185,7 @@ async def main(client, message, args, author_perms):
             await update_discord_leaderboard(client, quali_ws.get(f"J3:O{quali_ws.row_count}"), time_trial_leaderboard)
             await update_discord_leaderboard(client, quali_ws.get(f"B3:H{quali_ws.row_count}"), consistency_test_leaderboard)
 
+
         pass
 
 
@@ -218,8 +219,8 @@ async def main(client, message, args, author_perms):
         await display_license(message, args)
 
 
-    #elif args[0] == "!stream": # link stream
-        #await link_stream(message, args)
+    elif args[0] == "!stream": # link stream
+        await link_stream(message, args)
 
 
 # end main
@@ -507,12 +508,17 @@ async def link_stream(message, args):
         
     args[-2] = re.sub(r"[<>]", "", args[-2])
     if validators.url(args[-2]):
-        roster[i+3].value = args[-2]
-        for c in roster:
-            if c.col == 4:
-                c.value = ""
 
-        roster_ws.update_cells(roster, value_input_option="FORMULA")
+        roster[i+3].value = args[-2] # update stream link
+
+        for i, c in enumerate(roster):
+
+            if c.col in [4, 6]: # discord id col or div col
+                roster[i].value = ""
+
+            
+
+        roster_ws.update_cells(roster, value_input_option="USER_ENTERED")
 
         await simple_bot_response(message.channel,
             title="**Stream Linked**",
