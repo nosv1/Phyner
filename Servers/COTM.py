@@ -1481,6 +1481,19 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
     await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
 
 
+    # update start orders
+
+    start_orders_channel = message.guild.get_channel(start_orders_id)
+
+    start_orders = get_start_orders()
+
+    for i, start_order in enumerate(start_order_msgs):
+
+        start_order_msg = await start_orders_channel.fetch_message(start_order)
+
+        await update_start_order(start_order_msg, start_orders[i])
+
+
     return remove_reaction
 # end reserve_reaciton
 
@@ -1769,19 +1782,6 @@ async def update_reserves(message, div_combos, old_div_combos):
 
 
     await message.edit(embed=discord.Embed().from_dict(embed))
-
-
-    # update start orders
-
-    start_orders_channel = message.guild.get_channel(start_orders_id)
-
-    start_orders = get_start_orders()
-
-    for i, start_order in enumerate(start_order_msgs):
-
-        start_order_msg = await start_orders_channel.fetch_message(start_order)
-
-        await update_start_order(start_order_msg, start_orders[i])
 # end update_reserves
 
 
