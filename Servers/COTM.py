@@ -218,8 +218,8 @@ async def main(client, message, args, author_perms):
         await display_license(message, args)
 
 
-    elif args[0] == "!stream": # link stream
-        await link_stream(message, args)
+    #elif args[0] == "!stream": # link stream
+        #await link_stream(message, args)
 
 
 # end main
