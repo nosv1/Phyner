@@ -160,8 +160,6 @@ class Table:
 
                 col_max_widths[j] = len(value) if len(value) > col_max_widths[j] else col_max_widths[j]
 
-        print(col_max_widths)
-
 
         ## CREATE TABLES ##
 
