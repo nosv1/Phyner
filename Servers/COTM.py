@@ -305,7 +305,8 @@ async def on_reaction_remove(client, message, user, payload):
         if embed.title:
 
             if "Reserves" in embed.title:
-                await handle_reserve_reaction(message, payload, user, remove=True)
+                if payload.emoji.name != Support.emojis.counter_clockwise_arrows_emoji:
+                    await handle_reserve_reaction(message, payload, user, remove=True)
 # end on_reaction_remove
 
 
