@@ -272,8 +272,8 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = True
 
             
-            elif "Reserves" in embed.title:
-                remove_reaction = await handle_reserve_reaction(message, payload, user)
+            #elif "Reserves" in embed.title:
+                #remove_reaction = await handle_reserve_reaction(message, payload, user)
 
 
         if message.id in start_order_msgs:
@@ -1663,8 +1663,6 @@ async def update_reserves(message, div_combos, old_div_combos):
 
                 log('cotm', 'message sent to div' + str(combo[1].div))
 
-    
-    # update div channels to send the reserve situation, if changed - how many reserves avail, how many are without a reserve...
 
     r_drivers = get_r_drivers()
 
