@@ -272,8 +272,8 @@ async def on_reaction_add(client, message, user, payload):
                 remove_reaction = True
 
             
-            #elif "Reserves" in embed.title:
-                #remove_reaction = await handle_reserve_reaction(message, payload, user)
+            elif "Reserves" in embed.title:
+                remove_reaction = await handle_reserve_reaction(message, payload, user)
 
 
         if message.id in start_order_msgs:
@@ -1725,29 +1725,29 @@ async def update_reserves(message, div_combos, old_div_combos):
     ws = wb.worksheets()
 
     my_sheet_ws = Support.get_worksheet(ws, spreadsheets.season_7.my_sheet)
+    signups_ws = Support.get_worksheet(ws, spreadsheets.season_7.signups)
     reserves = my_sheet_ws.get(f"Q2:R")
 
     for i, r in enumerate(reserves):
         reserves[i] = ["" for c in r]
-        
-    
-    count = 0
 
-    for i, div_reservee in enumerate(div_reservees):
 
-        for j, reservee in enumerate(div_reservee):
+    count = 0 # index of reserves list
 
-            if not reserves: # reserves was blank
-                reserves.append(["", ""])
-            
-            elif len(reserves) < len(div_reservees): # there was less reserves on ss than there are now
+    for div_combo in div_combos: # loop new reserve combos
+
+        for combo in div_combo: # loop combos in div
+
+            if not reserves: # ss reserves was previously blank
                 reserves.append(["", ""])
 
-            reserves[count][0] = get_gt(reservee.r_driver, wb, ws)
-            reserves[count][1] = get_gt(div_reserves[i][j].r_driver, wb, ws)
+            elif reserves[-1][-1] != "": # more reserves than before
+                reserves.append(["", ""])
+
+            reserves[count][0] = get_gt(combo[0].r_driver, wb, ws, signups_ws)
+            reserves[count][1] = get_gt(combo[1].r_driver, wb, ws, signups_ws)
 
             count += 1
-
 
     my_sheet_ws.update("Q2:R", reserves)
 
