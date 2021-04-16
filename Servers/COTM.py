@@ -1469,13 +1469,17 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
 
 
     elif payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji and user.id == Support.ids.mo_id: # refresh
-        div_combos = generate_div_combos(get_r_drivers())
-        await update_reserves(message, div_combos, div_combos)
+        r_drivers = get_r_drivers()
+        await update_reserves(message, generate_div_combos(r_drivers), r_drivers)
         remove_reaction = True
 
 
     elif payload.emoji.name == Support.emojis.x_emoji and user.id == Support.ids.mo_id: # clear
         await clear_reserves(message)
+        remove_reaction = True
+
+
+    else: # punk clicking extra emoji
         remove_reaction = True
 
 
@@ -1544,7 +1548,7 @@ async def handle_need_reserve(message, user, remove=False):
     try:
         div = int(user.display_name.split("[D")[1].split("]")[0])
 
-        old_div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
+        old_r_drivers = get_r_drivers()
 
         if remove:
             await remove_r_driver(user, 0, div)
@@ -1554,7 +1558,7 @@ async def handle_need_reserve(message, user, remove=False):
 
         div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
         
-        await update_reserves(message, div_combos, old_div_combos)
+        await update_reserves(message, div_combos, old_r_drivers)
 
     except IndexError: # Div couldn't be recognized
         return True # remove reaction
@@ -1604,7 +1608,7 @@ async def handle_reserve_available(message, user, div, remove=False):
         return True
 
 
-    old_div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
+    old_r_drivers = get_r_drivers()
 
 
     if remove:
@@ -1617,11 +1621,11 @@ async def handle_reserve_available(message, user, div, remove=False):
     div_combos = generate_div_combos(get_r_drivers()) # [[(d1_reservee, d1_reserve), ...], ...]
     
 
-    await update_reserves(message, div_combos, old_div_combos)
+    await update_reserves(message, div_combos, old_r_drivers)
 # end handle_reserve_available
 
 
-async def update_reserves(message, div_combos, old_div_combos):
+async def update_reserves(message, div_combos, old_r_drivers):
     '''
         div_combos = [[(d1_reservee, d1_reserve), ...], ...]
     '''
@@ -1665,19 +1669,19 @@ async def update_reserves(message, div_combos, old_div_combos):
                 log('cotm', 'message sent to div' + str(combo[1].div))
 
 
-    r_drivers = get_r_drivers()
+    old_div_combos = generate_div_combos(old_r_drivers)
 
     div_reservees = [[] for i in range(num_divs)]
     div_reserves = [[] for i in range(num_divs)]
 
     
-    for r_driver in r_drivers: # get lists of reservees and reserves
+    for old_r_driver in old_r_drivers: # get lists of reservees and reserves
 
-        if r_driver.type == 0: # is reservee
-            div_reservees[r_driver.div-1].append(r_driver)
+        if old_r_driver.type == 0: # is reservee
+            div_reservees[old_r_driver.div-1].append(old_r_driver)
 
         else: # is reserve
-            div_reserves[r_driver.div-1].append(r_driver)
+            div_reserves[old_r_driver.div-1].append(old_r_driver)
 
     
     # check if any reserves are no longer reserving
