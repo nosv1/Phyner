@@ -1717,7 +1717,7 @@ async def update_reserves(message, div_combos, old_r_drivers):
 
                                 await simple_bot_response(c,
                                     content=member.mention,
-                                    description=f"**{reserve.display_name} is no longer reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
+                                    description=f"**{member.display_name} is no longer reserving for <:D{combo[1].div}:{division_emojis[combo[1].div-1]}>.**",
                                 )
 
                             log('cotm', 'message sent to div' + str(combo[1].div))
