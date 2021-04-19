@@ -609,19 +609,24 @@ async def update_streamers(streams_msg):
 
             member_divs = []
 
-            for role in member.roles:
+            try:
 
-                if "Division" in role.name:
-                    member_divs.append(int(role.name[-1]))
+                for role in member.roles:
+
+                    if "Division" in role.name:
+                        member_divs.append(int(role.name[-1]))
 
 
-            for div in member_divs:
+                for div in member_divs:
 
-                embed["fields"][div-1]["value"].append(f"{Support.emojis.space_char}[{member.display_name}]({streamer[-1]})") # [name](link)
+                    embed["fields"][div-1]["value"].append(f"{Support.emojis.space_char}[{member.display_name}]({streamer[-1]})") # [name](link)
 
-                if emoji == emojis.twitch_emoji:
+                    if emoji == emojis.twitch_emoji:
 
-                    multi_streams[div-1].append(streamer[-1].split(".tv/")[1].split("/")[0]) # https://twitch.tv/moshots -> moshots
+                        multi_streams[div-1].append(streamer[-1].split(".tv/")[1].split("/")[0]) # https://twitch.tv/moshots -> moshots
+            
+            except AttributeError: # member is none (not in server)
+                continue
 
 
     for i, field in enumerate(embed["fields"]):
