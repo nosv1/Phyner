@@ -614,7 +614,12 @@ async def update_streamers(streams_msg):
                 for role in member.roles:
 
                     if "Division" in role.name:
-                        member_divs.append(int(role.name[-1]))
+
+                        div = int(role.name[-1])
+
+                        if div not in member_divs: # in case some how has two of same div role :shrug:
+                            
+                            member_divs.append(div)
 
 
                 for div in member_divs:
