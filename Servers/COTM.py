@@ -674,7 +674,7 @@ def get_license(gt, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.
     if not driver_history_ws:
         driver_history_ws = Support.get_worksheet(ws if ws else wb.worksheets(), spreadsheets.season_7.driver_history)    
 
-    driver_history = driver_history_ws.get("C4:O")
+    driver_history = driver_history_ws.get("C4:P")
 
     i, row, j = Support.find_value_in_range(driver_history, gt, get=True)
 
@@ -690,7 +690,7 @@ def get_license(gt, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.
             "best_4" : row[7], # Average of overall positions of best 5 races # Finish Position Overall / Number of Drivers
             "division" : row[8],
             "points" : row[10], # avg dif of best 5 to quali to pts
-            "points_as_reserve" : row[11]
+            "points_as_reserve" : row[13]
         })
 
     else:
