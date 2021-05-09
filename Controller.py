@@ -429,6 +429,7 @@ async def on_raw_reaction_add(payload):
         async def remove_reaction_check(remove_reaction):
             if remove_reaction and not is_dm:
                 await message.remove_reaction(payload.emoji, user)
+                log("reaction", f"reaction removed {payload.emoji}")
         # end remove_reaction
 
 
