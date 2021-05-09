@@ -277,7 +277,6 @@ async def on_reaction_add(client, message, user, payload):
 
 
         if message.id in start_order_msgs:
-            print('yes')
 
             if payload.emoji.name == Support.emojis.counter_clockwise_arrows_emoji:
                 await update_start_order(message, get_start_orders()[start_order_msgs.index(message.id)])
