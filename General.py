@@ -197,6 +197,8 @@ async def reaction(message, args):
             try:
                 await msg.add_reaction(r)
 
+                log("reaction", f"added reaction {r}")
+
             except: # couldn't add emoji to message, likely was one of the args after the last reaction
                 pass
 
@@ -210,9 +212,13 @@ async def reaction(message, args):
                         
                         async for user in ur.users():
                             await Support.remove_reactions(msg, user, ur.emoji)
+                
+                log("reaction", f"removed all reactions")
 
             else:
                 await Support.remove_reactions(msg, Support.get_phyner_from_channel, r)
+                
+                log("reaction", f"removed reaction {r}")
 
     await Support.process_complete_reaction(message)
 
