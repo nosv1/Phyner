@@ -200,6 +200,7 @@ async def reaction(message, args):
                 log("reaction", f"added reaction {r}")
 
             except: # couldn't add emoji to message, likely was one of the args after the last reaction
+                print(Support.traceback.format_exc())
                 pass
 
         elif args[2] == "remove":
