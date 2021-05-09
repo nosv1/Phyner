@@ -446,6 +446,8 @@ async def on_raw_reaction_add(payload):
                 )
             ): # not bot reaction
 
+                print('yes')
+
                 restart_delta = (restart_time - datetime.utcnow()).seconds
                 if restart_delta < restart_interval:
                     return
