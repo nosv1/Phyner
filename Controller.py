@@ -612,7 +612,7 @@ async def on_raw_reaction_remove(payload):
                         event.condition.id == message.id,
                         str(event.object.id) == str(payload.emoji)
                     ]):
-                    
+
                         await Events.perform_action(client, message, user, event)
 
 
