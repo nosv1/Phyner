@@ -1489,8 +1489,8 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
         remove_reaction = True
 
 
-    else: # punk clicking extra emoji
-        remove_reaction = True
+    else: # not wave or div number
+        return True
 
 
     await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
