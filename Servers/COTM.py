@@ -1462,6 +1462,7 @@ def get_r_drivers():
 async def handle_reserve_reaction(message, payload, user, remove=False):
     '''
     '''
+    print(remove)
 
     remove_reaction = False
 
