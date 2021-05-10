@@ -116,7 +116,7 @@ division_emojis = [
 
 
 drivers_per_div = 14
-num_divs = 7
+num_divs = 8
 
 
 # SPREADSHEETS
@@ -1960,9 +1960,9 @@ async def update_divisions(guild, roster_ws=None):
     roster = roster_ws.get(f"C4:G{roster_ws.row_count}")
 
     
-    div_channels = [c for c in guild.channels if re.findall(rf"(division-[1-{8}])|(waiting-list)", c.name)]
+    div_channels = [c for c in guild.channels if re.findall(rf"(division-[1-{num_divs}])|(waiting-list)", c.name)]
     div_channels.sort(key=lambda x:x.name)
-    div_roles = [r for r in guild.roles if re.findall(rf"(^Division [1-{8}]$)|(^Waiting List$)", r.name)]
+    div_roles = [r for r in guild.roles if re.findall(rf"(^Division [1-{num_divs}]$)|(^Waiting List$)", r.name)]
 
     for row in roster:
         
