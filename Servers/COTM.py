@@ -804,7 +804,6 @@ async def reset_vote(msg):
 
     options = []
     for o in embed["fields"][0]["value"].split("\n"):
-        print(o)
 
         option = re.findall(r"(\[.*\]\(.*\))", o)[0]
         options.append(f"{Support.emojis.number_emojis[0]} {option}")
@@ -1485,7 +1484,6 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
 
 
     elif payload.emoji.name == Support.emojis.x_emoji and user.id == Support.ids.mo_id and not remove: # clear
-        print(remove)
         await clear_reserves(message)
         remove_reaction = True
 
@@ -1498,6 +1496,7 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
 
 
     # update start orders
+    print('yes')
 
     start_orders_channel = message.guild.get_channel(start_orders_id)
 
