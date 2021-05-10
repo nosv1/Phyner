@@ -1485,6 +1485,7 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
 
 
     elif payload.emoji.name == Support.emojis.x_emoji and user.id == Support.ids.mo_id and not remove: # clear
+        print(remove)
         await clear_reserves(message)
         remove_reaction = True
 
