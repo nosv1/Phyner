@@ -1462,7 +1462,6 @@ def get_r_drivers():
 async def handle_reserve_reaction(message, payload, user, remove=False):
     '''
     '''
-    print(remove)
 
     remove_reaction = False
 
@@ -1484,13 +1483,20 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
         remove_reaction = True
 
 
-    elif payload.emoji.name == Support.emojis.x_emoji and user.id == Support.ids.mo_id and not remove: # clear
-        await clear_reserves(message)
+    elif payload.emoji.name == Support.emojis.x_emoji and user.id == Support.ids.mo_id: # clear
+
+        if not remove:
+            await clear_reserves(message)
+
+        else:
+            skip_start_order_update = True
+
         remove_reaction = True
 
 
     else: # not wave or div number
-        return True
+        skip_start_order_update = True
+        remove_reaction = True
 
 
     await Support.remove_reactions(message, Support.get_phyner_from_channel(message.channel), Support.emojis._9b9c9f_emoji)
@@ -1498,15 +1504,17 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
 
     # update start orders
 
-    start_orders_channel = message.guild.get_channel(start_orders_id)
+    if not skip_start_order_update:
 
-    start_orders = get_start_orders()
+        start_orders_channel = message.guild.get_channel(start_orders_id)
 
-    for i, start_order in enumerate(start_order_msgs):
+        start_orders = get_start_orders()
 
-        start_order_msg = await start_orders_channel.fetch_message(start_order)
+        for i, start_order in enumerate(start_order_msgs):
 
-        await update_start_order(start_order_msg, start_orders[i])
+            start_order_msg = await start_orders_channel.fetch_message(start_order)
+
+            await update_start_order(start_order_msg, start_orders[i])
 
 
     return remove_reaction
