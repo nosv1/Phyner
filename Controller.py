@@ -606,18 +606,19 @@ async def on_raw_reaction_remove(payload):
                 ## PHYNER REACTION REMOVE CHECKS 
 
                 for event in phyner_reaction_removes:
+                    
                     if all([
                         event.guild_id == message.guild.id if message.guild else False,
                         event.condition.id == message.id,
                         str(event.object.id) == str(payload.emoji)
                     ]):
+                    
                         await Events.perform_action(client, message, user, event)
 
 
                 ## SERVER CHECKS ##
 
                 if message.guild:
-
 
                     if message.guild.id == COTM.cotm_id: # COTM
                         await COTM.on_reaction_remove(client, message, user, payload)
