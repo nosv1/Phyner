@@ -1995,6 +1995,7 @@ async def update_divisions(guild, roster_ws=None):
 
             
                 if (not member_div_role or incorrect_role): # needs role
+                    print(member)
 
                     div_role = [r for r in div_roles if r.name[-1] == div or (r.name == "Waiting List" and div in ["WL", "CT"])][0]
 
