@@ -1464,6 +1464,7 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
     '''
 
     remove_reaction = False
+    skip_start_order_update = False
 
     
     await message.add_reaction(Support.emojis._9b9c9f_emoji)
