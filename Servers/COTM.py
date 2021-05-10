@@ -116,7 +116,7 @@ division_emojis = [
 
 
 drivers_per_div = 14
-num_divs = 8
+num_divs = 7
 
 
 # SPREADSHEETS
