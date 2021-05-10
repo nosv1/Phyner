@@ -1496,7 +1496,6 @@ async def handle_reserve_reaction(message, payload, user, remove=False):
 
 
     # update start orders
-    print('yes')
 
     start_orders_channel = message.guild.get_channel(start_orders_id)
 
