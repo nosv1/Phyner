@@ -384,7 +384,7 @@ async def on_message(message):
             
 
     except RuntimeError:
-        log("Connection", f"{host} Disconnected")
+        log("Connection", f"{host} Disconnected (likely)")
     
     except:
         error = traceback.format_exc()
