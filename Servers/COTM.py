@@ -897,10 +897,9 @@ async def compare_stats(client, message, args):
     plt.savefig("COTM_graph.png", facecolor=fig.get_facecolor(), transparent=True, bbox_inches="tight")
     plt.close()
 
-    '''with open("COTM_graph.png", "rb") as graph:
+    with open("COTM_graph.png", "rb") as graph:
         attachment_url = await Support.save_image_to_random_storage(client, file=discord.File(graph))
-    os.remove("COTM_graph.png")'''
-    return
+    os.remove("COTM_graph.png")
 
 
     embed = await simple_bot_response(message.channel, title="**__Season 7 Stats__**", send=False)
