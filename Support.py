@@ -94,11 +94,11 @@ edit_aliases = ["edit"]
 
 ''' SUPPORT FUNCTIONS '''
 
-async def save_image_to_random_storage(client, attachment):
+async def save_image_to_random_storage(client, attachment=None, file=None):
     guild = client.get_guild(ids.phyner_support_id)
     channel = guild.get_channel(ids.random_storage)
 
-    msg = await channel.send(file=await attachment.to_file(spoiler=True))
+    msg = await channel.send(file=await attachment.to_file(spoiler=True) if attachment else file)
 
     return msg.attachments[0].url
 # end saveImageReturnURL
