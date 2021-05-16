@@ -1,14 +1,18 @@
 ''' IMPORTS '''
 
+import asyncio
 from datetime import datetime
 import discord
-import asyncio
+from matplotlib import pyplot as plt
+import matplotlib as mpl
+import numpy as np
+import os
+import random
+import re
 from pytz import timezone
 import traceback
 from types import SimpleNamespace
-import re
 import validators
-import random
 
 
 import Database
@@ -17,8 +21,6 @@ import Logger
 from Logger import log
 import Support
 from Support import delete_last_field, messageOrMsg, simple_bot_response
-import Delete
-
 
 
 ''' CONSTANTS '''
@@ -221,6 +223,10 @@ async def main(client, message, args, author_perms):
 
     elif args[0] == "!stream": # link stream
         await link_stream(message, args)
+
+    
+    elif args[0] in ["!compare", "!stats", "!history"]: # compare drivers' stats
+        await compare_stats(client, message, args)
 
 
 # end main
@@ -745,6 +751,187 @@ async def display_license(message, args):
 
     await message.channel.send(embed=embed)
 # end display_license
+
+
+
+## COMPARE STATS ##
+
+async def compare_stats(client, message, args):
+    '''
+        !compare/history/stats @driver ...
+        !... @division
+    '''
+
+    log("COTM", f"Compare Stats {message.author.id}, '{message.content}'\n")
+
+    await message.channel.trigger_typing()
+
+
+    # get list of members 
+
+    members = message.mentions # starter list of members to compare
+
+    for role in message.role_mentions: # only div roles
+
+        if re.findall(r"(^Division \d$)", role.name): # if div role
+
+            members += role.members
+
+    members = list(set(members)) # remove duplicates
+
+
+    # get the s7 history
+    
+    g = Support.get_g_client()
+    wb = g.open_by_key(spreadsheets.season_7.key)
+    ws = wb.worksheets()
+
+    signups_ws = Support.get_worksheet(ws, spreadsheets.season_7.signups)
+    driver_history_ws = Support.get_worksheet(ws, spreadsheets.season_7.driver_history)
+
+    signups = signups_ws.get("B2:C")
+    gts = [get_gt(m.id, wb=wb, ws=ws, signups_ws=signups_ws, signups=signups) for m in members] # may contain Nones where driver has not signed up
+
+
+    div_points_table = driver_history_ws.get("C3:P") # Drivers, Starts, Finishes, DNSs, RSVS, PS, PP, O Perf, C Div, L Div, C Pts, L Pts, PPR, Pts as Rsv
+    rounds_table = driver_history_ws.get("Z3:DQ") # Div, SPOS, FPOS, Overall, Reserve, Best Lap, Total Time, PS, PP, CLSF, PTS, _
+
+    driver_stats = {}
+
+    for i, gt in enumerate(gts[:1]):
+
+        if gt:
+
+            row_i, row, col_j = Support.find_value_in_range(div_points_table, gt, get=True)
+            
+            if row: # driver has history
+
+                driver_stats[gt] = {
+                    'member' : members[i],
+                    'rounds' : [rounds_table[row_i][j : j + 12] for j in range(0, len(rounds_table[row_i]), 12)], # split row into rounds
+                    'stats' : div_points_table[row_i],
+
+                    # per round stats
+                    'divisions' : [],
+                    'start_positions' : [],
+                    'finish_positions' : [],
+                    'reserves' : [],
+                    'points' : [],
+                    'color' : hex(random.randint(0, int(0xffffff))).replace("0x", "#"), # divide range of colors by num gts + 2, use middle hexs as line colors
+                }
+
+
+
+
+    fig, div_ax = plt.subplots()
+    s_pos_ax = f_pos_ax = div_ax.twinx()
+
+    for driver in driver_stats:
+
+        for i, round in enumerate(driver_stats[driver]["rounds"]):
+
+            if round[-2] and len(round) > 2: # has points and round completed
+
+                driver_stats[driver]["divisions"].append(int(round[0]))
+                driver_stats[driver]["start_positions"].append(int(round[1]))
+                driver_stats[driver]["finish_positions"].append(int(round[2]))
+                driver_stats[driver]["reserves"].append(round[4])
+                driver_stats[driver]["points"].append(int(round[-2]))
+
+            else:
+
+                driver_stats[driver]["divisions"].append(0)
+                driver_stats[driver]["start_positions"].append(0)
+                driver_stats[driver]["finish_positions"].append(0)
+                driver_stats[driver]["reserves"].append('')
+                driver_stats[driver]["points"].append(0)
+                
+    max_div = 0
+    max_rounds = 0
+
+    for driver in driver_stats:
+
+        m = max([int(d) for d in driver_stats[driver]['divisions'] if d])
+        max_div = m if m > max_div else max_div
+
+        r = max([8-i for i, r in enumerate(driver_stats[driver]["finish_positions"][::-1]) if r])
+        max_rounds = r if r > max_rounds else max_rounds
+
+
+    for driver in driver_stats:
+
+        for i, round in enumerate(driver_stats[driver]["rounds"]):
+
+            if i <= max_rounds:
+
+                div_ax.plot(driver_stats[driver]['divisions'], color=driver_stats[driver]["color"])
+                s_pos_ax.plot(driver_stats[driver]['start_positions'], linestyle="dashed", color=driver_stats[driver]["color"])
+                f_pos_ax.plot(driver_stats[driver]['finish_positions'], linestyle="dotted", color=driver_stats[driver]["color"])
+
+
+    log("COTM", f"Stats to Compare {driver_stats}")
+
+
+    f_pos_ax.legend(("Start Pos.", "Finish Pos."), loc="upper left", bbox_to_anchor=(1.075, 1))
+    div_ax.legend(tuple([gt for gt in driver_stats]), loc="upper left", bbox_to_anchor=(1.075, .85))
+
+    div_ax.tick_params(axis='y')
+    f_pos_ax.tick_params(axis='y')
+
+
+    div_ax.set_xticks(range(0, max_rounds))
+    div_ax.set_xticklabels(range(1, max_rounds + 1))
+    div_ax.set_xlabel("Round")
+
+
+    y_ticks = range(0, max_div+1)
+    div_ax.set_yticks(y_ticks)
+    div_ax.set_yticklabels(y_ticks)
+
+    div_ax.set_ylabel("Division")
+    f_pos_ax.set_ylabel(f"Start/Finish Position", rotation=270)
+
+    plt.axis('scaled')
+
+
+    plt.savefig("COTM_graph.png", facecolor=fig.get_facecolor(), transparent=True, bbox_inches="tight")
+    plt.close()
+
+    '''with open("COTM_graph.png", "rb") as graph:
+        attachment_url = await Support.save_image_to_random_storage(client, file=discord.File(graph))
+    os.remove("COTM_graph.png")'''
+    return
+
+
+    embed = await simple_bot_response(message.channel, title="**__Season 7 Stats__**", send=False)
+
+    for driver in driver_stats:
+
+        value = ""
+        value += f"Starts: {driver_stats[driver]['stats'][1]}\n"
+        value += f"Finishes: {driver_stats[driver]['stats'][2]}\n"
+        value += f"DNSs: {driver_stats[driver]['stats'][3]}\n"
+        value += f"Rsvs: {driver_stats[driver]['stats'][4]} {', '.join([f'R{i+1}' for i, _ in enumerate(driver_stats[driver]['reserves']) if _])}\n"
+        value += f"Div: {driver_stats[driver]['stats'][-6]}\n"
+        value += f"Points: {driver_stats[driver]['stats'][-4]}\n"
+
+        embed.add_field(
+            name=f"**{driver}**",
+            value=f"```{value}```{Support.emojis.space_char}"
+        )
+
+    embed.set_image(url=attachment_url)
+
+
+    await message.channel.send(embed=embed)
+
+
+    
+
+
+
+# end compare_stats
+
 
 
 
@@ -2049,14 +2236,16 @@ async def update_divisions(guild, roster_ws=None):
 # end update_divisions
 
 
-def get_gt(discord_id, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.key), ws=None, signups_ws=None):
+def get_gt(discord_id, wb=Support.get_g_client().open_by_key(spreadsheets.season_7.key), ws=None, signups_ws=None, signups=None):
     """
     """
 
     if not signups_ws:
         signups_ws = Support.get_worksheet(ws if ws else wb.worksheets(), spreadsheets.season_7.signups)
 
-    signups = signups_ws.get("B2:C")
+    if not signups:
+        signups = signups_ws.get("B2:C")
+
     i, row, j = Support.find_value_in_range(signups, discord_id, get=True)
 
     if row:
