@@ -308,7 +308,7 @@ async def series_report(client, message, user):
                 if mesge.attachments: # detect attachments
                     mesge.attachments.reverse()
                     for attachment in mesge.attachments:
-                        other_links.append(await Support.save_image_to_random_storage(client, attachment=attachment)) # save to a discord channel to keep a valid link
+                        other_links.append(await Support.save_image_to_random_storage(client, attachment)) # save to a discord channel to keep a valid link
 
                 if ballchasing_links or len(other_links) >= away_team_wins + home_team_wins: # stop condtion
                     stop = True
