@@ -854,6 +854,9 @@ async def compare_stats(client, message, args):
         m = max([int(d) for d in driver_stats[driver]['divisions'] if d])
         max_div = m if m > max_div else max_div
 
+        while len(driver_stats[driver]["finish_positions"]) < 8:
+            driver_stats[driver]["finish_positions"].append(0)
+
         r = max([num_rounds-i for i, r in enumerate(driver_stats[driver]["finish_positions"][::-1]) if r])
         max_rounds = r if r > max_rounds else max_rounds
 
@@ -868,8 +871,8 @@ async def compare_stats(client, message, args):
     log("COTM", f"Stats to Compare {driver_stats}")
 
 
-    f_pos_ax.legend(("Start Pos.", "Finish Pos."), loc="upper left", bbox_to_anchor=(1.075, 1))
-    div_ax.legend(tuple([gt for gt in driver_stats]), loc="upper left", bbox_to_anchor=(1.075, .85))
+    f_pos_ax.legend(("Start Pos.", "Finish Pos."), loc="upper left", bbox_to_anchor=(1.01, 1))
+    div_ax.legend(tuple([gt for gt in driver_stats]), loc="upper left", bbox_to_anchor=(1.01, .85))
 
     div_ax.tick_params(axis='y')
     f_pos_ax.tick_params(axis='y')
