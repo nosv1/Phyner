@@ -835,7 +835,7 @@ async def compare_stats(client, message, args):
                 driver_stats[driver]["start_positions"].append(int(round[1]))
                 driver_stats[driver]["finish_positions"].append(int(round[2]))
                 driver_stats[driver]["reserves"].append(round[4])
-                driver_stats[driver]["points"].append(int(round[-2]))
+                driver_stats[driver]["points"].append(int(round[10]))
 
             else:
 
