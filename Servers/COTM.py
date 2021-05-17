@@ -186,11 +186,7 @@ async def main(client, message, args, author_perms):
             quali_ws = Support.get_worksheet(ws, spreadsheets.season_7.quali)
             await update_discord_leaderboard(client, quali_ws.get(f"J3:O{quali_ws.row_count}"), time_trial_leaderboard)
             await update_discord_leaderboard(client, quali_ws.get(f"B3:H{quali_ws.row_count}"), consistency_test_leaderboard)
-
-
-        # elif args[0] in ["!compare", "!stats", "!history"]: # compare drivers' stats
-        #     await compare_stats(client, message, args)
-
+            
         pass
 
 
@@ -226,6 +222,10 @@ async def main(client, message, args, author_perms):
 
     elif args[0] == "!stream": # link stream
         await link_stream(message, args)
+
+
+    elif args[0] in ["!compare", "!stats", "!history"]: # compare drivers' stats
+        await compare_stats(client, message, args)
 
 
 # end main
@@ -797,7 +797,7 @@ async def compare_stats(client, message, args):
 
     driver_stats = {}
 
-    for i, gt in enumerate(gts[:1]):
+    for i, gt in enumerate(gts):
 
         if gt:
 
@@ -847,25 +847,22 @@ async def compare_stats(client, message, args):
                 
     max_div = 0
     max_rounds = 0
+    num_rounds = 8
 
     for driver in driver_stats:
 
         m = max([int(d) for d in driver_stats[driver]['divisions'] if d])
         max_div = m if m > max_div else max_div
 
-        r = max([8-i for i, r in enumerate(driver_stats[driver]["finish_positions"][::-1]) if r])
+        r = max([num_rounds-i for i, r in enumerate(driver_stats[driver]["finish_positions"][::-1]) if r])
         max_rounds = r if r > max_rounds else max_rounds
 
 
     for driver in driver_stats:
 
-        for i, round in enumerate(driver_stats[driver]["rounds"]):
-
-            if i <= max_rounds:
-
-                div_ax.plot(driver_stats[driver]['divisions'], color=driver_stats[driver]["color"])
-                s_pos_ax.plot(driver_stats[driver]['start_positions'], linestyle="dashed", color=driver_stats[driver]["color"])
-                f_pos_ax.plot(driver_stats[driver]['finish_positions'], linestyle="dotted", color=driver_stats[driver]["color"])
+        div_ax.plot(driver_stats[driver]['divisions'][:max_rounds], color=driver_stats[driver]["color"])
+        s_pos_ax.plot(driver_stats[driver]['start_positions'][:max_rounds], linestyle="dotted", color=driver_stats[driver]["color"])
+        f_pos_ax.plot(driver_stats[driver]['finish_positions'][:max_rounds], linestyle="dashed", color=driver_stats[driver]["color"])
 
 
     log("COTM", f"Stats to Compare {driver_stats}")
@@ -888,9 +885,7 @@ async def compare_stats(client, message, args):
     div_ax.set_yticklabels(y_ticks)
 
     div_ax.set_ylabel("Division")
-    f_pos_ax.set_ylabel(f"Start/Finish Position", rotation=270)
-
-    plt.axis('scaled')
+    f_pos_ax.set_ylabel(f"Start/Finish Position", rotation=270, labelpad=10)
 
 
     plt.savefig("COTM_graph.png", facecolor=fig.get_facecolor(), transparent=True, bbox_inches="tight")
