@@ -188,6 +188,9 @@ async def main(client, message, args, author_perms):
             await update_discord_leaderboard(client, quali_ws.get(f"B3:H{quali_ws.row_count}"), consistency_test_leaderboard)
 
 
+        # elif args[0] in ["!compare", "!stats", "!history"]: # compare drivers' stats
+        #     await compare_stats(client, message, args)
+
         pass
 
 
@@ -223,10 +226,6 @@ async def main(client, message, args, author_perms):
 
     elif args[0] == "!stream": # link stream
         await link_stream(message, args)
-
-    
-    elif args[0] in ["!compare", "!stats", "!history"]: # compare drivers' stats
-        await compare_stats(client, message, args)
 
 
 # end main
