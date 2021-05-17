@@ -854,7 +854,7 @@ async def compare_stats(client, message, args):
         m = max([int(d) for d in driver_stats[driver]['divisions'] if d])
         max_div = m if m > max_div else max_div
 
-        while len(driver_stats[driver]["finish_positions"]) < 8:
+        while len(driver_stats[driver]["finish_positions"]) < num_rounds:
             driver_stats[driver]["finish_positions"].append(0)
 
         r = max([num_rounds-i for i, r in enumerate(driver_stats[driver]["finish_positions"][::-1]) if r])
