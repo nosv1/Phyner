@@ -816,7 +816,7 @@ async def compare_stats(client, message, args):
                     'finish_positions' : [],
                     'reserves' : [],
                     'points' : [],
-                    'color' : hex(random.randint(0, int(0xffffff))).replace("0x", "#"), # divide range of colors by num gts + 2, use middle hexs as line colors
+                    'color' : hex(random.randint(0, int(0xffffff))).replace("0x", "#").ljust(7, "0"), # divide range of colors by num gts + 2, use middle hexs as line colors
                 }
 
 
