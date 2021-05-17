@@ -871,8 +871,8 @@ async def compare_stats(client, message, args):
     log("COTM", f"Stats to Compare {driver_stats}")
 
 
-    f_pos_ax.legend(("Start Pos.", "Finish Pos."), loc="upper left", bbox_to_anchor=(1.01, 1))
-    div_ax.legend(tuple([gt for gt in driver_stats]), loc="upper left", bbox_to_anchor=(1.01, .85))
+    f_pos_ax.legend(("Start Pos.", "Finish Pos."), loc="upper left", bbox_to_anchor=(1.1, 1))
+    div_ax.legend(tuple([gt for gt in driver_stats]), loc="upper left", bbox_to_anchor=(1.1, .85))
 
     div_ax.tick_params(axis='y')
     f_pos_ax.tick_params(axis='y')
