@@ -667,7 +667,7 @@ async def startup():
 
     await client.change_presence(
         activity=discord.Activity(
-            type=discord.ActivityType.playing, name="Alpha testing..."
+            type=discord.ActivityType.playing, name="DEPRECIATING THIS WINTER"
         ),
         status=discord.Status.online
     )
