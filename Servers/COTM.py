@@ -3,7 +3,7 @@
 import asyncio
 from datetime import datetime
 import discord
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 # import matplotlib as mpl
 # import numpy as np
 import os
