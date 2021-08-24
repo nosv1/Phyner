@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import Logger
+import Tasks
 
 
 ''' CONSTANTS '''
@@ -497,13 +498,7 @@ async def restart(client, message, restart_interval, restart=True):
             Logger.log(f"Connection", f"{host} Restarting see you on the other side...")
 
 
-        await client.change_presence(
-            activity=discord.Activity(
-                type=discord.ActivityType.playing, 
-                name=f"{'Restarting' if restart else 'Temporarily shutting down'} soon!"
-            ),
-            status=discord.Status.idle
-        )
+        await Tasks.update_status(client, restart=restart, close=not  restart)
 
         msg = await simple_bot_response(
             message.channel, 

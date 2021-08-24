@@ -32,6 +32,7 @@ from Servers import COTM
 from Servers import TemplarLeagues
 import Support
 import Tables
+import Tasks
 
 
 Logger.create_log_file()
@@ -665,6 +666,8 @@ async def startup():
     restart = 1
     log("Connection", f"{host} Controller Connected")
 
+    await Tasks.loop.start(client)
+
     await client.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.playing, name="DEPRECIATING THIS WINTER"
@@ -673,9 +676,12 @@ async def startup():
     )
 # end startup
 
-log("Connection", f"{host} Controller Connecting")
+def main():
+    while True:
+        client.loop.create_task(startup())
+        client.run(os.getenv("TOKEN"))
+        print(restart)
 
-client.loop.create_task(startup())
-
-client.run(os.getenv("TOKEN"))
-print(restart)
+    
+if __name__ == "__main__":
+    main()
