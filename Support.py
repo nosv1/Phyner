@@ -215,7 +215,7 @@ def messageOrMsg(msg):
 # end messageOrMsg
 
 def get_phyner_from_channel(channel):
-    if channel.type != discord.ChannelType.private and channel.type != discord.ChannelType.public_thread:
+    if channel.type != discord.ChannelType.private:
         return [member for member in channel.members if member.id == ids.phyner_id][0]
     else:
         return channel.me
