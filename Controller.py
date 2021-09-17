@@ -140,7 +140,7 @@ async def on_message(message):
 
         if not message.author.bot or is_webhook: # not a bot and webhook we care about
 
-            phyner = client.user
+            phyner = Support.get_phyner_from_channel(message.channel)
             is_mo = message.author.id == Support.ids.mo_id
 
             message.author = phyner if is_webhook else message.author
