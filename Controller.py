@@ -377,7 +377,7 @@ async def on_message(message):
                     for gc in guild_commands:
                         
                         if gc.prefix.lower() in message.content.lower()[:len(gc.prefix)]:
-                            await message.channel.trigger_typing()
+                            # await message.channel.trigger_typing()
                             await guild_commands[0].send_command(client, message)
 
             ''' END CUSTOM COMMAND CHECKS '''

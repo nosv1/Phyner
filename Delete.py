@@ -123,7 +123,7 @@ async def delete_messages(cilent, message, args, author_perms):
     top_message = None
     bottom_message = None
     try:
-        await message.channel.trigger_typing()
+        # await message.channel.trigger_typing()
         
         top_message = await destination_channel.fetch_message(top_message_id)
 
