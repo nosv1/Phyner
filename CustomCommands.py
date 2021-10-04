@@ -282,7 +282,7 @@ async def create_command(client, message, args):
 async def edit_command(client, message, command):
     """
     """
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
 
 
     msg = None

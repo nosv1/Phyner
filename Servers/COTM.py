@@ -322,7 +322,7 @@ async def on_reaction_remove(client, message, user, payload):
 async def request_signup(client, message, args):
     """
     """
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
 
 
     msg = None
@@ -335,7 +335,7 @@ async def request_signup(client, message, args):
     # end reaction_check
 
 
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
     now = timezone("UTC").localize(datetime.utcnow()).astimezone(timezone("Europe/London"))
 
     if not args[1]: # no gamertag
@@ -368,7 +368,7 @@ async def request_signup(client, message, args):
 
 
     # user has accepted the terms
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
 
 
     # get gt
@@ -707,7 +707,7 @@ async def display_license(message, args):
     """
     """
 
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
 
     user = message.mentions[0] if message.mentions else message.author
     gt = get_gt(user.id)
@@ -763,7 +763,7 @@ async def compare_stats(client, message, args):
 
     log("COTM", f"Compare Stats {message.author.id}, '{message.content}'\n")
 
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
 
 
     # get list of members 
@@ -1274,7 +1274,7 @@ async def submit_time(client, message, args):
         !ct <race_time> <screenshot.com> <video.com>
         !tt <lap_time> <screenshot.com> [video.com]
     """
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
 
     now = timezone("UTC").localize(datetime.utcnow()).astimezone(timezone("Europe/London"))
 

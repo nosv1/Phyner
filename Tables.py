@@ -793,7 +793,7 @@ async def get_table_from_user_input(client, message, author_perms):
 async def edit_table(client, message, table):
     """
     """
-    # await message.channel.trigger_typing()
+    await message.channel.trigger_typing()
 
     if table:
         table = table[0]
