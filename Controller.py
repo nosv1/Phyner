@@ -512,8 +512,8 @@ async def on_raw_reaction_add(payload):
                     if message.guild.id == COTM.cotm_id: # COTM
                         remove_reaction = await COTM.on_reaction_add(client, message, user, payload)
 
-                    elif message.guild.id == TCS.tcs_id: # TCS
-                        remove_reaction = await TCS.on_reaction_add(client, message, user, payload)
+                    # elif message.guild.id == TCS.tcs_id: # TCS
+                    #     remove_reaction = await TCS.on_reaction_add(client, message, user, payload)
                 
                 await remove_reaction_check(remove_reaction)
 
@@ -631,8 +631,8 @@ async def on_raw_reaction_remove(payload):
                     if message.guild.id == COTM.cotm_id: # COTM
                         await COTM.on_reaction_remove(client, message, user, payload)
 
-                    elif message.guild.id == TCS.tcs_id: # TCS
-                        await TCS.on_reaction_remove(client, message, user, payload)
+                    # elif message.guild.id == TCS.tcs_id: # TCS
+                    #     await TCS.on_reaction_remove(client, message, user, payload)
 
     except AttributeError: # possibly NoneType.fetch_message, happens in DMs after bot is restarted
         error = traceback.format_exc()
