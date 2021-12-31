@@ -33,7 +33,7 @@ async def update_status(client, restart=False, close=False):
     ]
 
     activity = None
-    if not (restart or close):
+    if not (restart or close or True):  # NOT UPDATING STATUS
         activity = choice(activities)
 
     elif restart:
