@@ -72,7 +72,7 @@ async def tt_submit(message):
 
         a1_ranges = [
             f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
-            f"E4:E{time_trial_submissions_ws.row_count}"  # discord ids
+            f"E4:E{time_trial_submissions_ws.row_count}"  # lap times
         ]
         
         ranges = time_trial_submissions_ws.batch_get(
