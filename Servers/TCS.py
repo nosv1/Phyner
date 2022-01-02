@@ -35,6 +35,7 @@ spreadsheet = {
     "leaderboards" : 2120696652,
     "time_trial_submissions" : 1968167541,
 }
+spreadsheet_link = "https://docs.google.com/spreadsheets/d/1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU/edit#gid=1367712203"
 
 
 ''' FUNCTIONS '''
@@ -107,7 +108,8 @@ async def tt_submit(message, args):
 
             await simple_bot_response(
                 message.channel,
-                title="**Your lap time has been submitted!**",
+                title=f"**Your lap time has been submitted!**",
+                description=f"[**Spreadsheet**]({spreadsheet_link})",
                 reply_message=message
             )
 
