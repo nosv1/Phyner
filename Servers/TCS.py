@@ -26,8 +26,8 @@ from Support import delete_last_field, messageOrMsg, simple_bot_response
 tcs_id = 925184986699685919
 
 # CHANNELS
-tt_submit = 925206419458900088
-bot_stuff = 925188627154210839
+tt_submit_id = 925206419458900088
+bot_stuff_id = 925188627154210839
 
 # SPREADSHEET
 spreadsheet = {
@@ -42,8 +42,10 @@ spreadsheet = {
 async def main(client, message, args, author_perms):
 
     args[0] = args[0].lower()
+    in_bot_stuff = message.channel.id == bot_stuff_id
+    in_tt_submit = message.channel.id == tt_submit_id
 
-    if args[0] == "!tt":
+    if args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(message, args)
 
 # end main
