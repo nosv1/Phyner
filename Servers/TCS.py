@@ -44,74 +44,93 @@ async def main(client, message, args, author_perms):
     args[0] = args[0].lower()
 
     if args[0] == "!tt":
-        await tt_submit(message)
+        await tt_submit(message, args)
 
 # end main
 
 
-async def tt_submit(message):
+async def tt_submit(message, args):
 
     await message.channel.trigger_typing()
 
     # get the time from message
     lap_time = re.findall(
-        r"[0-5]{1}:[0-9]{2}.\d{3}", message.content
+        r"[0-5]{1}:[0-9]{2}.\d{3}", args[1]
     )
 
-    if lap_time:
+    proof = validators.url(re.sub(r"[<>]", "", args[2]))
 
-        lap_time = lap_time[0]
-        driver_id = message.author.id
+    if proof:
 
-        g = Support.get_g_client()
-        wb = g.open_by_key(spreadsheet["key"])
-        ws = wb.worksheets()
-        time_trial_submissions_ws = Support.get_worksheet(
-            ws, spreadsheet["time_trial_submissions"]
-        )
+        if lap_time:
 
-        a1_ranges = [
-            f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
-            f"E4:E{time_trial_submissions_ws.row_count}"  # lap times
-        ]
-        
-        ranges = time_trial_submissions_ws.batch_get(
-            a1_ranges,
-            value_render_option="FORMULA"
-        )
+            lap_time = lap_time[0]
+            driver_id = message.author.id
 
-        # append the new submission
+            g = Support.get_g_client()
+            wb = g.open_by_key(spreadsheet["key"])
+            ws = wb.worksheets()
+            time_trial_submissions_ws = Support.get_worksheet(
+                ws, spreadsheet["time_trial_submissions"]
+            )
 
-        ranges[0].append([
-            str(driver_id)
-        ])
+            a1_ranges = [
+                f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
+                f"E4:E{time_trial_submissions_ws.row_count}"  # lap times
+            ]
+            
+            ranges = time_trial_submissions_ws.batch_get(
+                a1_ranges,
+                value_render_option="FORMULA"
+            )
 
-        ranges[1].append([
-            str(lap_time)
-        ])
+            # append the new submission
 
-        # update
-        time_trial_submissions_ws.batch_update(
-            Support.ranges_to_dict(
-                a1_ranges=a1_ranges,
-                value_ranges=ranges
-            ),
-            value_input_option="USER_ENTERED"
-        )
+            ranges[0].append([
+                str(driver_id)
+            ])
+
+            ranges[1].append([
+                str(lap_time)
+            ])
+
+            # update
+            time_trial_submissions_ws.batch_update(
+                Support.ranges_to_dict(
+                    a1_ranges=a1_ranges,
+                    value_ranges=ranges
+                ),
+                value_input_option="USER_ENTERED"
+            )
+
+            await simple_bot_response(
+                message.channel,
+                title="**Your lap time has been submitted!**",
+                reply_message=message
+            )
+
+        else: # invalid time format
+
+            await simple_bot_response(
+                message.channel,
+                title="**Invalid time format!**",
+                description="Please use the following format: `!tt [m:ss.000] [screnshot_link]`",
+                reply_message=message
+            )
+
+            return
+
+        # end if lap_time
+
+    else: # no proof
 
         await simple_bot_response(
             message.channel,
-            title="**Your lap time has been submitted!**",
-            reply_message=message
-        )
-
-    else: # invalid time format
-
-        await simple_bot_response(
-            message.channel,
-            title="**Invalid time format!**",
-            description="Please use the following format: `!tt [m:ss.000] [screnshot_link]`",
+            title="**Invalid proof!**",
+            description="Please use a valid screenshot link.\n\n`!tt [m:ss.000] [screnshot_link]`",
             reply_message=message
         )
 
         return
+
+    # end if proof
