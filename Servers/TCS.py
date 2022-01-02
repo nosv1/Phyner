@@ -101,7 +101,7 @@ async def tt_submit(message):
 
         await simple_bot_response(
             message.channel,
-            description="**Your lap time has been submitted!**",
+            title="**Your lap time has been submitted!**",
             reply_message=message
         )
 
@@ -109,7 +109,8 @@ async def tt_submit(message):
 
         await simple_bot_response(
             message.channel,
-            description="**Invalid time format. Please use the following format: `!tt [m:ss.000]`**",
+            title="**Invalid time format!**",
+            description="Please use the following format: `!tt [m:ss.000] [screnshot_link]`",
             reply_message=message
         )
 
