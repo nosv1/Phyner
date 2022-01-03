@@ -182,12 +182,14 @@ async def tt_submit(client, message, args):
             home_ws = Support.get_worksheet(
                 ws, spreadsheet["home"]
             )
+
+            a1_ranges = [
+                f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
+                f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
+            ]
             
             ranges = time_trial_submissions_ws.batch_get(
-                [
-                    f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
-                    f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
-                ],
+                a1_ranges,
                 value_render_option="FORMULA"
             )
 
