@@ -195,7 +195,7 @@ async def tt_submit(client, message, args):
 
             ranges.append(
                 home_ws.batch_get(
-                    f"B4:B{home_ws.row_count}", # rounds
+                    [f"B4:B{home_ws.row_count}"], # rounds
                     value_render_option="FORMULA"
                 )
             )
