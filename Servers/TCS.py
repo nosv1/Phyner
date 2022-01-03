@@ -50,6 +50,8 @@ async def main(client, message, args, author_perms):
 
     if args[0] == "!test" and in_bot_stuff:
 
+        return
+
         g = Support.get_g_client()
         wb = g.open_by_key(spreadsheet["key"])
         ws = wb.worksheets()
@@ -228,8 +230,7 @@ async def tt_submit(client, message, args):
 
             ranges.append(
                 home_ws.batch_get(
-                    [f"B4:B{home_ws.row_count}"], # rounds
-                    value_render_option="FORMULA"
+                    [f"B4:B{home_ws.row_count}"] # rounds
                 )
             )
 
