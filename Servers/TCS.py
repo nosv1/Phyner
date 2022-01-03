@@ -48,7 +48,38 @@ async def main(client, message, args, author_perms):
     in_bot_stuff = message.channel.id == bot_stuff_id
     in_tt_submit = message.channel.id == tt_submit_id
 
-    if args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
+    if args[0] == "!test" and in_bot_stuff:
+
+        g = Support.get_g_client()
+        wb = g.open_by_key(spreadsheet["key"])
+        ws = wb.worksheets()
+
+        time_trial_submissions_ws = Support.get_worksheet(
+            ws, spreadsheet["time_trial_submissions"]
+        )
+        home_ws = Support.get_worksheet(
+            ws, spreadsheet["home"]
+        )
+
+        a1_ranges = [
+            f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
+            f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
+        ]
+        
+        ranges = time_trial_submissions_ws.batch_get(
+            a1_ranges,
+            value_render_option="FORMULA"
+        )
+
+        ranges.append(
+            home_ws.batch_get(
+                [f"B4:B{home_ws.row_count}"] # rounds
+            )
+        )
+
+
+
+    elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(client, message, args)
 
     elif args[0] == "!update" and in_bot_stuff:
@@ -56,7 +87,9 @@ async def main(client, message, args, author_perms):
         g = Support.get_g_client()
         wb = g.open_by_key(spreadsheet["key"])
         ws = wb.worksheets()
+
         round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+        
         await update_discord_tables(
             client,
             round_sheet.get(
@@ -227,7 +260,7 @@ async def tt_submit(client, message, args):
             )
 
             
-            round_sheet = [sheet for sheet in ws if sheet.title == f"R{ranges[2][-1][0]}"][0]
+            round_sheet = [sheet for sheet in ws if sheet.title == f"R{ranges[2][-1][0][0]}"][0]
             
             await update_discord_tables(
                 client,
