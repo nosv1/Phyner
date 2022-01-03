@@ -200,6 +200,24 @@ def ranges_to_dict(a1_ranges, value_ranges):
     return dict_ranges
 # end to_batch_update
 
+def get_col_widths(table):
+    """ table should be [[row], ...] """
+    
+    col_widths = [0] * len(table[0] + [""])
+    for i, row in enumerate(table):
+        for j, value in enumerate(row):
+            
+            value = f"[{value}]" if i == 0 else value
+
+            try:
+                if len(value) > col_widths[j]:
+                    col_widths[j] = len(value)
+
+            except IndexError: # when there are blanks
+                pass
+
+    return col_widths
+
 
 def messageOrMsg(msg):  
     """

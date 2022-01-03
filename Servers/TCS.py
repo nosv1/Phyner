@@ -28,6 +28,7 @@ tcs_id = 925184986699685919
 # CHANNELS
 tt_submit_id = 925206419458900088
 bot_stuff_id = 925188627154210839
+leaderboard_id = 927333542726348861
 
 # SPREADSHEET
 spreadsheet = {
@@ -47,12 +48,113 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
-        await tt_submit(message, args)
+        await tt_submit(client, message, args)
+
+    elif args[0] == "!update" and in_bot_stuff:
+
+        g = Support.get_g_client()
+        wb = g.open_by_key(spreadsheet["key"])
+        ws = wb.worksheets()
+        round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+        await update_discord_tables(
+            client,
+            round_sheet.get(
+                f"B6:J{round_sheet.row_count}"
+            ),
+            "time_trial",
+            purge=True
+        )
+        await update_discord_tables(
+            client,
+            round_sheet.get(
+                f"L6:O{round_sheet.row_count}"
+            ),
+            "starting_order"
+        )
 
 # end main
 
 
-async def tt_submit(message, args):
+
+async def update_discord_tables(client, leaderboard, table_type, purge=False):
+    """
+        leaderboard is [[row], ...]
+    """
+
+    col_widths = Support.get_col_widths(leaderboard)
+
+    channel = await client.fetch_channel(leaderboard_id)
+    msg = None
+
+
+    tt_headers = [
+        f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
+        f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
+        f"`{('[' + leaderboard[0][-1] + ']').rjust(col_widths[-2], ' ')}`", # pts
+    ]
+
+    starting_order_headers = [
+        f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
+        f"`{('[' + leaderboard[0][1] + ']').ljust(col_widths[1], ' ')}`", # driver
+        f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # start time
+    ]
+
+    header = [" ".join(
+        tt_headers if table_type == "time_trial" else starting_order_headers
+    )]
+
+    if purge:
+        await channel.purge()
+
+    table = header
+    for i in range(len(leaderboard) // 25 + 1):
+
+        exited = False
+        for j, row in enumerate(leaderboard[1:][i*25:i*25+25]):
+
+            if row[0] == "":
+                exited = True
+                break
+
+            tt_line = [
+                f"{row[2]}".ljust(col_widths[2], " "),
+                f"{row[3]}".center(col_widths[3], " "),
+                f"{row[-1]}".center(col_widths[-2], " "),
+            ]
+
+            starting_order_line = [
+                f"{row[0]}".center(col_widths[0], " "),
+                f"{row[1]}".center(col_widths[1], " "),
+                f"{row[3]}".center(col_widths[3], " "),
+            ]
+
+            table.append(
+                tt_line if table_type == "time_trial" else starting_order_line
+            )
+
+            table[-1] = " ".join([f"`{c}`" for c in table[-1]])
+
+        if table:
+
+            embed = await simple_bot_response(
+                channel,
+                description="\n".join(table),
+                send=False
+            )
+
+            if i == 0:
+                embed.title = f"**Time Trial**" if table_type == "time_trial" else f"**Starting Order**"
+
+            await channel.send(embed=embed)
+
+        if exited:
+            break
+
+        table = []
+# end update_discord_tables
+
+
+async def tt_submit(client, message, args):
 
     await message.channel.trigger_typing()
 
@@ -109,8 +211,26 @@ async def tt_submit(message, args):
             await simple_bot_response(
                 message.channel,
                 title=f"**Your lap time has been submitted!**",
-                description=f"[**Spreadsheet**]({spreadsheet_link})",
+                description=f"[**Spreadsheet**]({spreadsheet_link}) <#{leaderboard_id}>",
                 reply_message=message
+            )
+
+            
+            round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+            await update_discord_tables(
+                client,
+                round_sheet.get(
+                    f"B6:J{round_sheet.row_count}"
+                ),
+                "time_trial",
+                purge=True
+            )
+            await update_discord_tables(
+                client,
+                round_sheet.get(
+                    f"L6:O{round_sheet.row_count}"
+                ),
+                "starting_order"
             )
 
         else: # invalid time format
