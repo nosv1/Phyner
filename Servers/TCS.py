@@ -32,9 +32,10 @@ leaderboard_id = 927333542726348861
 
 # SPREADSHEET
 spreadsheet = {
-    "key" : "1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU",
-    "leaderboards" : 2120696652,
-    "time_trial_submissions" : 1968167541,
+    "key": "1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU",
+    "leaderboards": 2120696652,
+    "time_trial_submissions": 1968167541,
+    "home": 1367712203
 }
 spreadsheet_link = "https://docs.google.com/spreadsheets/d/1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU/edit#gid=1367712203"
 
@@ -88,9 +89,9 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
 
 
     tt_headers = [
-        f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
         f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
         f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
+        f"`{('[' + leaderboard[0][-1] + ']').rjust(col_widths[-2], ' ')}`", # pts
     ]
 
     starting_order_headers = [
@@ -117,9 +118,9 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
                 break
 
             tt_line = [
-                f"{row[0]}".center(col_widths[0], " "),
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[3]}".center(col_widths[3], " "),
+                f"{row[-1]}".center(col_widths[-2], " "),
             ]
 
             starting_order_line = [
@@ -178,10 +179,14 @@ async def tt_submit(client, message, args):
             time_trial_submissions_ws = Support.get_worksheet(
                 ws, spreadsheet["time_trial_submissions"]
             )
+            home_ws = Support.get_worksheet(
+                ws, spreadsheet["home"]
+            )
 
             a1_ranges = [
                 f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
-                f"E4:E{time_trial_submissions_ws.row_count}"  # lap times
+                f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
+                f"B4:B{home_ws.row_count}" # rounds
             ]
             
             ranges = time_trial_submissions_ws.batch_get(
@@ -216,7 +221,8 @@ async def tt_submit(client, message, args):
             )
 
             
-            round_sheet = [sheet for sheet in ws if sheet.title == "R1"][0]
+            round_sheet = [sheet for sheet in ws if sheet.title == f"R{ranges[2][-1][0]}"][0]
+            
             await update_discord_tables(
                 client,
                 round_sheet.get(
