@@ -216,7 +216,7 @@ async def tt_submit(client, message, args):
             )
 
             
-            round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+            round_sheet = [sheet for sheet in ws if sheet.title == "R1"][0]
             await update_discord_tables(
                 client,
                 round_sheet.get(
