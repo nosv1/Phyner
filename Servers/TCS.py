@@ -124,7 +124,7 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
 
             starting_order_line = [
                 f"{row[0]}".center(col_widths[0], " "),
-                f"{row[1]}".center(col_widths[1], " "),
+                f"{row[1]}".ljust(col_widths[1], " "),
                 f"{row[3]}".center(col_widths[3], " "),
             ]
 
