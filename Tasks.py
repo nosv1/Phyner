@@ -29,7 +29,7 @@ async def update_status(client, restart=False, close=False):
     activities: list[discord.Activity] = [
         discord.Activity(
             type=discord.ActivityType.watching,
-            name="Alpha testing..."),
+            name="Phyner is finer."),
     ]
 
     activity = None
