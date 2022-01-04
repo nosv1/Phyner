@@ -142,7 +142,6 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
     else:
         starting_order_headers = [
             f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
-            f"`{('[' + leaderboard[0][1] + ']').center(col_widths[1], ' ')}`", # lobby
             f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
             f"`{('[' + leaderboard[0][4] + ']').center(col_widths[4], ' ')}`", # start time
         ]
@@ -173,7 +172,6 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
 
             starting_order_line = [
                 f"{row[0]}".center(col_widths[0], " "),
-                f"{row[1]}".center(col_widths[1], " "),
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[4]}".center(col_widths[4], " "),
             ]
