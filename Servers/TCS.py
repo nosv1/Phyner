@@ -133,6 +133,7 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
 
     if table_type == "time_trial":
         tt_headers = [
+            f"`{('[' + leaderboard[0][0] + ']').ljust(col_widths[0], ' ')}`", # pos
             f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
             f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
             f"`{('[' + leaderboard[0][-1] + ']').rjust(col_widths[-2], ' ')}`", # pts
@@ -164,6 +165,7 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
                 break
 
             tt_line = [
+                f"{row[0]}".center(col_widths[0], " "),
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[3]}".center(col_widths[3], " "),
                 f"{row[-1]}".center(col_widths[-2], " "),
