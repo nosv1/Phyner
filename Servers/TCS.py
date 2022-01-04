@@ -159,7 +159,7 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
         exited = False
         for j, row in enumerate(leaderboard[1:][i*25:i*25+25]):
 
-            if row[0] == "":
+            if not row or row[0] == "":
                 exited = True
                 break
 
