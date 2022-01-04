@@ -129,19 +129,24 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
     msg = None
 
 
-    tt_headers = [
-        f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
-        f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
-        f"`{('[' + leaderboard[0][5] + ']').center(col_widths[5], ' ')}`", # pvf
-        f"`{('[' + leaderboard[0][-1] + ']').rjust(col_widths[-2], ' ')}`", # pts
-    ]
+    tt_headers = []
+    starting_order_headers = []
+    
+    if table_type == "time_trial":
+        tt_headers = [
+            f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
+            f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
+            f"`{('[' + leaderboard[0][5] + ']').center(col_widths[5], ' ')}`", # pvf
+            f"`{('[' + leaderboard[0][-1] + ']').rjust(col_widths[-2], ' ')}`", # pts
+        ]
 
-    starting_order_headers = [
-        f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
-        f"`{('[' + leaderboard[0][1] + ']').center(col_widths[1], ' ')}`", # lobby
-        f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
-        f"`{('[' + leaderboard[0][4] + ']').center(col_widths[4], ' ')}`", # start time
-    ]
+    else:
+        starting_order_headers = [
+            f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
+            f"`{('[' + leaderboard[0][1] + ']').center(col_widths[1], ' ')}`", # lobby
+            f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
+            f"`{('[' + leaderboard[0][4] + ']').center(col_widths[4], ' ')}`", # start time
+        ]
 
     header = [" ".join(
         tt_headers if table_type == "time_trial" else starting_order_headers
