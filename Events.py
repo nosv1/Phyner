@@ -16,6 +16,7 @@ import Help
 import Role
 from Servers import TemplarLeagues
 from Servers import COTM
+from Servers import TCS
 import Support
 from Support import simple_bot_response
 from Support import quote
@@ -804,6 +805,11 @@ async def perform_action(client, message, user, event):
                     if event.object.id == Support.emojis.tick_emoji:
                         await COTM.prepare_vote_channel(channel, message.embeds[0])
                         remove_reaction = True
+
+            elif event.guild_id == TCS.tcs_id:
+                if event.condition.id == TCS.rival_selection_msg_id:
+                    if event.object.id == Support.emojis.ballot_checkmark_emoji:
+                        await TCS.prepare_rival_selection_channel(channel, message.embeds[0])
 
 
     elif event.action.action in ["add_role", "remove_role"]:

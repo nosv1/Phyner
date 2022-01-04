@@ -35,9 +35,13 @@ spreadsheet = {
     "key": "1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU",
     "leaderboards": 2120696652,
     "time_trial_submissions": 1968167541,
-    "home": 1367712203
+    "home": 1367712203,
+    "leaderboards": 2120696652,
 }
 spreadsheet_link = "https://docs.google.com/spreadsheets/d/1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU/edit#gid=1367712203"
+
+# MESSAGES
+rival_selection_msg_id = 927758552955748404
 
 
 ''' FUNCTIONS '''
@@ -52,33 +56,7 @@ async def main(client, message, args, author_perms):
 
         return
 
-        g = Support.get_g_client()
-        wb = g.open_by_key(spreadsheet["key"])
-        ws = wb.worksheets()
-
-        time_trial_submissions_ws = Support.get_worksheet(
-            ws, spreadsheet["time_trial_submissions"]
-        )
-        home_ws = Support.get_worksheet(
-            ws, spreadsheet["home"]
-        )
-
-        a1_ranges = [
-            f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
-            f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
-        ]
-        
-        ranges = time_trial_submissions_ws.batch_get(
-            a1_ranges,
-            value_render_option="FORMULA"
-        )
-
-        ranges.append(
-            home_ws.batch_get(
-                [f"B4:B{home_ws.row_count}"] # rounds
-            )
-        )
-
+        await prepare_rival_selection_channel(None, None)
 
 
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
@@ -103,12 +81,33 @@ async def main(client, message, args, author_perms):
         await update_discord_tables(
             client,
             round_sheet.get(
-                f"L6:O{round_sheet.row_count}"
+                f"L6:P{round_sheet.row_count}"
             ),
             "starting_order"
         )
-
 # end main
+
+
+async def on_reaction_add(client, message, user, payload):
+
+    remove_reaction = False
+    embed = message.embeds[0] if message.embeds else None
+
+    if embed:
+
+        if embed.author:
+
+            if embed.author.url:
+                pass
+
+
+        if embed.title:
+
+            pass
+
+
+    return remove_reaction
+# end on_reaction_add
 
 
 
@@ -116,6 +115,13 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
     """
         leaderboard is [[row], ...]
     """
+
+    if table_type == "time_trial":
+        leaderboard[0][3] = leaderboard[0][3].replace("Lap Time", "Lap")
+        leaderboard[0][5] = leaderboard[0][5].replace("Pace v Field", "P v F")
+
+    else:
+        leaderboard[0][4] = leaderboard[0][4].replace("Start Time", "Start")
 
     col_widths = Support.get_col_widths(leaderboard)
 
@@ -126,13 +132,15 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
     tt_headers = [
         f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
         f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
+        f"`{('[' + leaderboard[0][5] + ']').center(col_widths[5], ' ')}`", # pvf
         f"`{('[' + leaderboard[0][-1] + ']').rjust(col_widths[-2], ' ')}`", # pts
     ]
 
     starting_order_headers = [
         f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
-        f"`{('[' + leaderboard[0][1] + ']').ljust(col_widths[1], ' ')}`", # driver
-        f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # start time
+        f"`{('[' + leaderboard[0][1] + ']').center(col_widths[1], ' ')}`", # lobby
+        f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
+        f"`{('[' + leaderboard[0][4] + ']').center(col_widths[4], ' ')}`", # start time
     ]
 
     header = [" ".join(
@@ -155,13 +163,15 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
             tt_line = [
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[3]}".center(col_widths[3], " "),
+                f"{row[5]}".center(col_widths[5], " "),
                 f"{row[-1]}".center(col_widths[-2], " "),
             ]
 
             starting_order_line = [
                 f"{row[0]}".center(col_widths[0], " "),
-                f"{row[1]}".ljust(col_widths[1], " "),
-                f"{row[3]}".center(col_widths[3], " "),
+                f"{row[1]}".center(col_widths[1], " "),
+                f"{row[2]}".ljust(col_widths[2], " "),
+                f"{row[4]}".center(col_widths[4], " "),
             ]
 
             table.append(
@@ -274,7 +284,7 @@ async def tt_submit(client, message, args):
             await update_discord_tables(
                 client,
                 round_sheet.get(
-                    f"L6:O{round_sheet.row_count}"
+                    f"L6:P{round_sheet.row_count}"
                 ),
                 "starting_order"
             )
@@ -304,3 +314,40 @@ async def tt_submit(client, message, args):
         return
 
     # end if proof
+# end tt_submit
+
+
+async def prepare_rival_selection_channel(channel, embed):
+
+    g = Support.get_g_client()
+    wb = g.open_by_key(spreadsheet["key"])
+    ws = wb.worksheets()
+
+    leaderboards_ws = Support.get_worksheet(
+        ws, spreadsheet["leaderboards"]
+    )
+    time_trial_submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["time_trial_submissions"]
+    )
+
+    leaderboars_a1_ranges = [
+        f"J3:L{leaderboards_ws.row_count}", # avg tt pace vs field
+    ]
+    time_trial_submissions_a1_ranges = [
+        f"H4:I{time_trial_submissions_ws.row_count}", # gamertag conversion
+    ]
+
+    avg_tt_pace_vs_field_range = leaderboards_ws.batch_get(
+        leaderboars_a1_ranges
+    )[0]
+    # loop this range until no pos value given text below table on spreadsheet
+
+    gamertag_conversion_range = time_trial_submissions_ws.batch_get(
+        time_trial_submissions_a1_ranges,
+    )[0]
+
+    # avg_tt_pace_v_field
+
+    return
+
+# end prepare_rival_selection_channel
