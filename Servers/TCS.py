@@ -54,9 +54,7 @@ async def main(client, message, args, author_perms):
 
     if args[0] == "!test" and in_bot_stuff:
 
-        return
-
-        await prepare_rival_selection_channel(None, None)
+        pass
 
 
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
@@ -70,12 +68,16 @@ async def main(client, message, args, author_perms):
 
         round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
         
+        time_trial_title = round_sheet.get("B5")[0][0]
+        starting_order_title = round_sheet.get("L5")[0][0]
+        
         await update_discord_tables(
             client,
             round_sheet.get(
                 f"B6:J{round_sheet.row_count}"
             ),
             "time_trial",
+            time_trial_title,
             purge=True
         )
         await update_discord_tables(
@@ -83,7 +85,8 @@ async def main(client, message, args, author_perms):
             round_sheet.get(
                 f"L6:P{round_sheet.row_count}"
             ),
-            "starting_order"
+            "starting_order",
+            starting_order_title
         )
 # end main
 
@@ -111,7 +114,7 @@ async def on_reaction_add(client, message, user, payload):
 
 
 
-async def update_discord_tables(client, leaderboard, table_type, purge=False):
+async def update_discord_tables(client, leaderboard, table_type, title, purge=False):
     """
         leaderboard is [[row], ...]
     """
@@ -191,7 +194,7 @@ async def update_discord_tables(client, leaderboard, table_type, purge=False):
             )
 
             if i == 0:
-                embed.title = f"**Time Trial**" if table_type == "time_trial" else f"**Starting Order**"
+                embed.title = title
 
             await channel.send(embed=embed)
 
@@ -275,12 +278,16 @@ async def tt_submit(client, message, args):
             
             round_sheet = [sheet for sheet in ws if sheet.title == f"R{ranges[2][-1][0][0]}"][0]
             
+            time_trial_title = round_sheet.get("B5")[0][0]
+            starting_order_title = round_sheet.get("L5")[0][0]
+            
             await update_discord_tables(
                 client,
                 round_sheet.get(
                     f"B6:J{round_sheet.row_count}"
                 ),
                 "time_trial",
+                time_trial_title,
                 purge=True
             )
             await update_discord_tables(
@@ -288,7 +295,8 @@ async def tt_submit(client, message, args):
                 round_sheet.get(
                     f"L6:P{round_sheet.row_count}"
                 ),
-                "starting_order"
+                "starting_order",
+                starting_order_title
             )
 
         else: # invalid time format
