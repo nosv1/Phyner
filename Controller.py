@@ -689,7 +689,17 @@ async def startup():
 def main():
     while True:
         client.loop.create_task(startup())
-        client.run(os.getenv("TOKEN"))
+
+        if host == "PC":
+            bot_token = os.getenv("PROTO_TOKEN")  # used for testing
+            log("Using PROTO_TOKEN")
+
+        else:
+            bot_token = os.getenv("PHYNER_TOKEN") 
+            log("Using PHYNER_TOKEN")
+        
+        client.run(bot_token)
+
         print(restart)
 
     
