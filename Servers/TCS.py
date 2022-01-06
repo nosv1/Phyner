@@ -89,6 +89,9 @@ async def main(client, message, args, author_perms):
             "starting_order",
             starting_order_title
         )
+
+    elif args[0] == "!staggered":
+        await generate_staggered_start(message, args)
 # end main
 
 
@@ -350,6 +353,74 @@ async def tt_submit(client, message, args):
 
     # end if proof
 # end tt_submit
+
+
+async def generate_staggered_start(message, args):
+    
+    await message.channel.trigger_typing()
+
+    lap_count = int(args[1])
+
+    g = Support.get_g_client()
+    wb = g.open_by_key(spreadsheet["key"])
+    ws = wb.worksheets()
+    time_trial_submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["time_trial_submissions"]
+    )
+    round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
+    round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
+
+    gamertag_conversion = time_trial_submissions_ws.get(f"H4:I{time_trial_submissions_ws.row_count}")
+
+    mentions = [m.id for m in message.mentions]
+    gamertags = []
+    for i, row in enumerate(gamertag_conversion):
+        if int(row[0]) in mentions:
+            gamertags.append(row[1])
+
+    driver_lap_times = round_sheet.get(
+        f"D7:E{round_sheet.row_count}"
+    )
+
+    # convert lap times to seconds
+    for i, row in enumerate(driver_lap_times):
+        driver_lap_times[i][1] = int(driver_lap_times[i][1][0]) * 60 + float(driver_lap_times[i][1][2:])
+
+    # remove drivers not in gamertags
+    i = len(driver_lap_times) - 1
+    while i >= 0:
+        if driver_lap_times[i][0] not in gamertags:
+            driver_lap_times.pop(i)
+        i -= 1
+    
+    # sort driver lap times based on lap time
+    driver_lap_times.sort(key=lambda x: x[1], reverse=True)
+
+    # get deltas between laptimes
+    deltas = [0]
+    for i, row in enumerate(driver_lap_times):
+        if i > 0:
+            deltas.append((driver_lap_times[0][1] - driver_lap_times[i][1]) * lap_count)
+
+    start_times = []
+    offset = 15  # seconds
+    for i, delta in enumerate(deltas):
+        if i == 0:
+            start_times.append(offset)
+        else:
+            start_times.append(start_times[i-1] + delta)
+
+    description = f"**Lap Count:** {lap_count}\n"
+    for i, start_time in enumerate(start_times):
+        description += f"{Support.emojis.space_char * 2}**{i+1}.** +{driver_lap_times[i][0]} {start_time:.3f}s\n"
+
+    await simple_bot_response(
+        message.channel,
+        title="**Staggered start times generated!**",
+        description=description,
+    )
+            
+# end generate_staggered_start
 
 
 async def prepare_rival_selection_channel(channel, embed):
