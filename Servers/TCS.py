@@ -272,7 +272,7 @@ async def tt_submit(client, message, args):
             )
 
             driver_submissions = []  # lap times in seconds
-            driver_submission_history = "**Submission history:**"
+            driver_submission_history = f"**Round {round_number} | Submission history:**"
             for i, row in enumerate(ranges[0]):
 
                 if row[0] == str(driver_id):
