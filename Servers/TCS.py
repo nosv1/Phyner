@@ -412,7 +412,7 @@ async def generate_staggered_start(message, args):
 
     description = f"**Lap Count:** {lap_count}\n"
     for i, start_time in enumerate(start_times):
-        description += f"{Support.emojis.space_char * 2}**{i+1}.** +{driver_lap_times[i][0]} {start_time:.3f}s\n"
+        description += f"{Support.emojis.space_char * 2}**{i+1}.** {driver_lap_times[i][0]} +{start_time:.3f}s\n"
 
     await simple_bot_response(
         message.channel,
