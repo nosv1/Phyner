@@ -53,6 +53,7 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
+        await tt_submit(client, message, args)
 
         pass
 
@@ -233,6 +234,8 @@ async def tt_submit(client, message, args):
                 ws, spreadsheet["home"]
             )
 
+            round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
+
             a1_ranges = [
                 f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
                 f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
@@ -268,10 +271,32 @@ async def tt_submit(client, message, args):
                 value_input_option="USER_ENTERED"
             )
 
+            driver_submissions = []  # lap times in seconds
+            driver_submission_history = "**Submission history:**"
+            for i, row in enumerate(ranges[0]):
+
+                if row[0] == str(driver_id):
+                    lap_time_str = ranges[1][i][0]
+                    lap_time_seconds = int(lap_time_str[0]) * 60 + float(lap_time_str[2:])
+                    driver_submissions.append(lap_time_seconds)
+
+                    delta = 0
+                    if len(driver_submissions) > 0:
+                        delta = driver_submissions[-1] - driver_submissions[len(driver_submissions)-2]
+                    
+                    driver_submission_history += f"\n{Support.emojis.space_char * 2}**{len(driver_submissions)}.** {lap_time_str}" 
+
+                    if delta:
+                        driver_submission_history += f" ({delta:.3f}s)"
+
+            if len(driver_submissions) > 1:
+                driver_submission_history += f"\n**Total time found:** {driver_submissions[0] - driver_submissions[-1]:.3f}s"
+
+
             await simple_bot_response(
                 message.channel,
                 title=f"**Your lap time has been submitted!**",
-                description=f"[**Spreadsheet**]({spreadsheet_link}) <#{leaderboard_id}>",
+                description=f"{driver_submission_history}\n\n[**Spreadsheet**]({spreadsheet_link}) <#{leaderboard_id}>",
                 reply_message=message
             )
 
