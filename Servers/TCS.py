@@ -231,7 +231,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
 
     proof = validators.url(re.sub(r"[<>]", "", args[2]))
 
-    if proof:
+    if proof or True:
 
         if lap_time:
 
