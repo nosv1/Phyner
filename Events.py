@@ -809,7 +809,7 @@ async def perform_action(client, message, user, event):
             elif event.guild_id == TCS.tcs_id:
                 if event.condition.id == TCS.rival_selection_msg_id:
                     if event.object.id == Support.emojis.ballot_checkmark_emoji:
-                        await TCS.prepare_rival_selection_channel(channel, message.embeds[0])
+                        await TCS.prepare_rival_selection_channel(channel, user)
 
 
     elif event.action.action in ["add_role", "remove_role"]:
