@@ -574,11 +574,11 @@ async def handle_rival_selection(
         mo_user = discord.utils.find(lambda u: u.id == Support.ids.mo_id, msg.guild.members)
 
         rival_selection_log = msg.guild.get_channel(rival_selection_log_id)
-        # await rival_selection_log.send(
-        #     f"{rival_user.mention} ({rival_pace}), {user.mention} ({selector_pace}) has selected you as your rival. Please, let {mo_user.mention} know if you do not plan to race on Sunday."
-        # )
+        await rival_selection_log.send(
+            f"{rival_user.mention} ({rival_pace}), {user.mention} ({selector_pace}) has selected you as your rival. Please, let {mo_user.mention} know if you do not plan to race on Sunday."
+        )
 
-        # await msg.channel.send("Thank you for selecting a rival. Good luck :thumbsup:")
+        await msg.channel.send("Thank you for selecting a rival. Good luck :thumbsup:")
 
         for i in range(len(gamertag_conversion) - len(rivals)):
             rivals += [['']]
@@ -593,7 +593,7 @@ async def handle_rival_selection(
             rivals
         )
 
-        # await msg.channel.delete()
+        await msg.channel.delete()
 
 
     elif payload.emoji.name == Support.emojis.x_emoji:  # rival canceled
