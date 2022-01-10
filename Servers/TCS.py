@@ -249,19 +249,18 @@ async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextCh
             break
 
     # get the rival user ids for pings by looping through the rivals
-    rival_users = []
+    selector_users = []
 
-    for row in rivals:
+    for i, row in enumerate(rivals):
 
         if row and row[0] == driver_gamertag:  # found someone who has the driver as their rival
 
-            for r in gamertag_conversion:  # find the rival's user id
+            selector_id = gamertag_conversion[i][0] # so if Deux Veloce picked Mo v0, this is Veloce's ID
+            selector_users.append(await client.fetch_user(int(selector_id)))
 
-                if r[1] == driver_gamertag:
-                    rival_users.append(await client.fetch_user(int(r[0])))
-                    break
 
-    msg_str = f"{', '.join([ru.mention for ru in rival_users])}, your rival, {driver_gamertag}, just set a {lap_time}!"
+
+    msg_str = f"{', '.join([s.mention for s in selector_users])}, your rival, {driver_gamertag}, just set a {lap_time}!"
     await rivarly_log.send(msg_str)
 # end update_rival_log
 
