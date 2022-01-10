@@ -539,7 +539,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
 
     embed_meta = "embed_meta/type=rivals/"
 
-    for i, rival in enumerate(possible_rivals[-10:]):
+    for i, rival in enumerate(possible_rivals[-9:]):
         embed_meta += f"{Support.emojis.number_emojis[i+1]}={rival[1].replace(' ', '%20')}-{rival[2]}/"
 
         rival_line = f"{rival[1]} - {rival[2]}"
@@ -567,7 +567,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     else:
         msg = await channel.send(embed=embed)
 
-    for i, rival in enumerate(possible_rivals[-10:]):
+    for i, rival in enumerate(possible_rivals[-9:]):
 
         if rival[3]:
             await msg.add_reaction(Support.emojis.number_emojis[i+1])
