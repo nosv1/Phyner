@@ -638,6 +638,10 @@ async def handle_rival_selection(
         for i, row in enumerate(gamertag_conversion):
             
             if row[1] == selector:
+
+                if not rivals[i]:
+                    rivals[i] = [rival_gamertag]
+
                 rivals[i][0] = rival_gamertag
 
         time_trial_submissions_ws.update(
