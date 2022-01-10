@@ -30,6 +30,7 @@ tt_submit_id = 925206419458900088
 bot_stuff_id = 925188627154210839
 leaderboard_id = 927333542726348861
 rival_selection_log_id = 929154488143581245
+rivalry_log_id = 929154488143581245
 
 # SPREADSHEET
 spreadsheet = {
@@ -223,6 +224,47 @@ async def update_discord_tables(client: discord.Client, leaderboard: list, table
 # end update_discord_tables
 
 
+async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextChannel, driver_user: discord.User, lap_time: str):
+
+    g = Support.get_g_client()
+    wb = g.open_by_key(spreadsheet["key"])
+    ws = wb.worksheets()
+    time_trial_submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["time_trial_submissions"]
+    )
+    rivals = time_trial_submissions_ws.get(
+        f"{spreadsheet['ranges']['rivals']}{time_trial_submissions_ws.row_count}"
+    )
+    gamertag_conversion = time_trial_submissions_ws.get(
+        f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}"
+    )
+
+    # get driver gamertag by looping through the gamertag conversion
+    driver_gamertag = None
+    for row in gamertag_conversion:
+        if row[0] == str(driver_user.id):
+            driver_gamertag = row[1]
+            break
+
+    # get the rival user ids for pings by looping through the rivals
+    rival_users = []
+
+    for row in rivals:
+
+        if row[2] == driver_gamertag:  # found someone who has the driver as their rival
+
+            for r in gamertag_conversion:  # find the rival's user id
+
+                if r[1] == driver_gamertag:
+                    await client.fetch_user(int(r[0]))
+                    break
+
+    msg_str = f"{', '.join([ru.mention for ru in rival_users])}, your rival, {driver_gamertag}, just set a {lap_time}!"
+    await rivarly_log.send(msg_str)
+
+# end update_rival_log
+
+
 async def tt_submit(client: discord.Client, message: discord.Message, args: list[str]):
 
     await message.channel.trigger_typing()
@@ -339,6 +381,13 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 ),
                 "starting_order",
                 starting_order_title
+            )
+
+            await update_rivalry_log(
+                client,
+                message.guild.get_channel(rivalry_log_id),
+                message.author,
+                lap_time
             )
 
         else: # invalid time format
@@ -603,5 +652,4 @@ async def handle_rival_selection(
 
         await msg.clear_reactions()
         await prepare_rival_selection_channel(msg.channel, user, msg)
-
 # end handle_rival_selection
