@@ -82,7 +82,7 @@ async def main(client, message, args, author_perms):
         round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
         
         time_trial_title = round_sheet.get("B5")[0][0]
-        starting_order_title = round_sheet.get("L5")[0][0]
+        starting_order_title = round_sheet.get("K5")[0][0]
             
         await update_discord_tables(
             client,
@@ -298,17 +298,12 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             a1_ranges = [
                 f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
                 f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
+                f"F4:F{time_trial_submissions_ws.row_count}",  # round numbers
             ]
             
             ranges = time_trial_submissions_ws.batch_get(
                 a1_ranges,
                 value_render_option="FORMULA"
-            )
-
-            ranges.append(
-                home_ws.batch_get(
-                    [f"B4:B{home_ws.row_count}"] # rounds
-                )
             )
 
             # append the new submission
@@ -334,7 +329,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             driver_submission_history = f"**Round {round_number} | Submission history:**"
             for i, row in enumerate(ranges[0]):
 
-                if row[0] == str(driver_id):
+                if row[0] == str(driver_id) and ranges[2][i][0] == str(round_number):
                     lap_time_str = ranges[1][i][0]
                     lap_time_seconds = int(lap_time_str[0]) * 60 + float(lap_time_str[2:])
                     driver_submissions.append(lap_time_seconds)
@@ -360,10 +355,10 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             )
 
             
-            round_sheet = [sheet for sheet in ws if sheet.title == f"R{ranges[2][-1][0][0]}"][0]
+            round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
             
             time_trial_title = round_sheet.get("B5")[0][0]
-            starting_order_title = round_sheet.get("L5")[0][0]
+            starting_order_title = round_sheet.get("K5")[0][0]
             
             await update_discord_tables(
                 client,
