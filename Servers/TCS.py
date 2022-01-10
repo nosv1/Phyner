@@ -627,7 +627,7 @@ async def handle_rival_selection(
 
         rival_selection_log = msg.guild.get_channel(rival_selection_log_id)
         await rival_selection_log.send(
-            f"{rival_user.mention} ({rival_pace}), {user.mention} ({selector_pace}) has selected you as your rival. Please, let {mo_user.mention} know if you do not plan to race on Sunday."
+            f"{rival_user.mention} ({rival_pace}), {user.mention} ({selector_pace}) has selected you as their rival. Please, let {mo_user.mention} know if you do not plan to race on Sunday."
         )
 
         await msg.channel.send("Thank you for selecting a rival. Good luck :thumbsup:")
