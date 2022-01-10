@@ -42,7 +42,7 @@ Logger.create_log_file()
 ''' CONSTANTS '''
 
 intents = discord.Intents.all()
-client = discord.Client(intents = intents)
+client = discord.Client(intents=intents)
 
 connected = None
 host = os.getenv("HOST")
@@ -649,6 +649,44 @@ async def on_raw_reaction_remove(payload):
     if error:
         await Logger.log_error(client, error)
 # end on_reaction_remove
+
+
+# @client.event
+# async def on_scheduled_event_user_remove(event, member):
+#     print(f"{member} has left {event.name}")
+
+
+# @client.event
+# async def raw_scheduled_event_user_add(payload):
+
+#     scheduled_event = client.get_event(payload.event_id)
+#     if not scheduled_event:
+#         scheduled_event = await client.fetch_scheduled_event(payload.event_id)
+
+#     user = client.get_user(payload.user_id)
+#     if not user:
+#         user = await client.fetch_user(payload.user_id)
+
+#     print(f"{user} has joined {scheduled_event.name}")
+
+# # end raw_scheduled_event_user_add
+
+
+# @client.event
+# async def raw_scheduled_event_user_remove(payload):
+
+#     scheduled_event = client.get_event(payload.event_id)
+#     if not scheduled_event:
+#         scheduled_event = await client.fetch_scheduled_event(payload.event_id)
+
+#     user = client.get_user(payload.user_id)
+#     if not user:
+#         user = await client.fetch_user(payload.user_id)
+
+#     print(f"{user} has left {scheduled_event.name}")
+        
+# end raw_scheduled_event_user_remove
+
 
 
 ''' STARTUP '''

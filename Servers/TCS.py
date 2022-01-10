@@ -44,7 +44,9 @@ spreadsheet = {
         "rivals": "K4:K",  # rival_gamertag
 
         # leaderboards
-        "avg_tt_pace_vs_field": "J4:L",  # pos, gamertag, pace v field
+        "avg_tt_pace_vs_field": "B4:D",  # pos, gamertag, pace v field
+        "time_trial": "B6:G",  # pos, race?, gamertag, lap time, delta, pace v field
+        "starting_order": "K6:O",  # pos, lby, gamertag, lap time, start time
     }
 }
 spreadsheet_link = "https://docs.google.com/spreadsheets/d/1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU/edit#gid=1367712203"
@@ -80,11 +82,11 @@ async def main(client, message, args, author_perms):
         
         time_trial_title = round_sheet.get("B5")[0][0]
         starting_order_title = round_sheet.get("L5")[0][0]
-        
+            
         await update_discord_tables(
             client,
             round_sheet.get(
-                f"B6:J{round_sheet.row_count}"
+                f"{spreadsheet['ranges']['time_trial']}{round_sheet.row_count}"
             ),
             "time_trial",
             time_trial_title,
@@ -93,7 +95,7 @@ async def main(client, message, args, author_perms):
         await update_discord_tables(
             client,
             round_sheet.get(
-                f"L6:P{round_sheet.row_count}"
+                f"{spreadsheet['ranges']['starting_order']}{round_sheet.row_count}"
             ),
             "starting_order",
             starting_order_title
@@ -136,6 +138,7 @@ async def update_discord_tables(client: discord.Client, leaderboard: list, table
 
     if table_type == "time_trial":
         leaderboard[0][3] = leaderboard[0][3].replace("Lap Time", "Lap")
+        leaderboard[0][3] = leaderboard[0][3].replace("Pace v Field", "PvF")
 
     else:
         leaderboard[0][4] = leaderboard[0][4].replace("Start Time", "Start")
@@ -154,7 +157,7 @@ async def update_discord_tables(client: discord.Client, leaderboard: list, table
             f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
             f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
             f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
-            f"`{('[' + leaderboard[0][-1] + ']').rjust(col_widths[-2], ' ')}`", # pts
+            f"`{('[' + leaderboard[0][5] + ']').center(col_widths[5], ' ')}`", # pvf
         ]
 
     else:
@@ -185,7 +188,7 @@ async def update_discord_tables(client: discord.Client, leaderboard: list, table
                 f"{row[0]}".center(col_widths[0], " "),
                 f"{row[2]}".ljust(col_widths[2], " "),
                 f"{row[3]}".center(col_widths[3], " "),
-                f"{row[-1]}".center(col_widths[-2], " "),
+                f"{row[5]}".center(col_widths[5], " "),
             ]
 
             starting_order_line = [
@@ -323,7 +326,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             await update_discord_tables(
                 client,
                 round_sheet.get(
-                    f"B6:J{round_sheet.row_count}"
+                    f"{spreadsheet['ranges']['time_trial']}{round_sheet.row_count}"
                 ),
                 "time_trial",
                 time_trial_title,
@@ -332,7 +335,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             await update_discord_tables(
                 client,
                 round_sheet.get(
-                    f"L6:P{round_sheet.row_count}"
+                    f"{spreadsheet['ranges']['starting_order']}{round_sheet.row_count}"
                 ),
                 "starting_order",
                 starting_order_title
@@ -478,7 +481,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
             user_pace = row[2]
             break
 
-    description = "Beating your rival in the TT will give you a start-time deduction in this round's race - based on how many positions ahead your rival is; then, if you beat them in the race, you will get bonus points.\n\n"
+    description = "Beating your rival in the TT will give you a start-time deduction in this round's race - based on how many positions ahead your rival is; then, if you beat them in the race, you will get a fancy role for how many times you do so.\n\n"
 
     description += "Selecting a rival will ping them to let them know they've been chosen. If your rival does not plan to race, you will have the opportunity to pick a new rival.\n\n"
 
