@@ -41,6 +41,7 @@ spreadsheet = {
     "leaderboards": 2120696652,
     "ranges": {
         # time trial submisisons
+        "round_numbers": "F4:F",  # round numbers
         "gamertag_conversion": "H4:J",  # discord_id, gamertag, avail
         "rivals": "K4:K",  # rival_gamertag
 
@@ -289,16 +290,12 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             time_trial_submissions_ws = Support.get_worksheet(
                 ws, spreadsheet["time_trial_submissions"]
             )
-            home_ws = Support.get_worksheet(
-                ws, spreadsheet["home"]
-            )
 
             round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
 
             a1_ranges = [
                 f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
                 f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
-                f"F4:F{time_trial_submissions_ws.row_count}",  # round numbers
             ]
             
             ranges = time_trial_submissions_ws.batch_get(
@@ -325,11 +322,15 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 value_input_option="USER_ENTERED"
             )
 
+            round_numbers = time_trial_submissions_ws.get(
+                f"{spreadsheet['ranges']['round_numbers']}{time_trial_submissions_ws.row_count}"
+            )
+
             driver_submissions = []  # lap times in seconds
             driver_submission_history = f"**Round {round_number} | Submission history:**"
             for i, row in enumerate(ranges[0]):
 
-                if row[0] == str(driver_id) and ranges[2][i][0] == str(round_number):
+                if row[0] == str(driver_id) and round_numbers[i][0] == str(round_number):
                     lap_time_str = ranges[1][i][0]
                     lap_time_seconds = int(lap_time_str[0]) * 60 + float(lap_time_str[2:])
                     driver_submissions.append(lap_time_seconds)
