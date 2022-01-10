@@ -258,12 +258,11 @@ async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextCh
             for r in gamertag_conversion:  # find the rival's user id
 
                 if r[1] == driver_gamertag:
-                    await client.fetch_user(int(r[0]))
+                    rival_users.append(await client.fetch_user(int(r[0])))
                     break
 
     msg_str = f"{', '.join([ru.mention for ru in rival_users])}, your rival, {driver_gamertag}, just set a {lap_time}!"
     await rivarly_log.send(msg_str)
-
 # end update_rival_log
 
 
