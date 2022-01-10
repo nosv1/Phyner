@@ -654,7 +654,3 @@ async def handle_rival_selection(
         await msg.clear_reactions()
         await prepare_rival_selection_channel(msg.channel, user, msg)
 # end handle_rival_selection
-
-
-def test():
-            
