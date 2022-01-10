@@ -251,9 +251,9 @@ async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextCh
     # get the rival user ids for pings by looping through the rivals
     rival_users = []
 
-    for row in enumerate(rivals):
+    for row in rivals:
 
-        if row[0] == driver_gamertag:  # found someone who has the driver as their rival
+        if row and row[0] == driver_gamertag:  # found someone who has the driver as their rival
 
             for r in gamertag_conversion:  # find the rival's user id
 
@@ -654,3 +654,7 @@ async def handle_rival_selection(
         await msg.clear_reactions()
         await prepare_rival_selection_channel(msg.channel, user, msg)
 # end handle_rival_selection
+
+
+def test():
+            
