@@ -547,7 +547,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
         if not rival[3]:
             rival_line = f"~~{rival_line}~~ (not racing)"
 
-        description += f"{Support.emojis.space_char * 2}**{rival[0]}.** {rival_line}\n"
+        description += f"{Support.emojis.space_char * 2}**{i+1}.** {rival_line}\n"
     
     description += f"{Support.emojis.space_char * 2}**{len(possible_rivals)+1}.** {user_gamertag} - {user_pace}\n\n"
     embed_meta += f"selector={user_gamertag.replace(' ', '%20')}-{user_pace}/"
