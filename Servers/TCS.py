@@ -258,9 +258,9 @@ async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextCh
             selector_id = gamertag_conversion[i][0] # so if Deux Veloce picked Mo v0, this is Veloce's ID
             selector_users.append(await client.fetch_user(int(selector_id)))
 
-
-    msg_str = f"{', '.join([s.mention for s in selector_users])}, your rival, {driver_gamertag}, just set a {lap_time}!"
-    await rivarly_log.send(msg_str)
+    if selector_users:
+        msg_str = f"{', '.join([s.mention for s in selector_users])}, your rival, {driver_gamertag}, just set a {lap_time}!"
+        await rivarly_log.send(msg_str)
 # end update_rival_log
 
 
