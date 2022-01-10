@@ -186,22 +186,23 @@ async def update_discord_tables(client: discord.Client, leaderboard: list, table
                 exited = True
                 break
 
-            tt_line = [
-                f"{row[0]}".center(col_widths[0], " "),
-                f"{row[2]}".ljust(col_widths[2], " "),
-                f"{row[3]}".center(col_widths[3], " "),
-                f"{row[5]}".center(col_widths[5], " "),
-            ]
+            if table_type == "time_trial":
 
-            starting_order_line = [
-                f"{row[0]}".center(col_widths[0], " "),
-                f"{row[2]}".ljust(col_widths[2], " "),
-                f"{row[4]}".center(col_widths[4], " "),
-            ]
+                line = [
+                    f"{row[0]}".center(col_widths[0], " "),
+                    f"{row[2]}".ljust(col_widths[2], " "),
+                    f"{row[3]}".center(col_widths[3], " "),
+                    f"{row[5]}".center(col_widths[5], " "),
+                ]
 
-            table.append(
-                tt_line if table_type == "time_trial" else starting_order_line
-            )
+            else:
+                line = [
+                    f"{row[0]}".center(col_widths[0], " "),
+                    f"{row[2]}".ljust(col_widths[2], " "),
+                    f"{row[4]}".center(col_widths[4], " "),
+                ]
+
+            table.append(line)
 
             table[-1] = " ".join([f"`{c}`" for c in table[-1]])
 
