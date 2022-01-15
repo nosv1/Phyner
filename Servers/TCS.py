@@ -270,7 +270,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
 
     # get the time from message
     lap_time = re.findall(
-        r"[0-5]{1}:[0-9]{2}.\d{3}", args[1]
+        r"[0-5]{1}:[0-9]{2}\.\d{3}", args[1]
     )
 
     proof = validators.url(re.sub(r"[<>]", "", args[2]))
