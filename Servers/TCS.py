@@ -557,7 +557,6 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
         ws, spreadsheet["time_trial_submissions"]
     )
     round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
-    round_number = 2
     round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
 
     gamertag_conversion = time_trial_submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}")
