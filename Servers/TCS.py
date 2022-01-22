@@ -49,6 +49,9 @@ spreadsheet = {
         "avg_tt_pace_vs_field": "B4:D",  # pos, gamertag, pace v field
         "time_trial": "B6:G",  # pos, race?, gamertag, lap time, delta, pace v field
         "starting_order": "K6:O",  # pos, lby, gamertag, lap time, start time
+
+        # round sheet
+        "time_trial_times": "D7:E", # gamertag, lap_time
     }
 }
 spreadsheet_link = "https://docs.google.com/spreadsheets/d/1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU/edit#gid=1367712203"
@@ -66,7 +69,7 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
-        await tt_submit(client, message, args)
+        # await pvf_to_lap_time(message, args)
 
         pass
 
@@ -477,6 +480,101 @@ async def generate_staggered_start(message: discord.Message, args: list[str]):
         description=description,
     )
 # end generate_staggered_start
+
+
+async def pvf_to_lap_time(message: discord.Message, args: list[str]):
+
+    def get_avg_percent_diffs(times: list[float]) -> list[float]:
+        diffs = []
+
+        for time in times:
+            if time:
+
+                sum = 0
+                for field_time in times:
+
+                    if field_time:
+                        sum += (field_time - time) / ((time + field_time) / 2)
+
+                diffs.append(sum / len(times))
+
+        return diffs
+    # end get_avg_percent_diffs
+
+    def f(Td: float, times: list[float], num_drivers: int, target_pvf: float) -> float:
+        """
+        create the equation for opt.brentq()
+
+        0 = (Tfn1 - Td) / (1/2 * (Tfn1 + Td)) + ... - (PvF * num_drivers)
+        
+        Tfn are the field times Tfn1, Tfn2, ...
+
+        Parameters
+        ----------
+        Td: driver time
+        times: list of driver times
+        num_drivers: current number of drivers
+        target_pvf: denormalized verion
+        """
+
+        time_terms = []
+
+        for time in times:
+            time_terms.append(
+                f"({time} - Td) / (1/2 * ({time} + Td))"
+            )
+
+        eq = f"{' + '.join(time_terms)} - ({target_pvf} * {num_drivers})"
+
+        return eval(eq)
+    # end f
+
+    await message.channel.trigger_typing()
+
+    driver_id = message.mentions[0].id if message.mentions else message.author.id
+    driver_id = 442063575154950154
+    target_pvf = args[1]
+
+    try:
+        pvf = float(target_pvf)
+
+    except ValueError:
+        await simple_bot_response(
+            message.channel,
+            title="**Invalid PvF!**",
+            description="`target_pvf` should be in the range [0, 1] \n\n`!pvf <target_pvf> [@Driver]`\n`!pvf 0.75 @Mo`",
+            reply_message=message
+        )
+        return
+
+    gc = Support.get_g_client()
+    wb = gc.open_by_key(spreadsheet["key"])
+    ws = wb.worksheets()
+    time_trial_submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["time_trial_submissions"]
+    )
+    round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
+    round_number = 2
+    round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
+
+    gamertag_conversion = time_trial_submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}")
+
+    driver_gamertag = [row[1] for row in gamertag_conversion if row[0] == str(driver_id)][0]
+    time_trial_times = round_sheet.get(f"{spreadsheet['ranges']['time_trial_times']}{round_sheet.row_count}")  # gamertag, lap_time
+
+    # get all lap times except for driver lap time
+    # when we calculate the target time, it needs to think it's a new driver
+    lap_times = [row[1] for row in time_trial_times if row[0] != driver_gamertag]
+    for i, lap_time in enumerate(lap_times):
+        lap_times[i] = int(lap_times[i][0]) * 60 + float(lap_times[i][2:])
+
+    avg_percent_diffs = get_avg_percent_diffs(lap_times)
+    de_normalized_target_pvf = target_pvf * (avg_percent_diffs[0] - avg_percent_diffs[-1]) + avg_percent_diffs[-1]  # [0] is max and [-1] is min
+
+    print("avg_percent_diffs:", avg_percent_diffs)
+    print("de_normalized_target_pvf:", de_normalized_target_pvf)
+
+# end pvf_to_lap_time
 
 
 async def prepare_rival_selection_channel(channel: discord.TextChannel, user: discord.User, msg: discord.Message = None):
