@@ -573,7 +573,8 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
     if not lap_times:
         await simple_bot_response(
             message.channel,
-            description=f"**There have been no times submitted for Round {round_number}. Try again later.**",
+            title="**Not enough lap times submitted!**",
+            description=f"Not enough lap times submitted for Round {round_number} - missing {2 - len(lap_times)}. Please, try again later.",
             reply_message=message
         )
         return
