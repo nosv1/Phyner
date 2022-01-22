@@ -569,6 +569,15 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
     # get all lap times except for driver lap time
     # when we calculate the target time, it needs to think it's a new driver
     lap_times = [row[1] for row in time_trial_times if row[0] != driver_gamertag]
+
+    if not lap_times:
+        await simple_bot_response(
+            message.channel,
+            description=f"**There have been no times submitted for Round {round_number}. Try again later.**",
+            reply_message=message
+        )
+        return
+
     for i, lap_time in enumerate(lap_times):
         lap_times[i] = int(lap_times[i][0]) * 60 + float(lap_times[i][2:])
 
@@ -579,7 +588,11 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
         avg_percent_diffs[-1]  # [0] is max and [-1] is min
     )
     
-    target_time = opt.brentq(lambda xi: f(xi, lap_times, len(lap_times), de_normalized_target_pvf), lap_times[0]-100, lap_times[-1]+100)
+    target_time = opt.brentq(
+        lambda xi: f(xi, lap_times, len(lap_times), de_normalized_target_pvf), 
+        lap_times[0]-100, 
+        lap_times[-1]+100
+    )
 
     # convert seconds to m:ss.000
     target_time = f"{int(target_time // 60)}:{target_time % 60:.3f}"
