@@ -10,6 +10,7 @@ from pytz import timezone
 import traceback
 from types import SimpleNamespace
 import validators
+import scipy.optimize as opt
 
 
 import Database
@@ -73,6 +74,8 @@ async def main(client, message, args, author_perms):
 
         pass
 
+    elif args[0] == "!pvf":
+        await pvf_to_lap_time(message, args)
 
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(client, message, args)
@@ -531,12 +534,12 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
 
     await message.channel.trigger_typing()
 
-    driver_id = message.mentions[0].id if message.mentions else message.author.id
-    driver_id = 442063575154950154
+    driver = message.mentions[0] if message.mentions else message.author
+    driver_id = driver.id
     target_pvf = args[1]
 
     try:
-        pvf = float(target_pvf)
+        target_pvf = float(target_pvf)
 
     except ValueError:
         await simple_bot_response(
@@ -559,7 +562,9 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
 
     gamertag_conversion = time_trial_submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}")
 
-    driver_gamertag = [row[1] for row in gamertag_conversion if row[0] == str(driver_id)][0]
+    driver_gamertag = [row[1] for row in gamertag_conversion if row[0] == str(driver_id)]
+    driver_gamertag = driver_gamertag[0] if driver_gamertag else None
+
     time_trial_times = round_sheet.get(f"{spreadsheet['ranges']['time_trial_times']}{round_sheet.row_count}")  # gamertag, lap_time
 
     # get all lap times except for driver lap time
@@ -569,10 +574,22 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
         lap_times[i] = int(lap_times[i][0]) * 60 + float(lap_times[i][2:])
 
     avg_percent_diffs = get_avg_percent_diffs(lap_times)
-    de_normalized_target_pvf = target_pvf * (avg_percent_diffs[0] - avg_percent_diffs[-1]) + avg_percent_diffs[-1]  # [0] is max and [-1] is min
+    de_normalized_target_pvf = (
+        target_pvf * 
+        (avg_percent_diffs[0] - avg_percent_diffs[-1]) + 
+        avg_percent_diffs[-1]  # [0] is max and [-1] is min
+    )
+    
+    target_time = opt.brentq(lambda xi: f(xi, lap_times, len(lap_times), de_normalized_target_pvf), lap_times[0]-100, lap_times[-1]+100)
 
-    print("avg_percent_diffs:", avg_percent_diffs)
-    print("de_normalized_target_pvf:", de_normalized_target_pvf)
+    # convert seconds to m:ss.000
+    target_time = f"{int(target_time // 60)}:{target_time % 60:.3f}"
+    
+    await simple_bot_response(
+        message.channel,
+        description=f"**{driver.mention} needs to set a `{target_time}` for a `{target_pvf}` PvF.**",
+        reply_message=message
+    )
 
 # end pvf_to_lap_time
 
