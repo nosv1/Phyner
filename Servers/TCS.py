@@ -10,7 +10,7 @@ from pytz import timezone
 import traceback
 from types import SimpleNamespace
 import validators
-import scipy.optimize as opt
+# import scipy.optimize as opt
 
 
 import Database
@@ -75,7 +75,8 @@ async def main(client, message, args, author_perms):
         pass
 
     elif args[0] == "!pvf":
-        await pvf_to_lap_time(message, args)
+        # await pvf_to_lap_time(message, args)
+        pass
 
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(client, message, args)
