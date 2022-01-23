@@ -715,13 +715,6 @@ async def startup():
     log("Connection", f"{host} Controller Connected")
 
     await Tasks.loop.start(client)
-
-    await client.change_presence(
-        activity=discord.Activity(
-            type=discord.ActivityType.playing, name="DEPRECIATING THIS WINTER"
-        ),
-        status=discord.Status.online
-    )
 # end startup
 
 def main():
