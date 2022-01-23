@@ -538,10 +538,17 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
     driver_id = driver.id
     target_pvf = args[1]
 
+    bad_pvf = False
     try:
         target_pvf = float(target_pvf)
+        
+        if target_pvf < 0 or target_pvf > 1:
+            bad_pvf = True
 
     except ValueError:
+        bad_pvf = True
+    
+    if bad_pvf:
         await simple_bot_response(
             message.channel,
             title="**Invalid PvF!**",
@@ -603,7 +610,6 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
         description=f"**{driver.mention} needs to set a `{target_time}` for a `{target_pvf}` PvF.**",
         reply_message=message
     )
-
 # end pvf_to_lap_time
 
 
