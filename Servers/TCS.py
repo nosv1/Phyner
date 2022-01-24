@@ -833,9 +833,9 @@ async def log_laps(message, args):
     )
 
     total_laps = lap_count
-    for row in ranges[1]:
+    for i, row in enumerate(ranges[0]):
         if row[0] == str(message.author.id):
-            total_laps += int(row[0])
+            total_laps += int(ranges[1][i][0])
 
     ranges[0].append([
         str(message.author.id),
