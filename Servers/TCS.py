@@ -802,7 +802,7 @@ async def log_laps(message, args):
 
     await message.channel.trigger_typing()
 
-    lap_count = re.findall(r"\d+", args[1])
+    lap_count = re.findall(r"[-]{0,1}\d+", args[1])
     if lap_count:
         lap_count = int(lap_count[0])
 
