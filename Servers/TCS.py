@@ -37,14 +37,18 @@ rivalry_log_id = 929154488143581245
 spreadsheet = {
     "key": "1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU",
     "leaderboards": 2120696652,
-    "time_trial_submissions": 1968167541,
+    "submissions": 1968167541,
     "home": 1367712203,
     "leaderboards": 2120696652,
     "ranges": {
-        # time trial submisisons
+        # submisisons
+        "tt_discord_ids": "C4:C",  # discord id
+        "tt_lap_times": "E4:E",  # lap times
         "round_numbers": "F4:F",  # round numbers
-        "gamertag_conversion": "H4:J",  # discord_id, gamertag, avail
-        "rivals": "K4:K",  # rival_gamertag
+        "ll_discord_ids": "I4:I",  # discord id
+        "ll_laps": "K4:K", # lap counts
+        "gamertag_conversion": "N4:P",  # discord_id, gamertag, avail
+        "rivals": "Q4:Q",  # rival_gamertag
 
         # leaderboards
         "avg_tt_pace_vs_field": "B4:D",  # pos, gamertag, pace v field
@@ -76,6 +80,9 @@ async def main(client, message, args, author_perms):
 
     elif args[0] == "!pvf":
         await pvf_to_lap_time(message, args)
+
+    elif args[0] == "!logit":
+        await log_laps(message, args)
 
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(client, message, args)
@@ -237,14 +244,14 @@ async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextCh
     g = Support.get_g_client()
     wb = g.open_by_key(spreadsheet["key"])
     ws = wb.worksheets()
-    time_trial_submissions_ws = Support.get_worksheet(
-        ws, spreadsheet["time_trial_submissions"]
+    submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["submissions"]
     )
-    rivals = time_trial_submissions_ws.get(
-        f"{spreadsheet['ranges']['rivals']}{time_trial_submissions_ws.row_count}"
+    rivals = submissions_ws.get(
+        f"{spreadsheet['ranges']['rivals']}{submissions_ws.row_count}"
     )
-    gamertag_conversion = time_trial_submissions_ws.get(
-        f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}"
+    gamertag_conversion = submissions_ws.get(
+        f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}"
     )
 
     # get driver gamertag by looping through the gamertag conversion
@@ -291,18 +298,18 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             g = Support.get_g_client()
             wb = g.open_by_key(spreadsheet["key"])
             ws = wb.worksheets()
-            time_trial_submissions_ws = Support.get_worksheet(
-                ws, spreadsheet["time_trial_submissions"]
+            submissions_ws = Support.get_worksheet(
+                ws, spreadsheet["submissions"]
             )
 
-            round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
+            round_number = int(submissions_ws.get("F3")[0][0][-2:])
 
             a1_ranges = [
-                f"C4:C{time_trial_submissions_ws.row_count}",  # discord ids
-                f"E4:E{time_trial_submissions_ws.row_count}",  # lap times
+                f"{spreadsheet['ranges']['tt_discord_ids']}{submissions_ws.row_count}",  # discord ids
+                f"{spreadsheet['ranges']['tt_lap_times']}{submissions_ws.row_count}",  # lap times
             ]
             
-            ranges = time_trial_submissions_ws.batch_get(
+            ranges = submissions_ws.batch_get(
                 a1_ranges,
                 value_render_option="FORMULA"
             )
@@ -318,7 +325,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             ])
 
             # update
-            time_trial_submissions_ws.batch_update(
+            submissions_ws.batch_update(
                 Support.ranges_to_dict(
                     a1_ranges=a1_ranges,
                     value_ranges=ranges
@@ -326,8 +333,8 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 value_input_option="USER_ENTERED"
             )
 
-            round_numbers = time_trial_submissions_ws.get(
-                f"{spreadsheet['ranges']['round_numbers']}{time_trial_submissions_ws.row_count}"
+            round_numbers = submissions_ws.get(
+                f"{spreadsheet['ranges']['round_numbers']}{submissions_ws.row_count}"
             )
 
             driver_submissions = []  # lap times in seconds
@@ -427,13 +434,13 @@ async def generate_staggered_start(message: discord.Message, args: list[str]):
     g = Support.get_g_client()
     wb = g.open_by_key(spreadsheet["key"])
     ws = wb.worksheets()
-    time_trial_submissions_ws = Support.get_worksheet(
-        ws, spreadsheet["time_trial_submissions"]
+    submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["submissions"]
     )
-    round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
+    round_number = int(submissions_ws.get("F3")[0][0][-2:])
     round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
 
-    gamertag_conversion = time_trial_submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}")
+    gamertag_conversion = submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}")
 
     mentions = [m.id for m in message.mentions]
     gamertags = []
@@ -560,13 +567,13 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
     gc = Support.get_g_client()
     wb = gc.open_by_key(spreadsheet["key"])
     ws = wb.worksheets()
-    time_trial_submissions_ws = Support.get_worksheet(
-        ws, spreadsheet["time_trial_submissions"]
+    submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["submissions"]
     )
-    round_number = int(time_trial_submissions_ws.get("F3")[0][0][-2:])
+    round_number = int(submissions_ws.get("F3")[0][0][-2:])
     round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
 
-    gamertag_conversion = time_trial_submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}")
+    gamertag_conversion = submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}")
 
     driver_gamertag = [row[1] for row in gamertag_conversion if row[0] == str(driver_id)]
     driver_gamertag = driver_gamertag[0] if driver_gamertag else None
@@ -622,13 +629,13 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     leaderboards_ws = Support.get_worksheet(
         ws, spreadsheet["leaderboards"]
     )
-    time_trial_submissions_ws = Support.get_worksheet(
-        ws, spreadsheet["time_trial_submissions"]
+    submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["submissions"]
     )
 
     # loop avg tt pvf until no pos value given text below table on spreadsheet
     avg_tt_pace_vs_field = leaderboards_ws.get(f"{spreadsheet['ranges']['avg_tt_pace_vs_field']}{leaderboards_ws.row_count}")
-    gamertag_conversion = time_trial_submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}")
+    gamertag_conversion = submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}")
     
     user_gamertag = [row[1] for row in gamertag_conversion if row[0] and int(row[0]) == user.id]
     user_gamertag = user_gamertag[0] if user_gamertag else None
@@ -738,15 +745,15 @@ async def handle_rival_selection(
         wb = g.open_by_key(spreadsheet["key"])
         ws = wb.worksheets()
 
-        time_trial_submissions_ws = Support.get_worksheet(
-            ws, spreadsheet["time_trial_submissions"]
+        submissions_ws = Support.get_worksheet(
+            ws, spreadsheet["submissions"]
         )
 
-        gamertag_conversion = time_trial_submissions_ws.get(
-            f"{spreadsheet['ranges']['gamertag_conversion']}{time_trial_submissions_ws.row_count}"
+        gamertag_conversion = submissions_ws.get(
+            f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}"
         )
-        rivals = time_trial_submissions_ws.get(
-            f"{spreadsheet['ranges']['rivals']}{time_trial_submissions_ws.row_count}"
+        rivals = submissions_ws.get(
+            f"{spreadsheet['ranges']['rivals']}{submissions_ws.row_count}"
         )
         
         discord_id = [int(row[0]) for row in gamertag_conversion if row[1] == rival_gamertag][0]
@@ -772,8 +779,8 @@ async def handle_rival_selection(
 
                 rivals[i][0] = rival_gamertag
 
-        time_trial_submissions_ws.update(
-            f"{spreadsheet['ranges']['rivals']}{time_trial_submissions_ws.row_count}",
+        submissions_ws.update(
+            f"{spreadsheet['ranges']['rivals']}{submissions_ws.row_count}",
             rivals
         )
 
@@ -785,3 +792,73 @@ async def handle_rival_selection(
         await msg.clear_reactions()
         await prepare_rival_selection_channel(msg.channel, user, msg)
 # end handle_rival_selection
+
+
+async def log_laps(message, args):
+    """
+        get number of laps from args and log it to spreadsheet
+    """
+
+    await message.channel.trigger_typing()
+
+    lap_count = re.findall(r"\d+", args[1])
+    if lap_count:
+        lap_count = int(lap_count[0])
+
+    else:
+        await simple_bot_response(
+            message.channel,
+            title="**Invalid number of laps!**",
+            description="Please, provide a number of laps to log.\n\n`!log 3`",
+        )
+        return
+
+    gc = Support.get_g_client()
+    wb = gc.open_by_key(spreadsheet["key"])
+    ws = wb.worksheets()
+    submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["submissions"]
+    )
+
+    round_number = int(submissions_ws.get("F3")[0][0][-2:])
+
+    a1_ranges = [
+        f"{spreadsheet['ranges']['ll_discord_ids']}{submissions_ws.row_count}",
+        f"{spreadsheet['ranges']['ll_laps']}{submissions_ws.row_count}",
+    ]
+
+    ranges = submissions_ws.batch_get(
+        a1_ranges,
+        value_render_option="FORMULA"
+    )
+
+    total_laps = lap_count
+    for row in ranges[1]:
+        if row[0] == str(message.author.id):
+            total_laps += int(row[0])
+
+    ranges[0].append([
+        str(message.author.id),
+    ])
+
+    ranges[1].append([
+        str(lap_count),
+    ])
+
+    submissions_ws.batch_update(
+        Support.ranges_to_dict(
+            a1_ranges=a1_ranges,
+            value_ranges=ranges
+        ),
+        value_input_option="USER_ENTERED"
+    )
+
+    await simple_bot_response(
+        message.channel,
+        title=f"**Logged {lap_count} laps!**",
+        description=f"You have logged a total of {total_laps} laps during Round {round_number}.",
+        reply_message=message
+    )
+    
+# end log_laps
+
