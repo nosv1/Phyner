@@ -44,9 +44,10 @@ spreadsheet = {
         # submisisons
         "tt_discord_ids": "C4:C",  # discord id
         "tt_lap_times": "E4:E",  # lap times
-        "round_numbers": "F4:F",  # round numbers
+        "tt_round_numbers": "F4:F",  # round numbers
         "ll_discord_ids": "I4:I",  # discord id
         "ll_laps": "K4:K", # lap counts
+        "ll_round_numbers": "L4:L",  # round numbers
         "gamertag_conversion": "N4:P",  # discord_id, gamertag, avail
         "rivals": "Q4:Q",  # rival_gamertag
 
@@ -333,15 +334,15 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 value_input_option="USER_ENTERED"
             )
 
-            round_numbers = submissions_ws.get(
-                f"{spreadsheet['ranges']['round_numbers']}{submissions_ws.row_count}"
+            tt_round_numbers = submissions_ws.get(
+                f"{spreadsheet['ranges']['tt_round_numbers']}{submissions_ws.row_count}"
             )
 
             driver_submissions = []  # lap times in seconds
             driver_submission_history = f"**Round {round_number} | Submission history:**"
             for i, row in enumerate(ranges[0]):
 
-                if row[0] == str(driver_id) and round_numbers[i][0] == str(round_number):
+                if row[0] == str(driver_id) and tt_round_numbers[i][0] == str(round_number):
                     lap_time_str = ranges[1][i][0]
                     lap_time_seconds = int(lap_time_str[0]) * 60 + float(lap_time_str[2:])
                     driver_submissions.append(lap_time_seconds)
@@ -822,6 +823,10 @@ async def log_laps(message, args):
 
     round_number = int(submissions_ws.get("F3")[0][0][-2:])
 
+    ll_round_numbers = submissions_ws.get(
+        f"{spreadsheet['ranges']['ll_round_numbers']}{submissions_ws.row_count}"
+    )
+
     a1_ranges = [
         f"{spreadsheet['ranges']['ll_discord_ids']}{submissions_ws.row_count}",
         f"{spreadsheet['ranges']['ll_laps']}{submissions_ws.row_count}",
@@ -834,7 +839,10 @@ async def log_laps(message, args):
 
     total_laps = lap_count
     for i, row in enumerate(ranges[0]):
-        if row[0] == str(message.author.id):
+        if (
+            row[0] == str(message.author.id) and 
+            ll_round_numbers[i][0] == str(round_number)
+        ):
             total_laps += int(ranges[1][i][0])
 
     ranges[0].append([
