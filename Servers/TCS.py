@@ -806,6 +806,14 @@ async def log_laps(message, args):
     if lap_count:
         lap_count = int(lap_count[0])
 
+        if lap_count == 0 or lap_count > 50:
+            await simple_bot_response(
+                message.channel,
+                title="**Error!**",
+                reply_message=message
+            )
+            return
+
     else:
         await simple_bot_response(
             message.channel,
@@ -863,7 +871,7 @@ async def log_laps(message, args):
 
     await simple_bot_response(
         message.channel,
-        title=f"**Logged {lap_count} laps!**",
+        title=f"**{'Logged' if lap_count > 0 else 'Deducted'} {lap_count} laps!**",
         description=f"You have logged a total of {total_laps} laps during Round {round_number}.",
         reply_message=message
     )
