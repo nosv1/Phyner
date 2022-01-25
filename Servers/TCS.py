@@ -810,7 +810,7 @@ async def log_laps(message, args):
         await simple_bot_response(
             message.channel,
             title="**Invalid number of laps!**",
-            description="Please, provide a number of laps to log.\n\n`!log 3`",
+            description="Please, provide a number of laps to log.\n\n`!logit 10`",
         )
         return
 
