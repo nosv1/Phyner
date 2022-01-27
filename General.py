@@ -1,6 +1,7 @@
 ''' IMPORTS '''
 
 import discord
+import random
 import re
 
 import Logger
@@ -15,6 +16,7 @@ import Help
 ''' CONSTANTS '''
 
 say_aliases = ["say", "speak", "create"]
+randomize_aliases = ["randomize", "shuffle", "choose"]  # edit randomize() if u change this, shuffle on the left, choose on the right
 feedback_aliases = ["request", "issue", "bug", "report"] # make sure u change feedback_type in feedback() if you edit this, bugs on the right, requests on the left
 
 
@@ -221,5 +223,23 @@ async def reaction(message, args):
                 log("reaction", f"removed reaction {r}")
 
     await Support.process_complete_reaction(message)
-
 # end reaction
+
+
+async def randomize(message, args):
+    choices = [c.replace(',', '') for c in args[2:]]
+
+    if choices:
+        if args[1] in randomize_aliases[0:2]:  # shuffle
+            random.shuffle(choices)
+            await message.channel.send(f"**Shuffled:**{', '.join(choices)}")
+        
+        elif args[1] in randomize_aliases[2:]:  # choose
+            await message.channel.send(f"**Chosen:** {random.choice(choices)}")
+
+    else:
+        await Support.simple_bot_response(
+            message.channel,
+            description=f"**There were no choices provided.**\n\n`{args[0]} <randomize/choose> <choice>, <choice>, ...`"
+        )
+# end randomize

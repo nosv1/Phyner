@@ -6,6 +6,7 @@ import discord
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from pytz import timezone
+import random
 import re
 import traceback
 
@@ -274,6 +275,8 @@ async def on_message(message):
                 elif args[1] == "reaction":
                     await General.reaction(message, args)
 
+                elif args[1] in General.randomize_aliases:
+                    await General.randomize(message, args)
 
                 
                 ## COPY ##
