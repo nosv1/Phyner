@@ -153,7 +153,7 @@ async def update_discord_tables(client: discord.Client, leaderboard: list, table
     """
 
     if table_type == "time_trial":
-        leaderboard[0][3] = leaderboard[0][3].replace("Lap Time", "Lap")
+        # leaderboard[0][3] = leaderboard[0][3].replace("Lap Time", "Lap")
         leaderboard[0][5] = leaderboard[0][5].replace("Pace v Field", "PvF")
 
     else:
