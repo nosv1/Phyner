@@ -6,7 +6,6 @@ import discord
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from pytz import timezone
-import random
 import re
 import traceback
 
