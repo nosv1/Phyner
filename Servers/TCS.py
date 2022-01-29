@@ -345,6 +345,10 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 if row[0] == str(driver_id) and tt_round_numbers[i][0] == str(round_number):
                     lap_time_str = ranges[1][i][0]
                     lap_time_seconds = int(lap_time_str[0]) * 60 + float(lap_time_str[2:])
+
+                    if lap_time_seconds in driver_submissions:
+                        continue
+                    
                     driver_submissions.append(lap_time_seconds)
 
                     delta = 0
