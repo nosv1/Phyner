@@ -99,14 +99,14 @@ async def send_ping(client, message):
     description += f"**Ping to {message.author.display_name}:** {ping}ms\n\n"
 
     host_region = None
-    try:
-        host_region = client.get_guild(Support.ids.mobot_support_id).region
-        client_region = message.guild.region
+    # try: guess region's were depreciated?
+    #     host_region = client.get_guild(Support.ids.mobot_support_id).region
+    #     client_region = message.guild.region
 
-        description += f"**{phyner.display_name}:** {host_region}\n"
-        description += f"**{message.guild}:** {client_region}"
-    except AttributeError: # dm channel
-        pass
+    #     description += f"**{phyner.display_name}:** {host_region}\n"
+    #     description += f"**{message.guild}:** {client_region}"
+    # except AttributeError: # dm channel
+    #     pass
 
     await simple_bot_response(message.channel, description=description)
     await pong.delete()
