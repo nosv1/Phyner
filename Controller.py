@@ -653,59 +653,41 @@ async def on_raw_reaction_remove(payload):
 # end on_reaction_remove
 
 
-# @client.event
-# async def on_scheduled_event_user_remove(event, member):
-#     print(f"{member} has left {event.name}")
+@client.event
+async def on_raw_scheduled_event_user_add(payload):
+
+    guild = payload.guild
+
+    # get the scheduled event
+    scheduled_event = guild.get_scheduled_event(payload.event_id)
+    if not scheduled_event:
+        scheduled_event = await guild.fetch_scheduled_event(payload.event_id)
+
+    # get the user
+    user = client.get_user(payload.user_id)
+    if not user:
+        user = await client.fetch_user(payload.user_id)
+
+# end raw_scheduled_event_user_add
 
 
-# @client.event
-# async def raw_scheduled_event_user_add(payload):
+@client.event
+async def on_raw_scheduled_event_user_remove(payload):
 
-#     scheduled_event = client.get_event(payload.event_id)
-#     if not scheduled_event:
-#         scheduled_event = await client.fetch_scheduled_event(payload.event_id)
+    guild = payload.guild
 
-#     user = client.get_user(payload.user_id)
-#     if not user:
-#         user = await client.fetch_user(payload.user_id)
+    # get the scheduled event
+    scheduled_event = guild.get_scheduled_event(payload.event_id)
+    if not scheduled_event:
+        scheduled_event = await guild.fetch_scheduled_event(payload.event_id)
 
-#     print(f"{user} has joined {scheduled_event.name}")
-
-# # end raw_scheduled_event_user_add
-
-
-# @client.event
-# async def raw_scheduled_event_user_remove(payload):
-
-#     scheduled_event = client.get_event(payload.event_id)
-#     if not scheduled_event:
-#         scheduled_event = await client.fetch_scheduled_event(payload.event_id)
-
-#     user = client.get_user(payload.user_id)
-#     if not user:
-#         user = await client.fetch_user(payload.user_id)
-
-#     print(f"{user} has left {scheduled_event.name}")
+    # get the user
+    user = client.get_user(payload.user_id)
+    if not user:
+        user = await client.fetch_user(payload.user_id)
         
 # end raw_scheduled_event_user_remove
 
-
-
-''' STARTUP '''
-
-''' this appears to simply not be needed
-@client.event 
-async def on_ready():
-    error = None
-    try:
-    
-    except:
-        error = traceback.format_exc()
-
-    if error:
-        await Logger.log_error(client, error)
-# end on_ready
-'''
 
 async def startup():
     global connected
