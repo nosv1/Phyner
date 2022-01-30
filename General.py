@@ -232,7 +232,7 @@ async def randomize(message, args):
     if choices:
         if args[1] in randomize_aliases[0:2]:  # shuffle
             random.shuffle(choices)
-            await message.channel.send(f"**Shuffled:**{', '.join(choices)}")
+            await message.channel.send(f"**Shuffled:** {', '.join(choices)}")
         
         elif args[1] in randomize_aliases[2:]:  # choose
             await message.channel.send(f"**Chosen:** {random.choice(choices)}")
