@@ -139,7 +139,7 @@ async def on_message(message):
             log("webhook error", traceback.format_exc())
             return
 
-        if not message.author.bot or is_webhook or type(message.channel) != discord.ChannelType.public_thread: # not a bot and webhook we care about
+        if (not message.author.bot or is_webhook) and type(message.channel) != discord.ChannelType.public_thread: # not a bot and webhook we care about
 
             phyner = Support.get_phyner_from_channel(message.channel)
             is_mo = message.author.id == Support.ids.mo_id
