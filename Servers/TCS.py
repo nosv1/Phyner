@@ -810,7 +810,7 @@ async def log_laps(message, args):
     if lap_count:
         lap_count = int(lap_count[0])
 
-        if lap_count <= 0 or lap_count > 50:
+        if not lap_count or (lap_count < -50 or lap_count > 50):
             await simple_bot_response(
                 message.channel,
                 title="**Error!**",
