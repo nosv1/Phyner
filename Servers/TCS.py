@@ -615,7 +615,7 @@ async def pvf_to_lap_time(message: discord.Message, args: list[str]):
     )
 
     # convert seconds to m:ss.000
-    target_time = f"{int(target_time // 60)}:{target_time % 60:.3f}"
+    target_time = f"{int(target_time // 60)}:{str(int(target_time % 60)).zfill(2)}.{str(int((target_time % 1) * 1000)).zfill(3)}"
     
     await simple_bot_response(
         message.channel,
