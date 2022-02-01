@@ -227,7 +227,7 @@ async def reaction(message, args):
 
 
 async def randomize(message, args):
-    choices = [c.replace(',', '') for c in args[2:]]
+    choices = [c.replace(',', '') for c in args[2:-1]] # -1 to remove the blank
 
     if choices:
         if args[1] in randomize_aliases[0:2]:  # shuffle
