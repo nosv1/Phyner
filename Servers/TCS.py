@@ -119,6 +119,9 @@ async def main(client, message, args, author_perms):
 
     elif args[0] == "!staggered":
         await generate_staggered_start(message, args)
+
+    elif args[0] == "!resetnicks":
+        await reset_nicknames(message)
 # end main
 
 
@@ -425,7 +428,6 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
         )
 
         return
-
     # end if proof
 # end tt_submit
 
@@ -879,6 +881,41 @@ async def log_laps(message, args):
         description=f"You have logged a total of {total_laps} laps during Round {round_number}.",
         reply_message=message
     )
-    
 # end log_laps
 
+
+async def reset_nicknames(message):
+
+    msg = await message.channel.send("Resetting nicknames...")
+
+    g = Support.get_g_client()
+    wb = g.open_by_key(spreadsheet["key"])
+    ws = wb.worksheets()
+    submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["submissions"]
+    )
+    gamertag_conversion = submissions_ws.get(
+        f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}"
+    )
+
+    for i, row in enumerate(gamertag_conversion):
+
+        if row[0]:
+
+            # reset nickname
+            discord_id = int(row[0])
+            user = discord.utils.find(lambda u: u.id == discord_id, message.guild.members)
+            if user:
+                try:
+                    await user.edit(nick=row[1])
+                except discord.errors.Forbidden:
+                    pass
+
+        # if half way done, send message
+        if i and i % (len(gamertag_conversion) / 2) == 0:
+            await msg.edit(content=f"Resetting nicknames... {i}/{len(gamertag_conversion)}")
+
+    await msg.delete()
+    await Support.process_complete_reaction(message, remove=False)
+
+# end reset_nicknames
