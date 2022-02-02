@@ -452,7 +452,7 @@ async def generate_staggered_start(message: discord.Message, args: list[str]):
     mentions = [m.id for m in message.mentions]
     gamertags = []
     for i, row in enumerate(gamertag_conversion):
-        if int(row[0]) in mentions:
+        if row[0] and int(row[0]) in mentions:
             gamertags.append(row[1])
 
     driver_lap_times = round_sheet.get(

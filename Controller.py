@@ -421,7 +421,7 @@ async def on_raw_reaction_add(payload):
     try:
 
         message = await channel.fetch_message(message_id)
-        if not message:
+        if not message or type(message.channel) == discord.threads.Thread:
             return
 
         is_dm = message.channel.type == discord.ChannelType.private
@@ -577,7 +577,7 @@ async def on_raw_reaction_remove(payload):
     try:
 
         message = await channel.fetch_message(message_id)
-        if not message:
+        if not message or type(message.channel) == discord.threads.Thread:
             return
 
         is_dm = message.channel.type == discord.ChannelType.private
