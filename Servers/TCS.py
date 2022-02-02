@@ -436,7 +436,16 @@ async def generate_staggered_start(message: discord.Message, args: list[str]):
     
     await message.channel.trigger_typing()
 
-    lap_count = int(args[1])
+    try:
+        lap_count = int(args[1])
+    except:  # bad input
+        await simple_bot_response(
+            message.channel,
+            title="**Invalid input!**",
+            description="Please use the following format: `!staggered_start <lap_count> <@Driver> <@Driver> ...`",
+            reply_message=message
+        )
+        return
 
     g = Support.get_g_client()
     wb = g.open_by_key(spreadsheet["key"])
