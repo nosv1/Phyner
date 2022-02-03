@@ -291,8 +291,8 @@ async def update_discord_tables(
     bg_margin = 10
 
     # load image
-    checkbox = Image.open(f'{os.getcwd()}\Images\Checkbox.png').resize((16, 16))
-    empty_checkbox = Image.open(f'{os.getcwd()}\Images\Empty Checkbox.png').resize((16, 16))
+    checkbox = Image.open(f'{os.getcwd()}/Images/Checkbox.png').resize((16, 16))
+    empty_checkbox = Image.open(f'{os.getcwd()}/Images/Empty Checkbox.png').resize((16, 16))
 
     out = Image.new(
         "RGB", (
@@ -420,14 +420,14 @@ async def update_discord_tables(
                         ), text, fill=max_yellow_red, font=body_font
                     )
 
-    out.save(f"{os.getcwd()}\Images\{table_type}.png")
+    out.save(f"{os.getcwd()}/Images/{table_type}.png")
     
     channel = await client.fetch_channel(bot_stuff_id)
 
     if purge:
         await channel.purge()
 
-    image = discord.File(f"{os.getcwd()}\Images\{table_type}.png")
+    image = discord.File(f"{os.getcwd()}/Images/{table_type}.png")
     await channel.send(file=image)
 # end update_discord_tables
 
