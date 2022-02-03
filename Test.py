@@ -172,7 +172,6 @@ def test():
                         ), text, fill=max_yellow_red, font=body_font
                     )
 # end test
-test()
 
 
 async def test(client, message, args):
