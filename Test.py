@@ -2,6 +2,7 @@
 
 import asyncio
 import discord
+from PIL import ImageDraw, Image, ImageShow, ImageFont
 
 import os
 from dotenv import load_dotenv
@@ -17,6 +18,162 @@ from Support import simple_bot_response
 ''' FUNCTIONS '''
 
 ## TETS ##
+def test():
+
+    time_trial_table = [
+        ["Time Trial - Avg: 2:12.865"],
+        ["Pos", "Race?", "Driver", "Lap Time", "Delta", "Pace v Field", "Rival"],
+        ["1", "TRUE", "Rezorects", "2:09.765", "+0.000", "1.000", "", "FALSE"],
+        ["2", "FALSE", "Parcelius", "2:09.990", "+0.225", "0.969", "", "TRUE"],
+    ]
+    column_alignments = ["center", "center", "left", "center", "center", "center", "center", "center"]
+
+    metallic_seaweed = '#177e89'
+    ming = '#106575'
+    cg_red = '#db3a34'
+    mango_tango = '#ed8146'
+    max_yellow_red = '#ffc857'
+    jet = '#323031'
+
+    # create an image with a blue background of size 200x200  
+    header_heights = [24, 20]
+    column_widths = [40, 40, 150, 80, 50, 75, 140, 40]
+    body_rows = len(time_trial_table) - len(header_heights)
+    bg_margin = 10
+
+    # load image
+    checkbox = Image.open('Images/Checkbox.png').resize((16, 16))
+    empty_checkbox = Image.open('Images/Empty Checkbox.png').resize((16, 16))
+
+    out = Image.new(
+        "RGB", (
+            sum(column_widths) + bg_margin * 2, 
+            20 * body_rows + sum(header_heights) + bg_margin * 2
+        ), jet
+    )
+
+    draw = ImageDraw.Draw(out)
+
+    # rectangles
+    draw.rectangle((8, 8, out.size[0]-8, out.size[1]-8), fill=mango_tango)  # 2px outline
+
+    
+    draw.rectangle(  # header 1
+        (
+            bg_margin, bg_margin, 
+            out.size[0]-bg_margin, bg_margin + header_heights[0]
+        ), fill=cg_red
+    )  
+
+    draw.rectangle(  # header 2
+        (
+            bg_margin, bg_margin + header_heights[0], 
+            out.size[0]-bg_margin, bg_margin + sum(header_heights[0:2])
+        ), fill=ming
+    )
+
+    draw.rectangle(  # body
+        (
+            bg_margin, bg_margin + sum(header_heights), 
+            out.size[0]-bg_margin, out.size[1]-bg_margin
+        ), fill=metallic_seaweed
+    )
+
+    # borders
+    draw.line(  # header 1 bottom border
+        (
+            bg_margin, bg_margin + header_heights[0], 
+            out.size[0]-bg_margin, bg_margin + header_heights[0]
+        ), fill="black", width=1
+    )
+    draw.line(  # header 2 bottom border
+        (
+            bg_margin, bg_margin + sum(header_heights[0:2]), 
+            out.size[0]-bg_margin, bg_margin + sum(header_heights[0:2])
+        ), fill="black", width=1
+    )
+
+    for i in range(1, body_rows): # body bottom borders
+        offset_y = bg_margin + sum(header_heights) + 20*i
+        draw.line((bg_margin, offset_y, out.size[0]-bg_margin, offset_y), fill=ming, width=1)
+
+    # text
+    roboto_bold = "Fonts/Roboto-Bold.ttf"
+    roboto_medium = "Fonts/Roboto-Medium.ttf"
+    pt_to_px = 4/3
+    px_font_sizes = {
+        12: 12*pt_to_px,
+        14: 14*pt_to_px
+    }
+    header_1_font = ImageFont.truetype(roboto_bold, 14)
+    header_2_font = ImageFont.truetype(roboto_bold, 12)
+    body_font = ImageFont.truetype(roboto_medium, 12)
+
+    draw.text(  # header 1
+        (
+            bg_margin + (out.size[0]-bg_margin*2)//2 - header_1_font.getsize(text=time_trial_table[0][0])[0]//2,
+            bg_margin + header_heights[0]//2 - header_1_font.getsize(text=time_trial_table[0][0])[1]//2
+        ), time_trial_table[0][0], fill=max_yellow_red, font=header_1_font
+    )
+
+    # header 2
+    for i, text in enumerate(time_trial_table[1]):
+        offset_x = bg_margin + sum(column_widths[:i])
+        offset_y = bg_margin + sum(header_heights[0:1]) + (header_heights[1] // 2 - px_font_sizes[12] // 2) + 1  # no idea why it's + 1, but it works
+
+        if column_alignments[i] == "center":
+            draw.text(
+                (
+                    offset_x + (column_widths[i] - header_2_font.getsize(text=text)[0])//2,
+                    offset_y
+                ), text, fill=max_yellow_red, font=header_2_font
+            )
+
+        else:
+            draw.text(
+                (
+                    offset_x,
+                    offset_y
+                ), text, fill=max_yellow_red, font=header_2_font
+            )
+
+    # body
+    for i, row in enumerate(time_trial_table[2:]):
+
+        for j, text in enumerate(row):
+
+            offset_x = bg_margin + sum(column_widths[:j]) 
+            offset_y = bg_margin + sum(header_heights[0:2]) + 20*i + 3
+
+            if text in ['TRUE', 'FALSE']:
+                out.paste(
+                    checkbox if text == 'TRUE' else empty_checkbox,
+                    (
+                        offset_x + (column_widths[j] - checkbox.size[0])//2,
+                        offset_y + (header_heights[1] - checkbox.size[1])//2 - 2
+                    )
+                )
+
+            else:
+
+                if column_alignments[j] == "center":
+                    draw.text(
+                        (
+                            offset_x + (column_widths[j] - body_font.getsize(text=text)[0])//2,
+                            offset_y
+                        ), text, fill=max_yellow_red, font=body_font
+                    )
+
+                else:
+                    draw.text(
+                        (
+                            offset_x,
+                            offset_y
+                        ), text, fill=max_yellow_red, font=body_font
+                    )
+# end test
+test()
+
 
 async def test(client, message, args):
 

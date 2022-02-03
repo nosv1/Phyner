@@ -6,6 +6,7 @@ import discord
 import os
 import random
 import re
+from PIL import Image, ImageDraw, ImageFont
 from pytz import timezone
 import traceback
 from types import SimpleNamespace
@@ -53,8 +54,8 @@ spreadsheet = {
 
         # leaderboards
         "avg_tt_pace_vs_field": "B4:D",  # pos, gamertag, pace v field
-        "time_trial": "B6:G",  # pos, race?, gamertag, lap time, delta, pace v field
-        "starting_order": "K6:O",  # pos, lby, gamertag, lap time, start time
+        "time_trial": "B5:I",  # pos, race?, gamertag, lap time, delta, pace v field
+        "starting_order": "K5:Q",  # pos, lby, gamertag, lap time, start time
 
         # round sheet
         "time_trial_times": "D7:E", # gamertag, lap_time
@@ -64,6 +65,14 @@ spreadsheet_link = "https://docs.google.com/spreadsheets/d/1ecoU0lL2gROfneyF6WEX
 
 # MESSAGES
 rival_selection_msg_id = 927758552955748404
+
+# COLORS
+metallic_seaweed = '#177e89'
+ming = '#106575'
+cg_red = '#db3a34'
+mango_tango = '#ed8146'
+max_yellow_red = '#ffc857'
+jet = '#323031'
 
 
 ''' FUNCTIONS '''
@@ -75,8 +84,6 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
-        # await pvf_to_lap_time(message, args)
-
         pass
 
     elif args[0] == "!pvf":
@@ -95,9 +102,6 @@ async def main(client, message, args, author_perms):
         ws = wb.worksheets()
 
         round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
-        
-        time_trial_title = round_sheet.get("B5")[0][0]
-        starting_order_title = round_sheet.get("K5")[0][0]
             
         await update_discord_tables(
             client,
@@ -105,7 +109,6 @@ async def main(client, message, args, author_perms):
                 f"{spreadsheet['ranges']['time_trial']}{round_sheet.row_count}"
             ),
             "time_trial",
-            time_trial_title,
             purge=True
         )
         await update_discord_tables(
@@ -113,8 +116,7 @@ async def main(client, message, args, author_perms):
             round_sheet.get(
                 f"{spreadsheet['ranges']['starting_order']}{round_sheet.row_count}"
             ),
-            "starting_order",
-            starting_order_title
+            "starting_order"
         )
 
     elif args[0] == "!staggered":
@@ -150,98 +152,262 @@ async def on_reaction_add(client, message, user, payload):
 
 
 
-async def update_discord_tables(client: discord.Client, leaderboard: list, table_type: str, title: str, purge: bool = False):
-    """
-        leaderboard is [[row], ...]
-    """
+async def update_discord_tables_old(client: discord.Client, leaderboard: list, table_type: str, title: str, purge: bool = False):
+    # """
+    #     leaderboard is [[row], ...]
+    # """
 
+    # if table_type == "time_trial":
+    #     leaderboard[0][3] = leaderboard[0][3].replace("Lap Time", "Lap")
+    #     leaderboard[0][5] = leaderboard[0][5].replace("Pace v Field", "PvF")
+
+    # else:
+    #     leaderboard[0][4] = leaderboard[0][4].replace("Start Time", "Start")
+
+    # col_widths = Support.get_col_widths(leaderboard)
+
+    # channel = await client.fetch_channel(leaderboard_id)
+    # msg = None
+
+
+    # tt_headers = []
+    # starting_order_headers = []
+
+    # if table_type == "time_trial":
+    #     tt_headers = [
+    #         f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
+    #         f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
+    #         f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
+    #         f"`{('[' + leaderboard[0][5] + ']').center(col_widths[5], ' ')}`", # pvf
+    #     ]
+
+    # else:
+    #     starting_order_headers = [
+    #         f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
+    #         f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
+    #         f"`{('[' + leaderboard[0][4] + ']').center(col_widths[4], ' ')}`", # start time
+    #     ]
+
+    # header = [" ".join(
+    #     tt_headers if table_type == "time_trial" else starting_order_headers
+    # )]
+
+    # if purge:
+    #     await channel.purge()
+
+    # table = header
+    # for i in range(len(leaderboard) // 25 + 1):
+
+    #     exited = False
+    #     for j, row in enumerate(leaderboard[1:][i*25:i*25+25]):
+
+    #         if not row or row[0] == "":
+    #             exited = True
+    #             break
+
+    #         if table_type == "time_trial":
+
+    #             line = [
+    #                 f"{row[0]}".center(col_widths[0], " "),
+    #                 f"{row[2]}".ljust(col_widths[2], " "),
+    #                 f"{row[3]}".center(col_widths[3], " "),
+    #                 f"{row[5]}".center(col_widths[5], " "),
+    #             ]
+
+    #         else:
+    #             line = [
+    #                 f"{row[0]}".center(col_widths[0], " "),
+    #                 f"{row[2]}".ljust(col_widths[2], " "),
+    #                 f"{row[4]}".center(col_widths[4], " "),
+    #             ]
+
+    #         table.append(line)
+
+    #         table[-1] = " ".join([f"`{c}`" for c in table[-1]])
+
+    #     if table:
+
+    #         embed = await simple_bot_response(
+    #             channel,
+    #             description="\n".join(table),
+    #             send=False
+    #         )
+
+    #         if i == 0:
+    #             embed.title = title
+
+    #         await channel.send(embed=embed)
+
+    #     if exited:
+    #         break
+
+    #     table = []
+    return
+# end update_discord_tables_old
+
+async def update_discord_tables(
+    client: discord.Client, leaderboard: list[list[str]], table_type: str, purge: bool = False
+):
+
+    for row in leaderboard:
+        if not row[0]:
+            leaderboard = leaderboard[:leaderboard.index(row)]
+            break
+
+    header_heights = [24, 20]
     if table_type == "time_trial":
-        leaderboard[0][3] = leaderboard[0][3].replace("Lap Time", "Lap")
-        leaderboard[0][5] = leaderboard[0][5].replace("Pace v Field", "PvF")
+        # pos, race?, driver, lap time, delta, pvf, rival, rival beat?
+        column_widths = [40, 40, 150, 80, 50, 75, 140, 40]
+        column_alignments = ["center", "center", "left", "center", "center", "center", "center", "center"]
 
-    else:
-        leaderboard[0][4] = leaderboard[0][4].replace("Start Time", "Start")
+    elif table_type == "starting_order":
+        # pos, lby, driver, lap time, start time, rival, rival beat?
+        column_widths = [40, 40, 150, 80, 80, 150, 40]
+        column_alignments = ["center", "center", "left", "center", "center", "center", "center"]
 
-    col_widths = Support.get_col_widths(leaderboard)
+    body_rows = len(leaderboard) - len(header_heights)
+    bg_margin = 10
 
+    # load image
+    checkbox = Image.open('Images/Checkbox.png').resize((16, 16))
+    empty_checkbox = Image.open('Images/Empty Checkbox.png').resize((16, 16))
+
+    out = Image.new(
+        "RGB", (
+            sum(column_widths) + bg_margin * 2, 
+            20 * body_rows + sum(header_heights) + bg_margin * 2
+        ), jet
+    )
+
+    draw = ImageDraw.Draw(out)
+
+    # rectangles
+    draw.rectangle((8, 8, out.size[0]-8, out.size[1]-8), fill=mango_tango)  # 2px outline
+    
+    draw.rectangle(  # header 1
+        (
+            bg_margin, bg_margin, 
+            out.size[0]-bg_margin, bg_margin + header_heights[0]
+        ), fill=cg_red
+    )  
+
+    draw.rectangle(  # header 2
+        (
+            bg_margin, bg_margin + header_heights[0], 
+            out.size[0]-bg_margin, bg_margin + sum(header_heights[0:2])
+        ), fill=ming
+    )
+
+    draw.rectangle(  # body
+        (
+            bg_margin, bg_margin + sum(header_heights), 
+            out.size[0]-bg_margin, out.size[1]-bg_margin
+        ), fill=metallic_seaweed
+    )
+
+    # borders
+    draw.line(  # header 1 bottom border
+        (
+            bg_margin, bg_margin + header_heights[0], 
+            out.size[0]-bg_margin, bg_margin + header_heights[0]
+        ), fill="black", width=1
+    )
+    draw.line(  # header 2 bottom border
+        (
+            bg_margin, bg_margin + sum(header_heights[0:2]), 
+            out.size[0]-bg_margin, bg_margin + sum(header_heights[0:2])
+        ), fill="black", width=1
+    )
+
+    for i in range(1, body_rows): # body bottom borders
+        offset_y = bg_margin + sum(header_heights) + 20*i
+        draw.line((bg_margin, offset_y, out.size[0]-bg_margin, offset_y), fill=ming, width=1)
+
+    # text
+    roboto_bold = "Fonts/Roboto-Bold.ttf"
+    roboto_medium = "Fonts/Roboto-Medium.ttf"
+    pt_to_px = 4/3
+    px_font_sizes = {
+        12: 12*pt_to_px,
+        14: 14*pt_to_px
+    }
+    header_1_font = ImageFont.truetype(roboto_bold, 14)
+    header_2_font = ImageFont.truetype(roboto_bold, 12)
+    body_font = ImageFont.truetype(roboto_medium, 12)
+
+    draw.text(  # header 1
+        (
+            bg_margin + (out.size[0]-bg_margin*2)//2 - header_1_font.getsize(text=leaderboard[0][0])[0]//2,
+            bg_margin + header_heights[0]//2 - header_1_font.getsize(text=leaderboard[0][0])[1]//2
+        ), leaderboard[0][0], fill=max_yellow_red, font=header_1_font
+    )
+
+    # header 2
+    for i, text in enumerate(leaderboard[1]):
+        offset_x = bg_margin + sum(column_widths[:i])
+        offset_y = bg_margin + sum(header_heights[0:1]) + (header_heights[1] // 2 - px_font_sizes[12] // 2) + 1  # no idea why it's + 1, but it works
+
+        if column_alignments[i] == "center":
+            draw.text(
+                (
+                    offset_x + (column_widths[i] - header_2_font.getsize(text=text)[0])//2,
+                    offset_y
+                ), text, fill=max_yellow_red, font=header_2_font
+            )
+
+        else:
+            draw.text(
+                (
+                    offset_x,
+                    offset_y
+                ), text, fill=max_yellow_red, font=header_2_font
+            )
+
+    # body
+    for i, row in enumerate(leaderboard[2:]):
+
+        for j, text in enumerate(row):
+
+            offset_x = bg_margin + sum(column_widths[:j]) 
+            offset_y = bg_margin + sum(header_heights[0:2]) + 20*i + 3
+
+            if text in ['TRUE', 'FALSE']:
+                out.paste(
+                    checkbox if text == 'TRUE' else empty_checkbox,
+                    (
+                        offset_x + (column_widths[j] - checkbox.size[0])//2,
+                        offset_y + (header_heights[1] - checkbox.size[1])//2 - 2
+                    )
+                )
+
+            else:
+
+                if column_alignments[j] == "center":
+                    draw.text(
+                        (
+                            offset_x + (column_widths[j] - body_font.getsize(text=text)[0])//2,
+                            offset_y
+                        ), text, fill=max_yellow_red, font=body_font
+                    )
+
+                else:
+                    draw.text(
+                        (
+                            offset_x,
+                            offset_y
+                        ), text, fill=max_yellow_red, font=body_font
+                    )
+
+    out.save(f"Images/{table_type}.png")
+    
     channel = await client.fetch_channel(leaderboard_id)
-    msg = None
-
-
-    tt_headers = []
-    starting_order_headers = []
-
-    if table_type == "time_trial":
-        tt_headers = [
-            f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
-            f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
-            f"`{('[' + leaderboard[0][3] + ']').center(col_widths[3], ' ')}`", # lap time
-            f"`{('[' + leaderboard[0][5] + ']').center(col_widths[5], ' ')}`", # pvf
-        ]
-
-    else:
-        starting_order_headers = [
-            f"`{('[' + leaderboard[0][0] + ']').center(col_widths[0], ' ')}`", # pos
-            f"`{('[' + leaderboard[0][2] + ']').ljust(col_widths[2], ' ')}`", # driver
-            f"`{('[' + leaderboard[0][4] + ']').center(col_widths[4], ' ')}`", # start time
-        ]
-
-    header = [" ".join(
-        tt_headers if table_type == "time_trial" else starting_order_headers
-    )]
 
     if purge:
         await channel.purge()
 
-    table = header
-    for i in range(len(leaderboard) // 25 + 1):
-
-        exited = False
-        for j, row in enumerate(leaderboard[1:][i*25:i*25+25]):
-
-            if not row or row[0] == "":
-                exited = True
-                break
-
-            if table_type == "time_trial":
-
-                line = [
-                    f"{row[0]}".center(col_widths[0], " "),
-                    f"{row[2]}".ljust(col_widths[2], " "),
-                    f"{row[3]}".center(col_widths[3], " "),
-                    f"{row[5]}".center(col_widths[5], " "),
-                ]
-
-            else:
-                line = [
-                    f"{row[0]}".center(col_widths[0], " "),
-                    f"{row[2]}".ljust(col_widths[2], " "),
-                    f"{row[4]}".center(col_widths[4], " "),
-                ]
-
-            table.append(line)
-
-            table[-1] = " ".join([f"`{c}`" for c in table[-1]])
-
-        if table:
-
-            embed = await simple_bot_response(
-                channel,
-                description="\n".join(table),
-                send=False
-            )
-
-            if i == 0:
-                embed.title = title
-
-            await channel.send(embed=embed)
-
-        if exited:
-            break
-
-        table = []
+    image = discord.File(f"Images/{table_type}.png")
+    await channel.send(file=image)
 # end update_discord_tables
-
 
 async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextChannel, driver_user: discord.User, lap_time: str):
 
@@ -386,7 +552,6 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                     f"{spreadsheet['ranges']['time_trial']}{round_sheet.row_count}"
                 ),
                 "time_trial",
-                time_trial_title,
                 purge=True
             )
             await update_discord_tables(
@@ -394,8 +559,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 round_sheet.get(
                     f"{spreadsheet['ranges']['starting_order']}{round_sheet.row_count}"
                 ),
-                "starting_order",
-                starting_order_title
+                "starting_order"
             )
 
             await update_rivalry_log(
