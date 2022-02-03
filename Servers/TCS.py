@@ -291,8 +291,8 @@ async def update_discord_tables(
     bg_margin = 10
 
     # load image
-    checkbox = Image.open(f'Images/Checkbox.png').resize((16, 16))
-    empty_checkbox = Image.open(f'Images/Empty Checkbox.png').resize((16, 16))
+    checkbox = Image.open(f'{os.getcwd()}/Images/Checkbox.png').resize((16, 16))
+    empty_checkbox = Image.open(f'{os.getcwd()}/Images/Empty Checkbox.png').resize((16, 16))
 
     out = Image.new(
         "RGB", (
