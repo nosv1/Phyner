@@ -84,6 +84,28 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
+
+        g = Support.get_g_client()
+        wb = g.open_by_key(spreadsheet["key"])
+        ws = wb.worksheets()
+
+        round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+            
+        await update_discord_tables(
+            client,
+            round_sheet.get(
+                f"{spreadsheet['ranges']['time_trial']}{round_sheet.row_count}"
+            ),
+            "time_trial",
+            purge=False
+        )
+        await update_discord_tables(
+            client,
+            round_sheet.get(
+                f"{spreadsheet['ranges']['starting_order']}{round_sheet.row_count}"
+            ),
+            "starting_order"
+        )
         pass
 
     elif args[0] == "!pvf":
@@ -269,8 +291,8 @@ async def update_discord_tables(
     bg_margin = 10
 
     # load image
-    checkbox = Image.open('Images/Checkbox.png').resize((16, 16))
-    empty_checkbox = Image.open('Images/Empty Checkbox.png').resize((16, 16))
+    checkbox = Image.open(f'{os.getcwd()}\Images\Checkbox.png').resize((16, 16))
+    empty_checkbox = Image.open(f'{os.getcwd()}\Images\Empty Checkbox.png').resize((16, 16))
 
     out = Image.new(
         "RGB", (
@@ -398,14 +420,14 @@ async def update_discord_tables(
                         ), text, fill=max_yellow_red, font=body_font
                     )
 
-    out.save(f"Images/{table_type}.png")
+    out.save(f"{os.getcwd()}\Images\{table_type}.png")
     
-    channel = await client.fetch_channel(leaderboard_id)
+    channel = await client.fetch_channel(bot_stuff_id)
 
     if purge:
         await channel.purge()
 
-    image = discord.File(f"Images/{table_type}.png")
+    image = discord.File(f"{os.getcwd()}\Images\{table_type}.png")
     await channel.send(file=image)
 # end update_discord_tables
 
