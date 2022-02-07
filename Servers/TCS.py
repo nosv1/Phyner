@@ -57,7 +57,6 @@ spreadsheet = {
         "avg_tt_pace_vs_field": "B2:D",  # pos, gamertag, pace v field
         "avg_race_pace_vs_field": "F2:H",  # pos, gamertag, pace v field
         "avg_overall_pace_vs_field": "J2:L",  # pos, gamertag, pace v field
-        "rivals_swept": "N2:P",  # pos, gamertag, rivals swept
 
         # round sheet
         "time_trial": "B5:I",  # pos, race?, gamertag, lap time, delta, pace v field
@@ -121,8 +120,7 @@ async def main(client, message, args, author_perms):
             table_types = [
                 "avg_tt_pace_vs_field", 
                 "avg_race_pace_vs_field", 
-                "avg_overall_pace_vs_field", 
-                "rivals_swept"
+                "avg_overall_pace_vs_field"
             ]
 
         # counts
@@ -308,8 +306,7 @@ async def update_discord_tables(
     elif table_type in [
         "avg_tt_pace_vs_field", 
         "avg_race_pace_vs_field", 
-        "avg_overall_pace_vs_field", 
-        "rivals_swept"
+        "avg_overall_pace_vs_field"
     ]:
         column_widths = [40, 140, 90]
         column_alignments = ["center", "left", "center"]
@@ -492,8 +489,7 @@ async def update_discord_tables(
         # leaderboards
         "avg_tt_pace_vs_field", 
         "avg_race_pace_vs_field", 
-        "avg_overall_pace_vs_field", 
-        "rivals_swept",
+        "avg_overall_pace_vs_field",
 
         # counts
         "drivers_of_the_week", 
