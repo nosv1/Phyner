@@ -929,18 +929,19 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     user_pace = None
     for i, row in enumerate(avg_tt_pace_vs_field):
 
-        if row[1] != user_gamertag:
-            racing = [
-                r[2] for r in gamertag_conversion if r[1] == row[1]
-            ][0]
-            row.append(racing == "TRUE")
-            possible_rivals.append(row)
+        if len(row) > 1:
+            if row[1] != user_gamertag:
+                racing = [
+                    r[2] for r in gamertag_conversion if r[1] == row[1]
+                ][0]
+                row.append(racing == "TRUE")
+                possible_rivals.append(row)
 
-        else:
-            if i == 0:
-                possible_rivals.append(avg_tt_pace_vs_field[i+1])
-            user_pace = row[2]
-            break
+            else:
+                if i == 0:
+                    possible_rivals.append(avg_tt_pace_vs_field[i+1])
+                user_pace = row[2]
+                break
 
     description = "Beating your rival in the TT will give you a start-time deduction in this round's race - based on how many positions ahead your rival is; then, if you beat them in the race, you will get a fancy role for how many times you do so.\n\n"
 
