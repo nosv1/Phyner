@@ -30,9 +30,10 @@ tcs_id = 925184986699685919
 # CHANNELS
 tt_submit_id = 925206419458900088
 bot_stuff_id = 925188627154210839
-leaderboard_id = 927333542726348861
+tt_n_starting_order_id = 927333542726348861
 rival_selection_log_id = 929154488143581245
 rivalry_log_id = 929154488143581245
+leaderboards_id = 935016463968903259
 
 # SPREADSHEET
 spreadsheet = {
@@ -53,12 +54,21 @@ spreadsheet = {
         "rivals": "Q4:Q",  # rival_gamertag
 
         # leaderboards
-        "avg_tt_pace_vs_field": "B4:D",  # pos, gamertag, pace v field
-        "time_trial": "B5:I",  # pos, race?, gamertag, lap time, delta, pace v field
-        "starting_order": "K5:Q",  # pos, lby, gamertag, lap time, start time
+        "avg_tt_pace_vs_field": "B2:D",  # pos, gamertag, pace v field
+        "avg_race_pace_vs_field": "F2:H",  # pos, gamertag, pace v field
+        "avg_overall_pace_vs_field": "J2:L",  # pos, gamertag, pace v field
+        "rivals_swept": "N2:P",  # pos, gamertag, rivals swept
 
         # round sheet
+        "time_trial": "B5:I",  # pos, race?, gamertag, lap time, delta, pace v field
         "time_trial_times": "D7:E", # gamertag, lap_time
+        "starting_order": "K5:Q",  # pos, lby, gamertag, lap time, start time
+
+        # tables
+        "drivers_of_the_week": "H2:I",  # gamertag, count
+        "time_trial_counts": "K2:P",  # wins gamertag, count, podiums gamertag, count, particpation gamertag, count
+        "race_counts": "R2:W",  # wins gamertag, count, podiums gamertag, count, particpation gamertag, count
+        "rivals_beat": "Y2:AD",  # tt gamertag, count, race gamertag, count, swept gamertag, count
     }
 }
 spreadsheet_link = "https://docs.google.com/spreadsheets/d/1ecoU0lL2gROfneyF6WEXMJsM11xxj8CZ9VgMNdoiOPU/edit#gid=1367712203"
@@ -84,6 +94,29 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
+        
+        g = Support.get_g_client()
+        wb = g.open_by_key(spreadsheet["key"])
+        ws = wb.worksheets()
+
+        random_tables_sheet = [sheet for sheet in ws if sheet.title == "Random Tables"][0]
+        sheet = random_tables_sheet
+        table_types = [
+            "drivers_of_the_week", 
+            "time_trial_counts", 
+            "race_counts", 
+            "rivals_beat"
+        ]
+            
+        for i, table_type in enumerate(table_types):
+            await update_discord_tables(
+                client,
+                sheet.get(
+                    f"{spreadsheet['ranges'][table_type]}{sheet.row_count}"
+                ),
+                table_type,
+                purge=False
+            )
         pass
 
     elif args[0] == "!pvf":
@@ -96,28 +129,55 @@ async def main(client, message, args, author_perms):
         await tt_submit(client, message, args)
 
     elif args[0] == "!update" and in_bot_stuff:
-
+        
         g = Support.get_g_client()
         wb = g.open_by_key(spreadsheet["key"])
         ws = wb.worksheets()
 
-        round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+        sheet = None
+        table_types = []
+
+        # leaderboards
+        if args[1] == "leaderboards":
+            leaderboard_sheet = [sheet for sheet in ws if sheet.title == "Leaderboards"][0]
+            sheet = leaderboard_sheet
+            table_types = [
+                "avg_tt_pace_vs_field", 
+                "avg_race_pace_vs_field", 
+                "avg_overall_pace_vs_field", 
+                "rivals_swept"
+            ]
+
+        # counts
+        elif args[1] == "counts":
+            random_tables_sheet = [sheet for sheet in ws if sheet.title == "Random Tables"][0]
+            sheet = random_tables_sheet
+            table_types = [
+                "drivers_of_the_week", 
+                "time_trial_counts", 
+                "race_counts", 
+                "rivals_beat"
+            ]
+
+        # round sheet
+        else:
+            round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+            sheet = round_sheet
+            table_types = [
+                "time_trial", 
+                "starting_order"
+            ]
+        
+        for i, table_type in enumerate(table_types):
             
-        await update_discord_tables(
-            client,
-            round_sheet.get(
-                f"{spreadsheet['ranges']['time_trial']}{round_sheet.row_count}"
-            ),
-            "time_trial",
-            purge=True
-        )
-        await update_discord_tables(
-            client,
-            round_sheet.get(
-                f"{spreadsheet['ranges']['starting_order']}{round_sheet.row_count}"
-            ),
-            "starting_order"
-        )
+            await update_discord_tables(
+                client,
+                sheet.get(
+                    f"{spreadsheet['ranges'][table_type]}{sheet.row_count}"
+                ),
+                table_type,
+                purge = i==0 and args[1] != "leaderboards"
+            )
 
     elif args[0] == "!staggered":
         await generate_staggered_start(message, args)
@@ -166,7 +226,7 @@ async def update_discord_tables_old(client: discord.Client, leaderboard: list, t
 
     # col_widths = Support.get_col_widths(leaderboard)
 
-    # channel = await client.fetch_channel(leaderboard_id)
+    # channel = await client.fetch_channel(tt_n_starting_order_id)
     # msg = None
 
 
@@ -250,20 +310,50 @@ async def update_discord_tables(
 ):
 
     for row in leaderboard:
-        if not row[0]:
+        if not row or not row[0]:
             leaderboard = leaderboard[:leaderboard.index(row)]
             break
+
+    if len(leaderboard[1]) < len(leaderboard[2]):
+        leaderboard[1].append('')
 
     header_heights = [24, 20]
     if table_type == "time_trial":
         # pos, race?, driver, lap time, delta, pvf, rival, rival beat?
-        column_widths = [40, 40, 150, 80, 50, 75, 140, 40]
+        column_widths = [40, 40, 140, 80, 50, 75, 140, 40]
         column_alignments = ["center", "center", "left", "center", "center", "center", "center", "center"]
 
     elif table_type == "starting_order":
         # pos, lby, driver, lap time, start time, rival, rival beat?
-        column_widths = [40, 40, 150, 80, 80, 150, 40]
+        column_widths = [40, 40, 140, 80, 80, 140, 40]
         column_alignments = ["center", "center", "left", "center", "center", "center", "center"]
+
+    elif table_type in [
+        "avg_tt_pace_vs_field", 
+        "avg_race_pace_vs_field", 
+        "avg_overall_pace_vs_field", 
+        "rivals_swept"
+    ]:
+        column_widths = [40, 140, 90]
+        column_alignments = ["center", "left", "center"]
+
+    elif table_type == "drivers_of_the_week":
+        # gt, count
+        column_widths = [140, 40]
+        column_alignments = ["center", "center"]
+
+    elif table_type in [
+        "time_trial_counts", 
+        "race_counts"
+    ]:
+        # wins gt, count, podiums gt, count, participation gt, count
+        column_widths = [140, 40, 140, 40, 140, 40]
+        column_alignments = ["center", "center", "center", "center", "center", "center"]
+
+    elif table_type == "rivals_beat":
+        # tt gt, count, race gt, count, swept gt, count
+        column_widths = [140, 40, 140, 40, 140, 40]
+        column_alignments = ["center", "center", "center", "center", "center", "center"]
 
     body_rows = len(leaderboard) - len(header_heights)
     bg_margin = 10
@@ -347,21 +437,36 @@ async def update_discord_tables(
         offset_x = bg_margin + sum(column_widths[:i])
         offset_y = bg_margin + sum(header_heights[0:1]) + (header_heights[1] // 2 - px_font_sizes[12] // 2) + 1  # no idea why it's + 1, but it works
 
-        if column_alignments[i] == "center":
-            draw.text(
-                (
-                    offset_x + (column_widths[i] - header_2_font.getsize(text=text)[0])//2,
-                    offset_y
-                ), text, fill=max_yellow_red, font=header_2_font
-            )
+        # mergeable columns
+        mergeable = False
+        column_width = column_widths[i]
+        if i < len(column_widths) - 1:
+            if not leaderboard[1][i+1]:
+                column_width += column_widths[i+1]
+                mergeable = True
 
-        else:
-            draw.text(
-                (
-                    offset_x,
-                    offset_y
-                ), text, fill=max_yellow_red, font=header_2_font
-            )
+        previous_column_merged = False
+        if i > 0:
+            if leaderboard[1][i-1] != '' and not leaderboard[1][i]:
+                previous_column_merged = True
+
+        if not previous_column_merged:
+
+            if column_alignments[i] == "center":
+                draw.text(
+                    (
+                        offset_x + (column_width - header_2_font.getsize(text=text)[0])//2,
+                        offset_y
+                    ), text, fill=max_yellow_red, font=header_2_font
+                )
+
+            else:
+                draw.text(
+                    (
+                        offset_x,
+                        offset_y
+                    ), text, fill=max_yellow_red, font=header_2_font
+                )
 
     # body
     for i, row in enumerate(leaderboard[2:]):
@@ -400,7 +505,26 @@ async def update_discord_tables(
 
     out.save(f"Images/{table_type}.png")
     
-    channel = await client.fetch_channel(leaderboard_id)
+    if table_type in [
+        "time_trial", 
+        "starting_order"
+    ]:
+        channel = await client.fetch_channel(tt_n_starting_order_id)
+        
+    elif table_type in [
+        # leaderboards
+        "avg_tt_pace_vs_field", 
+        "avg_race_pace_vs_field", 
+        "avg_overall_pace_vs_field", 
+        "rivals_swept",
+
+        # counts
+        "drivers_of_the_week", 
+        "time_trial_counts", 
+        "race_counts", 
+        "rivals_beat"
+    ]:
+        channel = await client.fetch_channel(leaderboards_id)
 
     if purge:
         await channel.purge()
@@ -536,7 +660,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             await simple_bot_response(
                 message.channel,
                 title=f"**Your lap time has been submitted!**",
-                description=f"{driver_submission_history}\n\n[**Spreadsheet**]({spreadsheet_link}) <#{leaderboard_id}>",
+                description=f"{driver_submission_history}\n\n[**Spreadsheet**]({spreadsheet_link}) <#{tt_n_starting_order_id}>",
                 reply_message=message
             )
 
