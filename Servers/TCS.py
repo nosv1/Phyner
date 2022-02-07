@@ -94,29 +94,6 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
-        
-        g = Support.get_g_client()
-        wb = g.open_by_key(spreadsheet["key"])
-        ws = wb.worksheets()
-
-        random_tables_sheet = [sheet for sheet in ws if sheet.title == "Random Tables"][0]
-        sheet = random_tables_sheet
-        table_types = [
-            "drivers_of_the_week", 
-            "time_trial_counts", 
-            "race_counts", 
-            "rivals_beat"
-        ]
-            
-        for i, table_type in enumerate(table_types):
-            await update_discord_tables(
-                client,
-                sheet.get(
-                    f"{spreadsheet['ranges'][table_type]}{sheet.row_count}"
-                ),
-                table_type,
-                purge=False
-            )
         pass
 
     elif args[0] == "!pvf":
