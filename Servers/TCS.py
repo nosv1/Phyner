@@ -285,7 +285,7 @@ async def update_discord_tables(
 ):
 
     for row in leaderboard:
-        if not row or not row[0]:
+        if not row or not row[-1]:
             leaderboard = leaderboard[:leaderboard.index(row)]
             break
 
