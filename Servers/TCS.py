@@ -604,6 +604,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 f"{spreadsheet['ranges']['tt_round_numbers']}{submissions_ws.row_count}"
             )
 
+            # get past lap times in this round
             driver_submissions = []  # lap times in seconds
             driver_submission_history = f"**Round {round_number} | Submission history:**"
             for i, row in enumerate(ranges[0]):
@@ -629,19 +630,22 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             if len(driver_submissions) > 1:
                 driver_submission_history += f"\n**Total time found:** {driver_submissions[0] - driver_submissions[-1]:.3f}s"
 
-
             await simple_bot_response(
                 message.channel,
                 title=f"**Your lap time has been submitted!**",
                 description=f"{driver_submission_history}\n\n[**Spreadsheet**]({spreadsheet_link}) <#{tt_n_starting_order_id}>",
                 reply_message=message
             )
+            
+            # alert for brand new driver
+            if str(driver_id) not in ranges[0]:
+                mo_user = discord.utils.find(lambda u: u.id == Support.ids.mo_id, message.guild.members)
+                await message.channel.send(
+                    f"{mo_user.mention}, {message.author.display_name} is a brand new submitter! Update the spreadsheet.\n\n"
+                )
 
-            
+            # update the discord tables
             round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
-            
-            time_trial_title = round_sheet.get("B5")[0][0]
-            starting_order_title = round_sheet.get("K5")[0][0]
             
             await update_discord_tables(
                 client,
