@@ -26,6 +26,7 @@ from Support import delete_last_field, messageOrMsg, simple_bot_response
 
 # IDs
 tcs_id = 925184986699685919
+drivers_role_id = 925189004893253673
 
 # CHANNELS
 tt_submit_id = 925206419458900088
@@ -1176,14 +1177,19 @@ async def reset_nicknames(message):
 
         if row[0]:
 
-            # reset nickname
+            # reset nickname if has driver role
             discord_id = int(row[0])
-            user = discord.utils.find(lambda u: u.id == discord_id, message.guild.members)
+            user = discord.utils.find(
+                lambda u: u.id == discord_id, message.guild.members
+            )
             if user:
-                try:
-                    await user.edit(nick=row[1])
-                except discord.errors.Forbidden:
-                    pass
+                if discord.utils.find(
+                    lambda r: r.id == drivers_role_id, user.roles
+                ):
+                    try:
+                        await user.edit(nick=row[1])
+                    except discord.errors.Forbidden:
+                        pass
 
         # if half way done, send message
         if i and i % (len(gamertag_conversion) / 2) == 0:
