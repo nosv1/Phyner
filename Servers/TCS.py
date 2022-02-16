@@ -918,8 +918,12 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     )
 
     # loop avg tt pvf until no pos value given text below table on spreadsheet
-    avg_overall_pace_vs_field = leaderboards_ws.get(f"{spreadsheet['ranges']['avg_overall_pace_vs_field']}{leaderboards_ws.row_count}")
-    gamertag_conversion = submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}")
+    avg_overall_pace_vs_field = leaderboards_ws.get(
+        f"{spreadsheet['ranges']['avg_overall_pace_vs_field']}{leaderboards_ws.row_count}"
+    )
+    gamertag_conversion = submissions_ws.get(
+        f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}"
+    )
     
     user_gamertag = [row[1] for row in gamertag_conversion if row[0] and int(row[0]) == user.id]
     user_gamertag = user_gamertag[0] if user_gamertag else None
@@ -958,16 +962,21 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
 
     embed_meta = "embed_meta/type=rivals/"
 
+    # setting the possible rivals
     for i, rival in enumerate(possible_rivals[-9:]):
         embed_meta += f"{Support.emojis.number_emojis[i+1]}={rival[1].replace(' ', '%20')}-{rival[2]}/"
 
+        # rival - pvf
         rival_line = f"{rival[1]} - {rival[2]}"
 
+        # rival not racing
         if not rival[3]:
             rival_line = f"~~{rival_line}~~ (not racing)"
 
+        # #. rival - pvf
         description += f"{Support.emojis.space_char * 2}**{i+1}.** {rival_line}\n"
     
+    # driver line
     description += f"{Support.emojis.space_char * 2}**{len(possible_rivals)+1}.** {user_gamertag} - {user_pace}\n\n"
     embed_meta += f"selector={user_gamertag.replace(' ', '%20')}-{user_pace}/"
 
