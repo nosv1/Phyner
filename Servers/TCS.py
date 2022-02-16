@@ -928,7 +928,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
         await simple_bot_response(
             channel,
             title="**No gamertag found!**",
-            description="You have not participated in a TT yet. You can select a rival next round."
+            description="You have not participated in a TT or finished a race yet. You can select a rival once you've done both in the same round."
         )
         return
 
