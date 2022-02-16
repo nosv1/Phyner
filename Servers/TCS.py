@@ -918,7 +918,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     )
 
     # loop avg tt pvf until no pos value given text below table on spreadsheet
-    avg_tt_pace_vs_field = leaderboards_ws.get(f"{spreadsheet['ranges']['avg_tt_pace_vs_field']}{leaderboards_ws.row_count}")
+    avg_overall_pace_vs_field = leaderboards_ws.get(f"{spreadsheet['ranges']['avg_overall_pace_vs_field']}{leaderboards_ws.row_count}")
     gamertag_conversion = submissions_ws.get(f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}")
     
     user_gamertag = [row[1] for row in gamertag_conversion if row[0] and int(row[0]) == user.id]
@@ -934,7 +934,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
 
     possible_rivals = []  # pos, driver, pace
     user_pace = None
-    for i, row in enumerate(avg_tt_pace_vs_field[2:]):
+    for i, row in enumerate(avg_overall_pace_vs_field[2:]):
 
         if row[1] != user_gamertag:
             racing = [
@@ -945,13 +945,13 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
 
         else:
             if i == 0:
-                possible_rivals.append(avg_tt_pace_vs_field[i+1])
+                possible_rivals.append(avg_overall_pace_vs_field[i+1])
             user_pace = row[2]
             break
 
-    description = "Beating your rival in the TT will give you a start-time deduction in this round's race - based on how many positions ahead your rival is; then, if you beat them in the race, you will get a fancy role for how many times you do so.\n\n"
+    description = "Beating your rival in the TT will give you a start-time deduction in this round's race - based on how many positions ahead your rival is; then, if you also beat them in the race, you will get an honourable mention and a role.\n\n"
 
-    description += "Selecting a rival will ping them to let them know they've been chosen. If your rival does not plan to race, you will have the opportunity to pick a new rival.\n\n"
+    description += "Selecting a rival will ping them to let them know they've been chosen. If your rival does not plan to race, you will have the opportunity to pick a new rival - assuming your rival notifies staff before Thursday.\n\n"
 
     description += f"**Select the position of the driver you would like to choose as your rival for the current round.**\n"
 
@@ -971,7 +971,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     description += f"{Support.emojis.space_char * 2}**{len(possible_rivals)+1}.** {user_gamertag} - {user_pace}\n\n"
     embed_meta += f"selector={user_gamertag.replace(' ', '%20')}-{user_pace}/"
 
-    description += f"*The number to the right of the driver's name is their *Average TT Pace vs Field*; this number ranges from 1 to 0 and tries to evaluate how fast a driver typically is against a field."
+    description += f"*The number to the right of the driver's name is their *Average Overall Pace vs Field*; this number ranges from 1 to 0 and tries to evaluate how fast a driver typically is against a field."
 
     description += f"[{Support.emojis.zero_width}]({embed_meta})"
 
