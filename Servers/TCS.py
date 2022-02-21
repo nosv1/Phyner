@@ -581,6 +581,15 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 a1_ranges,
                 value_render_option="FORMULA"
             )
+            
+            # alert for brand new driver
+            if [str(driver_id)] not in ranges[0]:
+                mo_user = discord.utils.find(
+                    lambda u: u.id == Support.ids.mo_id, message.guild.members
+                )
+                await message.channel.send(
+                    f"{mo_user.mention}, {message.author.display_name} is a brand new submitter! Update the spreadsheet.\n\n"
+                )
 
             # append the new submission
 
@@ -637,15 +646,6 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 description=f"{driver_submission_history}\n\n[**Spreadsheet**]({spreadsheet_link}) <#{tt_n_starting_order_id}>",
                 reply_message=message
             )
-            
-            # alert for brand new driver
-            if [driver_id] not in ranges[0]:
-                mo_user = discord.utils.find(
-                    lambda u: u.id == Support.ids.mo_id, message.guild.members
-                )
-                await message.channel.send(
-                    f"{mo_user.mention}, {message.author.display_name} is a brand new submitter! Update the spreadsheet.\n\n"
-                )
 
             # update the discord tables
             round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
