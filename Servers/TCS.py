@@ -639,7 +639,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             )
             
             # alert for brand new driver
-            if [str(driver_id)] not in ranges[0]:
+            if [driver_id] not in ranges[0]:
                 mo_user = discord.utils.find(
                     lambda u: u.id == Support.ids.mo_id, message.guild.members
                 )
