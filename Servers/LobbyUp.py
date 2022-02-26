@@ -28,11 +28,13 @@ from Support import delete_last_field, messageOrMsg, simple_bot_response
 # IDs
 lobby_up_id = 845897647444459540
 # lobby_up_id = 789181254120505386 # phyner support
+shorzee_id = 449751702237741077
 
 # CHANNELS
 regs_game_queue_id = 947049845087170590
 # regs_game_queue_id = 789582283991678976 # phyner support
 mut_game_queue_id = 947049918932086794
+mmg_procedures_and_rules_id = 947050091846459402
 
 # MESSAGES
 
@@ -110,7 +112,7 @@ async def handle_money_game_command(message: discord.Message, game_type: str):
 
         if user and user.id == message.author.id:  # user is author, don't add
             await message.channel.send(
-                f"{user.mention} is already in the queue for a `{game_type}` game."
+                f"{user.mention} is already in the queue for a {game_type} game."
             )
 
         elif user:  # queued user found, queue is now filled, clear queue
@@ -119,6 +121,7 @@ async def handle_money_game_command(message: discord.Message, game_type: str):
 
         else:  # queued user was not found
             users.append(None)
+            queue = [message.author.id]
 
     else:  # add author to queue, queue has 1 person
         queue.append(message.author.id)
@@ -149,11 +152,11 @@ async def handle_money_game_command(message: discord.Message, game_type: str):
         )
 
         await channel.send(
-            f"{game_type.title()} game started with {message.author.mention} and {users[-1].mention}."
+            f"{message.author.mention} and {users[-1].mention}, this is your {game_type} money game matchup channel. Review the <#{mmg_procedures_and_rules_id}>, and then set your wager terms. Once you agree on the wager value, send your payments to $xSHORZEEx on Cash App or management@lobbyup.net on PayPal. Once both sides post a screenshot to this channel of them sending the money, you may begin the game. Be sure to post the final socre and the winner here. For any disputes and at the conclusion of the game, ping <@{shorzee_id}> to have the issue resolved or the payment sent. Good luck!"
         )
 
         await message.reply(
-            f"Channel created: <#{channel.id}>."
+            f"Money game matchup channel created: <#{channel.id}>."
         )
 
 
