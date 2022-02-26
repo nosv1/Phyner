@@ -114,6 +114,7 @@ async def handle_money_game_command(message: discord.Message, game_type: str):
             await message.channel.send(
                 f"{user.mention} is already in the queue for a {game_type} game."
             )
+            return
 
         elif user:  # queued user found, queue is now filled, clear queue
             users.append(user)
