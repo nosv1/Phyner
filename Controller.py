@@ -29,6 +29,7 @@ import Morse
 import Role
 from Stats import command_used
 from Servers import COTM
+from Servers import LobbyUp
 from Servers import TCS
 from Servers import TemplarLeagues
 import Support
@@ -368,6 +369,9 @@ async def on_message(message):
 
                 elif message.guild.id in [TCS.tcs_id]:
                     await TCS.main(client, message, args, author_perms)
+
+                elif message.guild.id in [LobbyUp.lobby_up_id]:
+                    await LobbyUp.main(client, message, args, author_perms)
                 
 
             ''' END SERVER CHECKS '''    
