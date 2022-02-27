@@ -237,7 +237,7 @@ async def clear_queue(message: discord.Message, game_type: str):
         queue = pickle.load(open(f"lobby_up_{game_type}_queue.p", "rb"))
 
     except FileNotFoundError:
-        pass
+        queue = []
 
     if not queue:
         await message.reply(
@@ -252,4 +252,4 @@ async def clear_queue(message: discord.Message, game_type: str):
             f"The {game_type} game queue has been cleared - {user.mention} removed."
         )
 
-        pickle.dump([], open(f"lobby_up_{game_type}_queue.p", "wb"))
+        pickle.dump(queue, open(f"lobby_up_{game_type}_queue.p", "wb"))
