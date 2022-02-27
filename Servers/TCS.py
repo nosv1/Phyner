@@ -105,7 +105,7 @@ async def main(client, message, args, author_perms):
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(client, message, args)
 
-    elif args[0] == "!update" and in_bot_stuff:
+    elif args[0] == "!update" and message.author.id == Support.ids.mo_id:
         
         g = Support.get_g_client()
         wb = g.open_by_key(spreadsheet["key"])
@@ -155,6 +155,8 @@ async def main(client, message, args, author_perms):
                 purge = i==0 and args[1] != "leaderboards"
             )
 
+        await Support.process_complete_reaction(message, remove=False)
+
     elif args[0] == "!staggered":
         await generate_staggered_start(message, args)
 
@@ -186,6 +188,9 @@ async def on_reaction_add(client, message, user, payload):
     return remove_reaction
 # end on_reaction_add
 
+def get_unlap_count(starting_time_sec: float, lap_time_sec: list[float]):
+
+    unlap_counts = []
 
 
 async def update_discord_tables_old(client: discord.Client, leaderboard: list, table_type: str, title: str, purge: bool = False):
@@ -413,12 +418,10 @@ async def update_discord_tables(
         offset_y = bg_margin + sum(header_heights[0:1]) + (header_heights[1] // 2 - px_font_sizes[12] // 2) + 1  # no idea why it's + 1, but it works
 
         # mergeable columns
-        mergeable = False
         column_width = column_widths[i]
         if i < len(column_widths) - 1:
             if not leaderboard[1][i+1]:
                 column_width += column_widths[i+1]
-                mergeable = True
 
         previous_column_merged = False
         if i > 0:
@@ -428,20 +431,17 @@ async def update_discord_tables(
         if not previous_column_merged:
 
             if column_alignments[i] == "center":
-                draw.text(
-                    (
-                        offset_x + (column_width - header_2_font.getsize(text=text)[0])//2,
-                        offset_y
-                    ), text, fill=max_yellow_red, font=header_2_font
-                )
+                x = offset_x + (column_width - header_2_font.getsize(text=text)[0])//2
 
             else:
-                draw.text(
-                    (
-                        offset_x,
-                        offset_y
-                    ), text, fill=max_yellow_red, font=header_2_font
-                )
+                x = offset_x
+
+            draw.text(
+                (
+                    x,
+                    offset_y
+                ), text, fill=max_yellow_red, font=header_2_font
+            )
 
     # body
     for i, row in enumerate(leaderboard[2:]):
@@ -463,20 +463,42 @@ async def update_discord_tables(
             else:
 
                 if column_alignments[j] == "center":
-                    draw.text(
-                        (
-                            offset_x + (column_widths[j] - body_font.getsize(text=text)[0])//2,
-                            offset_y
-                        ), text, fill=max_yellow_red, font=body_font
-                    )
+                    x = offset_x + (column_widths[j] - body_font.getsize(text=text)[0])//2
 
                 else:
-                    draw.text(
-                        (
-                            offset_x,
-                            offset_y
-                        ), text, fill=max_yellow_red, font=body_font
-                    )
+                    x = offset_x
+
+                # SETTING COLOR IF STARTING ORDER TABLE AND DRIVER IS GETTING LAPPED
+                color = max_yellow_red
+                if table_type == "starting_order":
+
+                    if j == 4:  # starting time column
+
+                        starting_time = re.findall(r"\d:\d\d.\d", text)
+                        slowest_starting_time = re.findall(r"\d:\d\d.\d", leaderboard[2][4])
+                        slowest_lap_time = re.findall(r"\d:\d\d.\d", leaderboard[2][3])
+
+                        if starting_time:
+                            starting_time = starting_time[0]
+                            slowest_starting_time = slowest_starting_time[0]
+                            slowest_lap_time = slowest_lap_time[0]
+
+                            # convert times to seconds
+                            starting_time = int(starting_time.split(":")[0]) * 60 + int(starting_time.split(":")[1])
+
+                            slowest_starting_time = int(slowest_starting_time.split(":")[0]) * 60 + int(slowest_starting_time.split(":")[1])
+                            
+                            slowest_lap_time = int(slowest_lap_time.split(":")[0]) * 60 + int(slowest_lap_time.split(":")[1])
+
+                            if starting_time - slowest_starting_time >= slowest_lap_time:  # is getting lapped before start
+                                color = cg_red
+                                
+                draw.text(
+                    (
+                        x,
+                        offset_y
+                    ), text, fill=color, font=body_font
+                )
 
     out.save(f"Images/{table_type}.png")
     
