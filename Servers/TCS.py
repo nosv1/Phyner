@@ -94,7 +94,24 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
-        pass
+        
+        g = Support.get_g_client()
+        wb = g.open_by_key(spreadsheet["key"])
+        ws = wb.worksheets()
+
+        round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
+        sheet = round_sheet
+            
+        await update_discord_tables(
+            client,
+            sheet.get(
+                f"{spreadsheet['ranges']['starting_order']}{sheet.row_count}"
+            ),
+            "starting_order",
+            purge = False
+        )
+
+        await Support.process_complete_reaction(message, False)
 
     elif args[0] == "!pvf":
         await pvf_to_lap_time(message, args)
@@ -480,11 +497,11 @@ async def update_discord_tables(
                             slowest_lap_time = slowest_lap_time[0]
 
                             # convert times to seconds
-                            starting_time = int(starting_time.split(":")[0]) * 60 + int(starting_time.split(":")[1])
+                            starting_time = int(starting_time.split(":")[0]) * 60 + float(starting_time.split(":")[1])
 
-                            slowest_starting_time = int(slowest_starting_time.split(":")[0]) * 60 + int(slowest_starting_time.split(":")[1])
+                            slowest_starting_time = int(slowest_starting_time.split(":")[0]) * 60 + float(slowest_starting_time.split(":")[1])
                             
-                            slowest_lap_time = int(slowest_lap_time.split(":")[0]) * 60 + int(slowest_lap_time.split(":")[1])
+                            slowest_lap_time = int(slowest_lap_time.split(":")[0]) * 60 + float(slowest_lap_time.split(":")[1])
 
                             if starting_time - slowest_starting_time >= slowest_lap_time:  # is getting lapped before start
                                 color = cg_red
