@@ -92,8 +92,9 @@ async def main(client, message, args, author_perms):
     args[0] = args[0].lower()
     in_bot_stuff = message.channel.id == bot_stuff_id
     in_tt_submit = message.channel.id == tt_submit_id
+    is_mo = message.author.id == Support.ids.mo_id
 
-    if args[0] == "!test" and in_bot_stuff:
+    if args[0] == "!test" and is_mo:
         pass
 
     elif args[0] == "!pvf":
@@ -105,7 +106,7 @@ async def main(client, message, args, author_perms):
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(client, message, args)
 
-    elif args[0] == "!update" and message.author.id == Support.ids.mo_id:
+    elif args[0] == "!update" and is_mo:
         
         g = Support.get_g_client()
         wb = g.open_by_key(spreadsheet["key"])
@@ -162,6 +163,9 @@ async def main(client, message, args, author_perms):
 
     elif args[0] == "!resetnicks":
         await reset_nicknames(message)
+
+    elif args[0] == "!pingstarttimes" and author_perms.manage_messages:
+        await ping_start_times(message)
 # end main
 
 
@@ -281,6 +285,7 @@ async def update_discord_tables_old(client: discord.Client, leaderboard: list, t
     #     table = []
     return
 # end update_discord_tables_old
+
 
 async def update_discord_tables(
     client: discord.Client, leaderboard: list[list[str]], table_type: str, purge: bool = False
@@ -524,6 +529,7 @@ async def update_discord_tables(
     image = discord.File(f"Images/{table_type}.png")
     await channel.send(file=image)
 # end update_discord_tables
+
 
 async def update_rivalry_log(client: discord.Client, rivarly_log: discord.TextChannel, driver_user: discord.User, lap_time: str):
 
@@ -1226,5 +1232,50 @@ async def reset_nicknames(message):
 
     await msg.delete()
     await Support.process_complete_reaction(message, remove=False)
-
 # end reset_nicknames
+
+
+async def ping_start_times(message):
+
+    await message.channel.trigger_typing()
+
+    g = Support.get_g_client()
+    wb = g.open_by_key(spreadsheet["key"])
+    ws = wb.worksheets()
+    submissions_ws = Support.get_worksheet(
+        ws, spreadsheet["submissions"]
+    )
+    gamertag_conversion = submissions_ws.get(
+        f"{spreadsheet['ranges']['gamertag_conversion']}{submissions_ws.row_count}"
+    )
+
+    round_number = int(submissions_ws.get("F3")[0][0][-2:])
+    round_sheet = [sheet for sheet in ws if sheet.title == f"R{round_number}"][0]
+
+    # get starting order
+    starting_order = round_sheet.get(
+        f"{spreadsheet['ranges']['starting_order']}{round_sheet.row_count}"
+    )
+
+    # loop through drivers
+    for i, row in enumerate(starting_order[2:]):
+
+        driver = row[2]
+        starting_time = row[4]
+
+        if driver:
+
+            # find driver in gamertag conversion
+            for j, row in enumerate(gamertag_conversion):
+                gamertag = row[1]
+                discord_id = row[0]
+                if gamertag == driver:
+                    user = discord.utils.find(
+                        lambda u: u.id == int(discord_id), message.guild.members
+                    )
+                    await message.channel.send(
+                        f"{user.mention} starts at `{starting_time}`"
+                    )
+                    break
+
+    await Support.process_complete_reaction(message, remove=False)
