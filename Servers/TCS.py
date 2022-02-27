@@ -188,10 +188,6 @@ async def on_reaction_add(client, message, user, payload):
     return remove_reaction
 # end on_reaction_add
 
-def get_unlap_count(starting_time_sec: float, lap_time_sec: list[float]):
-
-    unlap_counts = []
-
 
 async def update_discord_tables_old(client: discord.Client, leaderboard: list, table_type: str, title: str, purge: bool = False):
     # """
