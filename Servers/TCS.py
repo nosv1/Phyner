@@ -472,7 +472,7 @@ async def update_discord_tables(
 
                         starting_time = re.findall(r"\d:\d\d.\d", text)
                         slowest_starting_time = re.findall(r"\d:\d\d.\d", leaderboard[2][4])
-                        slowest_lap_time = re.findall(r"\d:\d\d.\d", leaderboard[2][3])
+                        slowest_lap_time = re.findall(r"\d:\d\d.\d\d\d", leaderboard[2][3])
 
                         if starting_time:
                             starting_time = starting_time[0]
