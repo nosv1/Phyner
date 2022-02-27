@@ -71,7 +71,46 @@ async def main(
             await message.reply(
                 f"You can only use this command in <#{mut_game_queue_id}>."
             )
-# end main
+
+    elif args[0] == "!cancelregs$":
+            
+        if message.channel.id == regs_game_queue_id:
+            await remove_user_from_queue(message, "regs")
+
+        else:
+            await message.reply(
+                f"You can only use this command in <#{regs_game_queue_id}>."
+            )
+
+    elif args[0] == "!cancelmut$":
+
+        if message.channel.id == mut_game_queue_id:
+            await remove_user_from_queue(message, "mut")
+
+        else:
+            await message.reply(
+                f"You can only use this command in <#{mut_game_queue_id}>."
+            )
+
+    elif args[0] == "!clearregs$":
+
+        if message.channel.id == regs_game_queue_id:
+            await clear_queue(message, "regs")
+
+        else:
+            await message.reply(
+                f"You can only use this command in <#{regs_game_queue_id}>."
+            )
+
+    elif args[0] == "!clearmut$":
+            
+        if message.channel.id == mut_game_queue_id:
+            await clear_queue(message, "mut")
+
+        else:
+            await message.reply(
+                f"You can only use this command in <#{mut_game_queue_id}>."
+            )
 
 
 async def on_reaction_add(client, message, user, payload):
@@ -90,7 +129,6 @@ async def on_reaction_add(client, message, user, payload):
 
 
     return remove_reaction
-# end on_reaction_add
 
 
 async def handle_money_game_command(message: discord.Message, game_type: str):
@@ -171,3 +209,47 @@ async def handle_money_game_command(message: discord.Message, game_type: str):
             await message.channel.send(
                 f"{message.author.mention} has been added to the queue."
             )
+
+
+async def remove_user_from_queue(message: discord.Message, game_type: str):
+    
+    # get pickled queue
+    # queued IDs
+    try:
+        queue = pickle.load(open(f"lobby_up_{game_type}_queue.p", "rb"))
+
+    except FileNotFoundError:
+        queue = []
+
+    if message.author.id in queue:
+        queue.remove(message.author.id)
+
+    pickle.dump(queue, open(f"lobby_up_{game_type}_queue.p", "wb"))
+
+    await message.channel.send(
+        f"{message.author.mention} has been removed from the queue."
+    )
+
+
+async def clear_queue(message: discord.Message, game_type: str):
+    
+    try:
+        queue = pickle.load(open(f"lobby_up_{game_type}_queue.p", "rb"))
+
+    except FileNotFoundError:
+        pass
+
+    if not queue:
+        await message.reply(
+            f"There are no users queued for a {game_type} game."
+        )
+
+    else:
+        user = discord.utils.find(
+            lambda u: u.id == queue[0], message.guild.members
+        )
+        await message.reply(
+            f"The {game_type} game queue has been cleared - {user.mention} removed."
+        )
+
+        pickle.dump([], open(f"lobby_up_{game_type}_queue.p", "wb"))
