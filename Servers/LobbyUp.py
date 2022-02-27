@@ -95,7 +95,14 @@ async def main(
     elif args[0] == "!clearregs$":
 
         if message.channel.id == regs_game_queue_id:
-            await clear_queue(message, "regs")
+            
+            if author_perms.administrator:
+                await clear_queue(message, "regs")
+                
+            else:
+                await message.reply(
+                    f"You must be an administrator to use this command."
+                )
 
         else:
             await message.reply(
@@ -105,7 +112,14 @@ async def main(
     elif args[0] == "!clearmut$":
             
         if message.channel.id == mut_game_queue_id:
-            await clear_queue(message, "mut")
+
+            if author_perms.administrator:
+                await clear_queue(message, "mut")
+            
+            else:
+                await message.reply(
+                    f"You must be an administrator to use this command."
+                )
 
         else:
             await message.reply(
