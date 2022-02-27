@@ -95,7 +95,7 @@ async def main(client, message, args, author_perms):
 
     if args[0] == "!test" and in_bot_stuff:
         pass
-    
+
     elif args[0] == "!pvf":
         await pvf_to_lap_time(message, args)
 
@@ -487,7 +487,7 @@ async def update_discord_tables(
                             slowest_lap_time = int(slowest_lap_time.split(":")[0]) * 60 + float(slowest_lap_time.split(":")[1])
 
                             if starting_time - slowest_starting_time >= slowest_lap_time:  # is getting lapped before start
-                                color = cg_red
+                                color = mango_tango
                                 
                 draw.text(
                     (
