@@ -94,25 +94,8 @@ async def main(client, message, args, author_perms):
     in_tt_submit = message.channel.id == tt_submit_id
 
     if args[0] == "!test" and in_bot_stuff:
-        
-        g = Support.get_g_client()
-        wb = g.open_by_key(spreadsheet["key"])
-        ws = wb.worksheets()
-
-        round_sheet = [sheet for sheet in ws if sheet.title == args[1]][0]
-        sheet = round_sheet
-            
-        await update_discord_tables(
-            client,
-            sheet.get(
-                f"{spreadsheet['ranges']['starting_order']}{sheet.row_count}"
-            ),
-            "starting_order",
-            purge = False
-        )
-
-        await Support.process_complete_reaction(message, False)
-
+        pass
+    
     elif args[0] == "!pvf":
         await pvf_to_lap_time(message, args)
 
