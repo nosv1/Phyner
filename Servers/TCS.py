@@ -293,8 +293,8 @@ async def update_discord_tables(
 
     for row in leaderboard:
         blank_row = not row
-        blank_first_cell = not row[0]
-        blank_last_cell = not row[-1]
+        blank_first_cell = row and not row[0]
+        blank_last_cell = row and not row[-1]
         if blank_row or (blank_first_cell and table_type in ["time_trial", "starting_order"]) or blank_last_cell:
             leaderboard = leaderboard[:leaderboard.index(row)]
             break
