@@ -954,7 +954,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     
     user_gamertag = [row[1] for row in gamertag_conversion if row[0] and int(row[0]) == user.id]
     user_gamertag = user_gamertag[0] if user_gamertag else None
-    has_pvf = not not [r[1] for r in avg_overall_pace_vs_field if r[1] == user_gamertag]
+    has_pvf = not not [r[1] for r in avg_overall_pace_vs_field if r and r[1] == user_gamertag]
 
     if has_pvf:
         await simple_bot_response(
