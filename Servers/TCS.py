@@ -956,7 +956,7 @@ async def prepare_rival_selection_channel(channel: discord.TextChannel, user: di
     user_gamertag = user_gamertag[0] if user_gamertag else None
     has_pvf = not not [r[1] for r in avg_overall_pace_vs_field if len(r) >= 2 and r[1] == user_gamertag]
 
-    if has_pvf:
+    if not has_pvf:
         await simple_bot_response(
             channel,
             title="**No gamertag found!**",
