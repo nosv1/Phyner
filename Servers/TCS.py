@@ -576,17 +576,6 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
 
     await message.channel.trigger_typing()
 
-<<<<<<< HEAD
-    # if it's Sunday after 6:00pm UK time and has not submitted before, too late
-    now = datetime.now(tz=timezone("Europe/London"))
-    late_hour = 18
-    
-    is_late = now.weekday() == 6 and now.hour >= late_hour and now.minute >= 0
-    if is_late:  # only check to revert if it's late
-        is_late = not (now.weekday() == 6 and now.hour >= 21)  # after race, submisisons open again
-
-=======
->>>>>>> parent of 554d31f (Update TCS.py)
     # get the time from message
     lap_time = re.findall(
         r"[0-5]{1}:[0-9]{2}\.\d{3}", args[1]
