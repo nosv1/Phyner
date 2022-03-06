@@ -576,6 +576,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
 
     await message.channel.trigger_typing()
 
+<<<<<<< HEAD
     # if it's Sunday after 6:00pm UK time and has not submitted before, too late
     now = datetime.now(tz=timezone("Europe/London"))
     late_hour = 18
@@ -584,6 +585,8 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
     if is_late:  # only check to revert if it's late
         is_late = not (now.weekday() == 6 and now.hour >= 21)  # after race, submisisons open again
 
+=======
+>>>>>>> parent of 554d31f (Update TCS.py)
     # get the time from message
     lap_time = re.findall(
         r"[0-5]{1}:[0-9]{2}\.\d{3}", args[1]
@@ -591,7 +594,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
 
     proof = validators.url(re.sub(r"[<>]", "", args[2]))
 
-    if proof or True:  # bypassing proof requirement
+    if proof or True:
 
         if lap_time:
 
@@ -617,10 +620,17 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                 value_render_option="FORMULA"
             )
             
-            # alert for brand new driver, sending message below
-            brand_new_submitter = [str(driver_id)] not in ranges[0]
+            # alert for brand new driver
+            if [str(driver_id)] not in ranges[0]:
+                mo_user = discord.utils.find(
+                    lambda u: u.id == Support.ids.mo_id, message.guild.members
+                )
+                await message.channel.send(
+                    f"{mo_user.mention}, {message.author.display_name} is a brand new submitter! Update the spreadsheet.\n\n"
+                )
 
             # append the new submission
+
             ranges[0].append([
                 str(driver_id)
             ])
@@ -628,6 +638,15 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             ranges[1].append([
                 str(lap_time)
             ])
+
+            # update
+            submissions_ws.batch_update(
+                Support.ranges_to_dict(
+                    a1_ranges=a1_ranges,
+                    value_ranges=ranges
+                ),
+                value_input_option="USER_ENTERED"
+            )
 
             tt_round_numbers = submissions_ws.get(
                 f"{spreadsheet['ranges']['tt_round_numbers']}{submissions_ws.row_count}"
@@ -656,38 +675,9 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                     if delta:
                         driver_submission_history += f" ({delta:.3f}s)"
 
-            if not is_late:
-                if len(driver_submissions) > 1:
-                    driver_submission_history += f"\n**Total time found:** {driver_submissions[0] - driver_submissions[-1]:.3f}s"
+            if len(driver_submissions) > 1:
+                driver_submission_history += f"\n**Total time found:** {driver_submissions[0] - driver_submissions[-1]:.3f}s"
 
-            else:
-                await simple_bot_response(
-                    message.channel,
-                    title=f"**Submission is too late!**",
-                    description=f"Submission's closed at {datetime(now.year, now.month, now.day, late_hour, 0, 0).strftime('%H:%M')} UK for drivers who have not yet submitted this week. Sorry for the inconvenience.",
-                    reply_message=message
-                )
-                return
-
-            # update
-            submissions_ws.batch_update(
-                Support.ranges_to_dict(
-                    a1_ranges=a1_ranges,
-                    value_ranges=ranges
-                ),
-                value_input_option="USER_ENTERED"
-            )
-
-            # brand new submitter alert
-            if brand_new_submitter:
-                mo_user = discord.utils.find(
-                    lambda u: u.id == Support.ids.mo_id, message.guild.members
-                )
-                await message.channel.send(
-                    f"{mo_user.mention}, {message.author.display_name} is a brand new submitter! Update the spreadsheet.\n\n"
-                )
-
-            # lap time submitted message
             await simple_bot_response(
                 message.channel,
                 title=f"**Your lap time has been submitted!**",
