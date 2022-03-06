@@ -577,7 +577,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
     await message.channel.trigger_typing()
 
     # if it's Sunday after 6:00pm UK time and has not submitted before, too late
-    now = datetime.datetime.now(tz=timezone("Europe/London"))
+    now = datetime.now(tz=timezone("Europe/London"))
     late_hour = 18
     
     is_late = now.weekday() == 6 and now.hour >= late_hour and now.minute >= 0
