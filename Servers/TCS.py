@@ -659,10 +659,12 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
                     if delta:
                         driver_submission_history += f" ({delta:.3f}s)"
 
-            if not is_late:
+            # > 1 submisison before late time or not late
+            if not is_late or len(driver_submissions) > 1:
                 if len(driver_submissions) > 1:
                     driver_submission_history += f"\n**Total time found:** {driver_submissions[0] - driver_submissions[-1]:.3f}s"
 
+            # is late
             else:
                 await simple_bot_response(
                     message.channel,
