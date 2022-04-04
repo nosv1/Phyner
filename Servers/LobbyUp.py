@@ -205,7 +205,7 @@ async def handle_money_game_command(message: discord.Message, game_type: str):
         )
 
         await channel.send(
-            f"{message.author.mention} and {users[-1].mention}, this is your {game_type} money game matchup channel. Review the <#{mmg_procedures_and_rules_id}>, and then set your wager terms. Once you agree on the wager value, send your payments to $xSHORZEEx on Cash App or management@lobbyup.net on PayPal. Once both sides post a screenshot to this channel of them sending the money, you may begin the game. Be sure to post the final socre and the winner here. For any disputes and at the conclusion of the game, ping <@{shorzee_id}> to have the issue resolved or the payment sent. Good luck!"
+            f"{message.author.mention} and {users[-1].mention}, this is your {game_type} money game matchup channel. Review the <#{mmg_procedures_and_rules_id}>, and then set your wager terms. Once you agree on the wager value, send your payments to $xSHORZEEx on Cash App or management@lobbyup.net on PayPal. Once both sides post a screenshot to this channel of them sending the money, you may begin the game. Be sure to post the final score and the winner here. For any disputes and at the conclusion of the game, ping <@{shorzee_id}> to have the issue resolved or the payment sent. Good luck!"
         )
 
         await message.reply(
