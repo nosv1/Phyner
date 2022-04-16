@@ -106,7 +106,7 @@ async def main(client, message, args, author_perms):
     elif args[0] == "!tt" and (in_bot_stuff or in_tt_submit):
         await tt_submit(client, message, args)
 
-    elif args[0] == "!update" and is_mo:
+    elif args[0] == "!update" and author_perms.manage_messages:
         
         g = Support.get_g_client()
         wb = g.open_by_key(spreadsheet["key"])
