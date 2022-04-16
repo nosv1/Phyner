@@ -103,7 +103,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
         await simple_bot_response(
             message.channel,
             title="**Invalid proof!**",
-            description="Please use a valid screenshot link.\n\n`!submit [m:ss.000] [video_link]`",  # TODO update this with new command
+            description="Please use a valid video link.\n\n`!submit <m:ss.000> <video_link>`",
             reply_message=message
         )
         return
@@ -112,7 +112,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
         await simple_bot_response(
             message.channel,
             title="**Invalid time format!**",
-            description="Please use the following format: `!submit [m:ss.000] [video_link]`",  # TODO update this with new command
+            description="Please use the following format: `!submit <m:ss.000> <video_link>`",
             reply_message=message
         )
         return
