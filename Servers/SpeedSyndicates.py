@@ -96,14 +96,17 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
         r"[0-9]{1}:[0-5]{1}[0-9]{1}\.\d{3}", message.content
     )
 
-    proof = [a for a in args if a and validators.url(re.sub(r"[<>]", "", a))]
     # check if there is a link in the message
+    proof = [a for a in args if a and validators.url(re.sub(r"[<>]", "", a))]
+    if not proof:
+        if message.attachments:
+            proof = [message.attachments[0].url]
 
     if not proof:  
         await simple_bot_response(
             message.channel,
             title="**Invalid proof!**",
-            description="Please use a valid video link.\n\n`!submit <m:ss.000> <video_link>`",
+            description="Please use a valid video link.\n\n`!submit <m:ss.000> <screenshot>`",
             reply_message=message
         )
         return
@@ -112,7 +115,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
         await simple_bot_response(
             message.channel,
             title="**Invalid time format!**",
-            description="Please use the following format: `!submit <m:ss.000> <video_link>`",
+            description="Please use the following format: `!submit <m:ss.000> <screenshot>`",
             reply_message=message
         )
         return
