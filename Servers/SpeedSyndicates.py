@@ -103,21 +103,26 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             proof = [message.attachments[0].url]
 
     if not proof:  
-        await simple_bot_response(
+        embed = await simple_bot_response(
             message.channel,
             title="**Invalid proof!**",
             description="Please use a valid video link.\n\n`!submit <m:ss.000> <screenshot>`",
-            reply_message=message
+            send=False
         )
+        embed.colour = discord.Color.red()
+        await message.reply(embed=embed)
         return
 
     if not lap_time:
-        await simple_bot_response(
+        embed = await simple_bot_response(
             message.channel,
             title="**Invalid time format!**",
-            description="Please use the following format: `!submit <m:ss.000> <screenshot>`",
-            reply_message=message
+            description="Please use the following format: `!submit <m:ss.000> <screenshot>`"
+            send=False
         )
+        # set embed color
+        embed.colour = discord.Color.red()
+        await message.reply(embed=embed)
         return
 
     lap_time = lap_time[0]
@@ -244,10 +249,13 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
     basic_lap_details = "\n".join([" ".join(row) for row in basic_lap_details])
 
     # lap time submitted message
-    await simple_bot_response(
+    embed = await simple_bot_response(
         message.channel,
         title=f"**Week {round_number} | {message.author.display_name}**",
         description=f"{basic_lap_details}\n\n{driver_submission_history}\n\n[**Spreadsheet**]({tt_spreadsheet_link.replace('gid=0', f'gid={round_sheet.id}')}) **|** [**Proof**]({proof[0]})",
-        reply_message=message
+        send=False
     )
+    embed.colour = discord.Color.red()
+    await message.reply(embed=embed)
+    return
 # end tt_submit
