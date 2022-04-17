@@ -244,7 +244,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
     await simple_bot_response(
         message.channel,
         title=f"**Week {round_number} | {message.author.display_name}**",
-        description=f"{basic_lap_details}\n\n{driver_submission_history}\n\n[**Spreadsheet**]({tt_spreadsheet_link.replace('gid=0', f'gid={round_sheet.id}')}) [**Proof**]({proof[0]})",
+        description=f"{basic_lap_details}\n\n{driver_submission_history}\n\n[**Spreadsheet**]({tt_spreadsheet_link.replace('gid=0', f'gid={round_sheet.id}')}) **|** [**Proof**]({proof[0]})",
         reply_message=message
     )
 # end tt_submit
