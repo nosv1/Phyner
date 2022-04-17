@@ -146,7 +146,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
     # check for diff name with same discord id
     # if the names are different, change the existing names to the new name
     for i in range(len(ranges[0])):
-        if ranges[0][i][0] == driver_id:
+        if str(ranges[1][i][0]) == str(driver_id):
             if ranges[2][i][0] != message.author.display_name:
                 ranges[2][i][0] = message.author.display_name
 
