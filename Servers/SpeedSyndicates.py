@@ -117,7 +117,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
         embed = await simple_bot_response(
             message.channel,
             title="**Invalid time format!**",
-            description="Please use the following format: `!submit <m:ss.000> <screenshot>`"
+            description="Please use the following format: `!submit <m:ss.000> <screenshot>`",
             send=False
         )
         # set embed color
