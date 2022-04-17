@@ -38,6 +38,7 @@ bot_log_id = 856204358772064258
 # MESSAGES
 
 # COLORS
+red = int("0xd0021b", 16)
 
 
 # tt_spreadsheet
@@ -109,7 +110,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             description="Please use a valid video link.\n\n`!submit <m:ss.000> <screenshot>`",
             send=False
         )
-        embed.colour = discord.Color.red()
+        embed.colour = discord.Color(red)
         await message.reply(embed=embed)
         return
 
@@ -121,7 +122,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
             send=False
         )
         # set embed color
-        embed.colour = discord.Color.red()
+        embed.colour = discord.Color(red)
         await message.reply(embed=embed)
         return
 
@@ -255,7 +256,7 @@ async def tt_submit(client: discord.Client, message: discord.Message, args: list
         description=f"{basic_lap_details}\n\n{driver_submission_history}\n\n[**Spreadsheet**]({tt_spreadsheet_link.replace('gid=0', f'gid={round_sheet.id}')}) **|** [**Proof**]({proof[0]})",
         send=False
     )
-    embed.colour = discord.Color.red()
+    embed.colour = discord.Color(red)
     await message.reply(embed=embed)
     return
 # end tt_submit
